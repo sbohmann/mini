@@ -2,4 +2,4 @@ import tokenizer.tokenizer
 import pprint
 
 tokens = tokenizer.tokenizer.read_file('example.mini')
-pprint.pprint(tokens)
+pprint.pprint(vars(tokens))
