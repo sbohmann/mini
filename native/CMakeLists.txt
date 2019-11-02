@@ -1,3 +1,3 @@
 project (mini)
-add_executable(mini mini.c errors.c tokenizer.c allocate.c)
-set(CMAKE_C_FLAGS "-D_CRT_SECURE_NO_DEPRECATE")
+add_executable(mini mini.c errors.c tokenizer.c allocate.c string.c string.h)
+set(CMAKE_C_FLAGS "-std=c11")

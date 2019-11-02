@@ -5,5 +5,8 @@
 int main() {
     struct Tokens *tokens = read_file("native/mini.c");
     printf("path: [%s]\n", tokens->path);
-    printf("source: [%s]\n", tokens->source);
+    printf("source: %zu lines\n", tokens->source->number_of_lines);
+    for (size_t index = 0; index < tokens->source->number_of_lines; ++index) {
+        printf("line %zu: [%s]\n", index, tokens->source->lines[index].value);
+    }
 }
