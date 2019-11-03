@@ -4,26 +4,7 @@
 
 #include "string.h"
 #include "source.h"
-
-struct ReferenceCount {
-    size_t strong_count;
-    size_t *weak_count;
-};
-
-struct ComplexValue {
-    struct ReferenceCount *reference_count;
-};
-
-void retain(struct ComplexValue *instance);
-void release(struct ComplexValue *instance);
-
-struct Any {
-    char complex;
-    union {
-        char primitive_value[8];
-        struct ComplexValue * complex_value;
-    } value;
-};
+#include "types.h"
 
 struct Position {
     const char *path;
