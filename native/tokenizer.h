@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "string.h"
+#include "source.h"
 
 struct ReferenceCount {
     size_t strong_count;
@@ -34,11 +35,6 @@ struct Token {
     const char *text;
     const struct Any value;
     const struct Position position;
-};
-
-struct Source {
-    size_t number_of_lines;
-    const struct String * lines;
 };
 
 struct Tokens
