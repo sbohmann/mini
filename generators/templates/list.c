@@ -1,6 +1,6 @@
-#include "{{name}}List.h"
+#include "{{file}}.h"
 
-#include "allocate.h"
+#include "../allocate.h"
 
 struct {{name}}List {
     size_t size;

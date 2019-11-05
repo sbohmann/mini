@@ -1,6 +1,6 @@
-#include "TokenList.h"
+#include "token_list.h"
 
-#include "allocate.h"
+#include "../allocate.h"
 
 struct TokenList {
     size_t size;
