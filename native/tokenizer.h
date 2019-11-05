@@ -18,10 +18,17 @@ struct Token {
     const struct Position position;
 };
 
-struct Tokens
+struct Tokens {
+    const size_t size;
+    const struct Token *data;
+};
+
+struct ParsedModule
 {
     const char *path;
     const struct Source *source;
+    const size_t tokens_size;
+    const struct Tokens *tokens;
 };
 
-struct Tokens * read_file(const char *path);
+struct ParsedModule * read_file(const char *path);

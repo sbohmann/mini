@@ -3,7 +3,7 @@
 #include "tokenizer.h"
 
 int main() {
-    struct Tokens *tokens = read_file("native/mini.c");
+    struct ParsedModule *tokens = read_file("native/mini.c");
     printf("path: [%s]\n", tokens->path);
     printf("source: %zu lines\n", tokens->source->number_of_lines);
     for (size_t index = 0; index < tokens->source->number_of_lines; ++index) {

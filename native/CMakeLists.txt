@@ -1,4 +1,5 @@
+cmake_minimum_required(VERSION 3.0)
 project (mini)
 file(GLOB_RECURSE sources "*.c")
-add_executable($sources)
+add_executable(minic ${sources})
 set(CMAKE_C_FLAGS "-std=c11 -O3")

@@ -1,23 +1,25 @@
 #pragma once
 
+#include "../tokenizer.h"
+
 struct TokenList;
 
 struct TokenListElement;
 
-TokenList * TokenList_create();
+struct TokenList * TokenList_create();
 
-TokenList * TokenList_delete(struct TokenList * list);
+void TokenList_delete(struct TokenList * list);
 
 void TokenList_append(struct TokenList * list, struct Token *value);
 
 void TokenList_prepend(struct TokenList * list, struct Token *value);
 
-TokenListElement * TokenList_begin(struct TokenList * list);
+struct TokenListElement * TokenList_begin(struct TokenList * list);
 
-TokenListElement * TokenList_end(struct TokenList * list);
+struct TokenListElement * TokenList_end(struct TokenList * list);
 
-TokenListElement * TokenListIterator_next(TokenListElement * iterator);
+struct TokenListElement * TokenListIterator_next(struct TokenListElement * iterator);
 
-TokenListElement * TokenListIterator_previous(TokenListElement * iterator);
+struct TokenListElement * TokenListIterator_previous(struct TokenListElement * iterator);
 
-struct Token * TokenListIterator_get(TokenListElement * value);
+struct Token * TokenListIterator_get(struct TokenListElement * value);

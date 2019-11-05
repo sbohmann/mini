@@ -1,38 +1,41 @@
 #include "{{file}}.h"
 
+#include <stdlib.h>
+
 #include "../allocate.h"
+#include "../errors.h"
 
 struct {{name}}List {
     size_t size;
-    struct ListElement *first;
-    struct ListElement *last;
+    struct {{name}}ListElement *first;
+    struct {{name}}ListElement *last;
 };
 
 struct {{name}}ListElement {
     {{prefix}}value;
-    {{name}}ListElement *next;
-    {{name}}ListElement *previous;
+    struct {{name}}ListElement *next;
+    struct {{name}}ListElement *previous;
 };
 
-{{name}}List * {{name}}List_create() {
+struct {{name}}List * {{name}}List_create() {
     return allocate(sizeof(struct {{name}}List));
 }
 
-{{name}}List * {{name}}List_delete(struct {{name}}List * list) {
-    {{name}}ListElement *element = list->first;
+struct {{name}}List * {{name}}List_delete(struct {{name}}List * list) {
+    struct {{name}}ListElement *element = list->first;
     while (element) {
-        {{name}}ListElement *next = element->next;
+        struct {{name}}ListElement *next = element->next;
         free(element);
         element = next;
     }
 }
 
 void {{name}}List_append(struct {{name}}List * list, {{prefix}}value) {
-    {{name}}ListElement * element = allocate(sizeof({{name}}ListElement));
+    struct {{name}}ListElement * element = allocate(sizeof(struct {{name}}ListElement));
     element->value = value;
     if (list->size == 0) {
-        list->first = element
-        list->last = element
+        list->first = element;
+        list->last = element;
         list->size = 1;
     } else {
         list->last->next = element;
@@ -43,11 +46,11 @@ void {{name}}List_append(struct {{name}}List * list, {{prefix}}value) {
 }
 
 void {{name}}List_prepend(struct {{name}}List * list, {{prefix}}value) {
-    {{name}}ListElement * element = allocate(sizeof({{name}}ListElement));
+    struct {{name}}ListElement * element = allocate(sizeof(struct {{name}}ListElement));
     element->value = value;
     if (list->size == 0) {
-        list->first = element
-        list->last = element
+        list->first = element;
+        list->last = element;
         list->size = 1;
     } else {
         list->first->previous = element;
@@ -57,15 +60,15 @@ void {{name}}List_prepend(struct {{name}}List * list, {{prefix}}value) {
     }
 }
 
-{{name}}ListElement * {{name}}List_begin(struct {{name}}List * list) {
+struct {{name}}ListElement * {{name}}List_begin(struct {{name}}List * list) {
     return list->first;
 }
 
-{{name}}ListElement * {{name}}List_end(struct {{name}}List * list) {
+struct {{name}}ListElement * {{name}}List_end(struct {{name}}List * list) {
     return list->last;
 }
 
-{{name}}ListElement * {{name}}ListIterator_next({{name}}ListElement * iterator) {
+struct {{name}}ListElement * {{name}}ListIterator_next(struct {{name}}ListElement * iterator) {
     if (iterator) {
         return iterator->next;
     } else {
@@ -73,7 +76,7 @@ void {{name}}List_prepend(struct {{name}}List * list, {{prefix}}value) {
     }
 }
 
-{{name}}ListElement * {{name}}ListIterator_previous({{name}}ListElement * iterator) {
+struct {{name}}ListElement * {{name}}ListIterator_previous(struct {{name}}ListElement * iterator) {
     if (iterator) {
         return iterator->previous;
     } else {
@@ -81,7 +84,7 @@ void {{name}}List_prepend(struct {{name}}List * list, {{prefix}}value) {
     }
 }
 
-{{value}} {{name}}ListIterator_get({{name}}ListElement * value) {
+{{value}} {{name}}ListIterator_get(struct {{name}}ListElement * iterator) {
     if (iterator) {
         return iterator->value;
     } else {

@@ -1,38 +1,41 @@
 #include "token_list.h"
 
+#include <stdlib.h>
+
 #include "../allocate.h"
+#include "../errors.h"
 
 struct TokenList {
     size_t size;
-    struct ListElement *first;
-    struct ListElement *last;
+    struct TokenListElement *first;
+    struct TokenListElement *last;
 };
 
 struct TokenListElement {
     struct Token *value;
-    TokenListElement *next;
-    TokenListElement *previous;
+    struct TokenListElement *next;
+    struct TokenListElement *previous;
 };
 
-TokenList * TokenList_create() {
+struct TokenList * TokenList_create() {
     return allocate(sizeof(struct TokenList));
 }
 
-TokenList * TokenList_delete(struct TokenList * list) {
-    TokenListElement *element = list->first;
+void TokenList_delete(struct TokenList * list) {
+    struct TokenListElement *element = list->first;
     while (element) {
-        TokenListElement *next = element->next;
+        struct TokenListElement *next = element->next;
         free(element);
         element = next;
     }
 }
 
 void TokenList_append(struct TokenList * list, struct Token *value) {
-    TokenListElement * element = allocate(sizeof(TokenListElement));
+    struct TokenListElement * element = allocate(sizeof(struct TokenListElement));
     element->value = value;
     if (list->size == 0) {
-        list->first = element
-        list->last = element
+        list->first = element;
+        list->last = element;
         list->size = 1;
     } else {
         list->last->next = element;
@@ -43,11 +46,11 @@ void TokenList_append(struct TokenList * list, struct Token *value) {
 }
 
 void TokenList_prepend(struct TokenList * list, struct Token *value) {
-    TokenListElement * element = allocate(sizeof(TokenListElement));
+    struct TokenListElement * element = allocate(sizeof(struct TokenListElement));
     element->value = value;
     if (list->size == 0) {
-        list->first = element
-        list->last = element
+        list->first = element;
+        list->last = element;
         list->size = 1;
     } else {
         list->first->previous = element;
@@ -57,15 +60,15 @@ void TokenList_prepend(struct TokenList * list, struct Token *value) {
     }
 }
 
-TokenListElement * TokenList_begin(struct TokenList * list) {
+struct TokenListElement * TokenList_begin(struct TokenList * list) {
     return list->first;
 }
 
-TokenListElement * TokenList_end(struct TokenList * list) {
+struct TokenListElement * TokenList_end(struct TokenList * list) {
     return list->last;
 }
 
-TokenListElement * TokenListIterator_next(TokenListElement * iterator) {
+struct TokenListElement * TokenListIterator_next(struct TokenListElement * iterator) {
     if (iterator) {
         return iterator->next;
     } else {
@@ -73,7 +76,7 @@ TokenListElement * TokenListIterator_next(TokenListElement * iterator) {
     }
 }
 
-TokenListElement * TokenListIterator_previous(TokenListElement * iterator) {
+struct TokenListElement * TokenListIterator_previous(struct TokenListElement * iterator) {
     if (iterator) {
         return iterator->previous;
     } else {
@@ -81,7 +84,7 @@ TokenListElement * TokenListIterator_previous(TokenListElement * iterator) {
     }
 }
 
-struct Token * TokenListIterator_get(TokenListElement * value) {
+struct Token * TokenListIterator_get(struct TokenListElement * iterator) {
     if (iterator) {
         return iterator->value;
     } else {
