@@ -14,7 +14,7 @@ class Token:
 
 def read_file(path):
     file = open(path, 'r')
-    content = file.read()
+    content = file.read().splitlines()
     return Tokens(path, content)
 
 
