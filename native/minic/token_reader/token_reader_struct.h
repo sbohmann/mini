@@ -30,3 +30,13 @@ bool is_alphabetic(char c);
 bool is_name_start(char c);
 
 bool is_name_part(char c);
+
+bool is_opening_bracket(char c);
+
+bool is_closing_bracket(char c);
+
+bool is_bracket(char c);
+
+bool is_operator_part(char c);
+
+bool is_quote(char c);

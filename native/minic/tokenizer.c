@@ -14,7 +14,7 @@ static void check_character_legality(const char *path, size_t line, size_t colum
     if (c == 0x9 || (c >= 0x20 && c < 0x7f)) {
         return;
     }
-    fail("Illegal character [%02x] at [%s], line %zu, column %zu", (int)c, path, line, column);
+    fail("Illegal character [0x%02x] at [%s], line %zu, column %zu", (int)c, path, line, column);
 }
 
 static size_t advance_column(size_t column, char c) {
@@ -42,14 +42,16 @@ static void process_line(const char *path, size_t line_number, struct TokenList 
     size_t column = 1;
     struct TokenReader *current_token_reader = 0;
     size_t current_token_column = 0;
-    bool inside_string_literal = 0;
     for (size_t index = 0; index < line->length; ++index) {
         char c = line->value[index];
         check_character_legality(path, line_number, column, c);
         if (!whitespace(c) && !current_token_reader) {
+            if (c == '#') {
+                break;
+            }
             current_token_reader = TokenReader_create((struct Position) {path, line_number, column}, c);
             if (!current_token_reader) {
-                fail("Illegal character [%c] (%02x) at line %zu, column %zu, file [%s]",
+                fail("Illegal character [%c] (0x%02x) at line %zu, column %zu, file [%s]",
                         c, (int)c, line_number, column, path);
             }
             current_token_column = column;
@@ -63,7 +65,6 @@ static void process_line(const char *path, size_t line_number, struct TokenList 
     }
     add_token(path, line_number, current_token_column, tokens, &current_token_reader);
 }
-
 
 static struct Tokens *flatten(struct TokenList *tokens) {
     const size_t size = TokenList_size(tokens);

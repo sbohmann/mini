@@ -24,6 +24,10 @@ struct StringBuilder *StringBuilder_delete(struct StringBuilder *instance) {
     free(instance);
 }
 
+size_t StringBuilder_length(struct StringBuilder *self) {
+    return self->length;
+}
+
 static void enlarge(struct StringBuilder *self, size_t minimum_capacity) {
     size_t new_capacity = self->capacity;
     while (new_capacity < minimum_capacity) {

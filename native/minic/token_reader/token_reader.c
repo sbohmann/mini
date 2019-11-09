@@ -6,6 +6,9 @@
 #include "token_reader_struct.h"
 #include "number_token_reader.h"
 #include "symbol_token_reader.h"
+#include "bracket_token_reader.h"
+#include "operator_token_reader.h"
+#include "string_token_reader.h"
 
 struct TokenReader *TokenReader_create(struct Position position, char initial_char) {
     struct TokenReader *result;
@@ -13,6 +16,12 @@ struct TokenReader *TokenReader_create(struct Position position, char initial_ch
         result = NumberTokenReader_create();
     } else if (is_name_start(initial_char)) {
         result = SymbolTokenReader_create();
+    } else if (is_bracket(initial_char)) {
+        result = BracketTokenReader_create();
+    } else if (is_operator_part(initial_char)) {
+        result = OperatorTokenReader_create();
+    } else if (is_quote(initial_char)) {
+        result = StringTokenReader_create(initial_char);
     } else {
         result = 0;
     }
@@ -73,5 +82,54 @@ bool is_name_start(char c) {
 }
 
 bool is_name_part(char c) {
-    return is_numeric(c) || is_name_part(c);
+    return is_numeric(c) || is_name_start(c);
+}
+
+bool is_opening_bracket(char c) {
+    switch (c) {
+        case '(':
+        case '[':
+        case '{':
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool is_closing_bracket(char c) {
+    switch (c) {
+        case ')':
+        case ']':
+        case '}':
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool is_bracket(char c) {
+    return is_opening_bracket(c) || is_closing_bracket(c);
+}
+
+bool is_operator_part(char c) {
+    switch (c) {
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '^':
+        case '=':
+        case '!':
+        case '~':
+        case '<':
+        case '>':
+        case '%':
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool is_quote(char c) {
+    return c == '"' || c == '\'';
 }
