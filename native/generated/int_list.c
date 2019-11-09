@@ -65,7 +65,7 @@ void IntList_prepend(struct IntList * self, int64_t value) {
     }
 }
 
-int64_t * IntListIterator_to_array(struct IntList * self) {
+int64_t * IntList_to_array(struct IntList * self) {
     const size_t size = IntList_size(self);
     const size_t element_size = sizeof(int64_t);
     const size_t result_size = element_size * size;
@@ -74,7 +74,7 @@ int64_t * IntListIterator_to_array(struct IntList * self) {
     struct IntListElement *iterator = IntList_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail("Logical error in IntListIterator_to_array - target overrun");
+            fail("Logical error in IntList_to_array - target overrun");
         }
         *result_iterator = IntListIterator_get(iterator);
         iterator = IntListIterator_next(iterator);

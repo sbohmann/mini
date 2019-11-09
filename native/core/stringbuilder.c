@@ -52,6 +52,7 @@ struct StringBuilder *StringBuilder_append_string(struct StringBuilder *self, co
         enlarge(self, self->length + value->length);
     }
     memcpy(self->buffer + self->length, value->value, value->length);
+    self->length += value->length;
 }
 
 struct String *StringBuilder_result(struct StringBuilder *self) {

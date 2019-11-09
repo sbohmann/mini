@@ -17,7 +17,7 @@ void IntList_append(struct IntList * self, int64_t value);
 
 void IntList_prepend(struct IntList * self, int64_t value);
 
-int64_t * IntListIterator_to_array(struct IntList * self);
+int64_t * IntList_to_array(struct IntList * self);
 
 struct IntListElement * IntList_begin(struct IntList * self);
 

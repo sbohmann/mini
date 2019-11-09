@@ -65,7 +65,7 @@ void StringList_prepend(struct StringList * self, struct String *value) {
     }
 }
 
-struct String * StringListIterator_to_array(struct StringList * self) {
+struct String * StringList_to_array(struct StringList * self) {
     const size_t size = StringList_size(self);
     const size_t element_size = sizeof(struct String);
     const size_t result_size = element_size * size;
@@ -74,7 +74,7 @@ struct String * StringListIterator_to_array(struct StringList * self) {
     struct StringListElement *iterator = StringList_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail("Logical error in StringListIterator_to_array - target overrun");
+            fail("Logical error in StringList_to_array - target overrun");
         }
         *result_iterator = *StringListIterator_get(iterator);
         iterator = StringListIterator_next(iterator);

@@ -19,7 +19,7 @@ void {{name}}List_append(struct {{name}}List * self, {{prefix}}value);
 
 void {{name}}List_prepend(struct {{name}}List * self, {{prefix}}value);
 
-{{type}} * {{name}}ListIterator_to_array(struct {{name}}List * self);
+{{type}} * {{name}}List_to_array(struct {{name}}List * self);
 
 struct {{name}}ListElement * {{name}}List_begin(struct {{name}}List * self);
 

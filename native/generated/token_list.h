@@ -18,7 +18,7 @@ void TokenList_append(struct TokenList * self, struct Token *value);
 
 void TokenList_prepend(struct TokenList * self, struct Token *value);
 
-struct Token * TokenListIterator_to_array(struct TokenList * self);
+struct Token * TokenList_to_array(struct TokenList * self);
 
 struct TokenListElement * TokenList_begin(struct TokenList * self);
 

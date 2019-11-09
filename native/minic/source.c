@@ -42,7 +42,7 @@ static void collect_lines(const struct String *text, struct StringList *lines) {
 }
 
 static struct String *flatten(struct StringList *lines) {
-    struct String *result_lines = StringListIterator_to_array(lines);
+    struct String *result_lines = StringList_to_array(lines);
     StringList_delete(lines);
     return result_lines;
 }

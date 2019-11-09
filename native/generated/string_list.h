@@ -18,7 +18,7 @@ void StringList_append(struct StringList * self, struct String *value);
 
 void StringList_prepend(struct StringList * self, struct String *value);
 
-struct String * StringListIterator_to_array(struct StringList * self);
+struct String * StringList_to_array(struct StringList * self);
 
 struct StringListElement * StringList_begin(struct StringList * self);
 

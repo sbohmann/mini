@@ -27,7 +27,6 @@ struct ParsedModule
 {
     const char *path;
     const struct Source *source;
-    const size_t tokens_size;
     const struct Tokens *tokens;
 };
 

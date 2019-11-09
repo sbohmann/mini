@@ -65,7 +65,7 @@ void {{name}}List_prepend(struct {{name}}List * self, {{prefix}}value) {
     }
 }
 
-{{type}} * {{name}}ListIterator_to_array(struct {{name}}List * self) {
+{{type}} * {{name}}List_to_array(struct {{name}}List * self) {
     const size_t size = {{name}}List_size(self);
     const size_t element_size = sizeof({{type}});
     const size_t result_size = element_size * size;
@@ -74,7 +74,7 @@ void {{name}}List_prepend(struct {{name}}List * self, {{prefix}}value) {
     struct {{name}}ListElement *iterator = {{name}}List_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail("Logical error in {{name}}ListIterator_to_array - target overrun");
+            fail("Logical error in {{name}}List_to_array - target overrun");
         }
         *result_iterator = {{value_dereference}}{{name}}ListIterator_get(iterator);
         iterator = {{name}}ListIterator_next(iterator);

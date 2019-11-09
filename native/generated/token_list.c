@@ -65,7 +65,7 @@ void TokenList_prepend(struct TokenList * self, struct Token *value) {
     }
 }
 
-struct Token * TokenListIterator_to_array(struct TokenList * self) {
+struct Token * TokenList_to_array(struct TokenList * self) {
     const size_t size = TokenList_size(self);
     const size_t element_size = sizeof(struct Token);
     const size_t result_size = element_size * size;
@@ -74,7 +74,7 @@ struct Token * TokenListIterator_to_array(struct TokenList * self) {
     struct TokenListElement *iterator = TokenList_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail("Logical error in TokenListIterator_to_array - target overrun");
+            fail("Logical error in TokenList_to_array - target overrun");
         }
         *result_iterator = *TokenListIterator_get(iterator);
         iterator = TokenListIterator_next(iterator);

@@ -9,14 +9,6 @@
 
 static uint8_t tab_width = 4;
 
-static struct Tokens *flatten(struct TokenList *tokens) {
-    const size_t size = TokenList_size(tokens);
-    struct Tokens *result = allocate(sizeof(struct Tokens) * size);
-    result->size = size;
-    TokenList_delete(tokens);
-    return result;
-}
-
 static void check_character_legality(const char *path, size_t line, size_t column, char c) {
     if (c == 0x9 || (c >= 0x20 && c < 0x7f)) {
         return;
@@ -66,6 +58,16 @@ static void process_line(const char *path, size_t line_number, struct TokenList 
         column = advance_column(column, c);
     }
     add_token(path, line_number, column, tokens, &current_token_text);
+}
+
+
+static struct Tokens *flatten(struct TokenList *tokens) {
+    const size_t size = TokenList_size(tokens);
+    struct Tokens *result = allocate(sizeof(struct Tokens) * size);
+    result->size = size;
+    result->data = TokenList_to_array(tokens);
+    TokenList_delete(tokens);
+    return result;
 }
 
 static struct Tokens *read_tokens(const char *path, const struct Source *source) {
