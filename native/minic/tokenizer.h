@@ -13,7 +13,7 @@ struct Position {
 };
 
 struct Token {
-    const char *text;
+    const struct String *text;
     struct Any value;
     struct Position position;
 };

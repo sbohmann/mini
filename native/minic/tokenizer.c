@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdbool.h>
+#include <core/stringbuilder.h>
 #include "tokenizer.h"
 
 #include "core/allocate.h"
@@ -30,14 +32,40 @@ static size_t advance_column(size_t column, char c) {
     }
 }
 
+static bool whitespace(char c) {
+    return c == 0x9 || c == ' ';
+}
+
+static void add_token(const char *path, size_t line, size_t column, struct TokenList *tokens, struct StringBuilder **current_token_text) {
+    if (*current_token_text) {
+        struct Token *token = allocate(sizeof(struct Token));
+        struct String *text = StringBuilder_result(*current_token_text);
+        token->text = text;
+        token->position = (struct Position) {path, line, column};
+        TokenList_append(tokens, token);
+        StringBuilder_delete(*current_token_text);
+        *current_token_text = 0;
+    }
+}
+
 static void process_line(const char *path, size_t line_number, struct TokenList *tokens, const struct String *line) {
     size_t column = 1;
+    struct StringBuilder *current_token_text = 0;
+    int inside_string_literal = 0;
     for (size_t index = 0; index < line->length; ++index) {
         char c = line->value[index];
         check_character_legality(path, line_number, column, c);
-        
+        if (whitespace(c)) {
+            add_token(path, line_number, column, tokens, &current_token_text);
+        } else {
+            if (!current_token_text) {
+                current_token_text = StringBuilder_create();
+            }
+            StringBuilder_append(current_token_text, c);
+        }
         column = advance_column(column, c);
     }
+    add_token(path, line_number, column, tokens, &current_token_text);
 }
 
 static struct Tokens *read_tokens(const char *path, const struct Source *source) {
