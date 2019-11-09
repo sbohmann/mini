@@ -1,25 +1,24 @@
 #include "source.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 
-#include "allocate.h"
-#include "errors.h"
-#include "string.h"
-#include "files.h"
+#include "core/allocate.h"
+#include "core/errors.h"
+#include "core/string.h"
+#include "core/files.h"
+#include "generated/string_list.h"
 
-struct StringList * prepend_line(struct StringList *lines, const char *pointer, const char *line_start) {
+static void append_line(struct StringList *lines, const char *pointer, const char *line_start) {
     size_t line_length = pointer - line_start;
     char *line_value = allocate(line_length + 1);
     memcpy(line_value, line_start, line_length);
     struct String *line = allocate(sizeof(struct String));
     *line = (struct String) {line_length, line_value};
-    return StringList_prepend(lines, line);
+    StringList_append(lines, line);
 }
 
-struct StringList * collect_lines(const struct String *text, struct StringList *initial_lines) {
-    struct StringList *lines = initial_lines;
+static void collect_lines(const struct String *text, struct StringList *lines) {
     const char *iterator = text->value;
     const char *line_start = text->value;
     const char *end = text->value + text->length;
@@ -27,7 +26,7 @@ struct StringList * collect_lines(const struct String *text, struct StringList *
     while (iterator != end) {
         if (*iterator == '\r' || *iterator == '\n') {
             if (!current_line_processed) {
-                lines = prepend_line(lines, iterator, line_start);
+                append_line(lines, iterator, line_start);
                 current_line_processed = 1;
             }
         }
@@ -38,32 +37,22 @@ struct StringList * collect_lines(const struct String *text, struct StringList *
         ++iterator;
     }
     if (line_start != end) {
-        lines = prepend_line(lines, iterator, line_start);
+        append_line(lines, iterator, line_start);
     }
-    return lines;
+}
+
+static struct String *flatten(struct StringList *lines) {
+    struct String *result_lines = StringListIterator_to_array(lines);
+    StringList_delete(lines);
+    return result_lines;
 }
 
 static struct Source *create_source(struct String *text) {
     struct StringList *lines = StringList_create();
-    struct StringList *const last = lines;
-    lines = collect_lines(text, lines);
-    const size_t size = lines->size;
+    collect_lines(text, lines);
+    const size_t size = StringList_size(lines);
     
-    struct String *result_lines = allocate(sizeof(struct String) * size);
-    struct String *result_line_iterator = result_lines;
-    for (struct StringList *current = last->previous; current != 0; current = current->previous) {
-        if (result_line_iterator - result_lines >= size) {
-            fail("Logical error in result lines creation");
-        }
-        *result_line_iterator = *current->value;
-        ++result_line_iterator;
-    }
-    if (result_line_iterator - result_lines != size) {
-        fail("Logical error in result lines creation - offset: [%zu], size: [%zu]",
-             result_line_iterator - result_lines, size);
-    }
-    
-    StringList_free(lines);
+    struct String *result_lines = flatten(lines);
     
     struct Source *result = allocate(sizeof(struct Source));
     result->number_of_lines = size;

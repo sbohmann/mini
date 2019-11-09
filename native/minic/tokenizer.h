@@ -2,24 +2,24 @@
 
 #include <stddef.h>
 
-#include "string.h"
+#include "core/string.h"
 #include "source.h"
 #include "types.h"
 
 struct Position {
     const char *path;
-    const size_t line;
-    const size_t column;
+    size_t line;
+    size_t column;
 };
 
 struct Token {
     const char *text;
-    const struct Any value;
-    const struct Position position;
+    struct Any value;
+    struct Position position;
 };
 
 struct Tokens {
-    const size_t size;
+    size_t size;
     const struct Token *data;
 };
 

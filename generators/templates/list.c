@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 
-#include "../allocate.h"
-#include "../errors.h"
+#include "core/allocate.h"
+#include "core/errors.h"
 
 struct {{name}}List {
     size_t size;
@@ -21,51 +21,78 @@ struct {{name}}List * {{name}}List_create() {
     return allocate(sizeof(struct {{name}}List));
 }
 
-struct {{name}}List * {{name}}List_delete(struct {{name}}List * list) {
-    struct {{name}}ListElement *element = list->first;
+struct {{name}}List * {{name}}List_delete(struct {{name}}List * instance) {
+    struct {{name}}ListElement *element = instance->first;
     while (element) {
         struct {{name}}ListElement *next = element->next;
         free(element);
         element = next;
     }
+    free(instance);
 }
 
-void {{name}}List_append(struct {{name}}List * list, {{prefix}}value) {
+size_t {{name}}List_size(struct {{name}}List * self) {
+    return self->size;
+}
+
+void {{name}}List_append(struct {{name}}List * self, {{prefix}}value) {
     struct {{name}}ListElement * element = allocate(sizeof(struct {{name}}ListElement));
     element->value = value;
-    if (list->size == 0) {
-        list->first = element;
-        list->last = element;
-        list->size = 1;
+    if (self->size == 0) {
+        self->first = element;
+        self->last = element;
+        self->size = 1;
     } else {
-        list->last->next = element;
-        element->previous = list->last;
-        list->last = element;
-        ++list->size;
+        self->last->next = element;
+        element->previous = self->last;
+        self->last = element;
+        ++self->size;
     }
 }
 
-void {{name}}List_prepend(struct {{name}}List * list, {{prefix}}value) {
+void {{name}}List_prepend(struct {{name}}List * self, {{prefix}}value) {
     struct {{name}}ListElement * element = allocate(sizeof(struct {{name}}ListElement));
     element->value = value;
-    if (list->size == 0) {
-        list->first = element;
-        list->last = element;
-        list->size = 1;
+    if (self->size == 0) {
+        self->first = element;
+        self->last = element;
+        self->size = 1;
     } else {
-        list->first->previous = element;
-        element->next = list->first;
-        list->first = element;
-        ++list->size;
+        self->first->previous = element;
+        element->next = self->first;
+        self->first = element;
+        ++self->size;
     }
 }
 
-struct {{name}}ListElement * {{name}}List_begin(struct {{name}}List * list) {
-    return list->first;
+{{type}} * {{name}}ListIterator_to_array(struct {{name}}List * self) {
+    const size_t size = {{name}}List_size(self);
+    const size_t element_size = sizeof({{type}});
+    const size_t result_size = element_size * size;
+    {{type}} *result = allocate(result_size);
+    {{type}} *result_iterator = result;
+    struct {{name}}ListElement *iterator = {{name}}List_begin(self);
+    while (iterator) {
+        if (result_iterator - result > size - 1) {
+            fail("Logical error in {{name}}ListIterator_to_array - target overrun");
+        }
+        *result_iterator = {{value_dereference}}{{name}}ListIterator_get(iterator);
+        iterator = {{name}}ListIterator_next(iterator);
+        ++result_iterator;
+    }
+    if (result_iterator - result != size) {
+        fail("Logical error in result lines creation - offset: [%zu], size: [%zu]",
+             result_iterator - result, size);
+    }
+    return result;
 }
 
-struct {{name}}ListElement * {{name}}List_end(struct {{name}}List * list) {
-    return list->last;
+struct {{name}}ListElement * {{name}}List_begin(struct {{name}}List * self) {
+    return self->first;
+}
+
+struct {{name}}ListElement * {{name}}List_end(struct {{name}}List * self) {
+    return self->last;
 }
 
 struct {{name}}ListElement * {{name}}ListIterator_next(struct {{name}}ListElement * iterator) {

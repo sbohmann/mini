@@ -14,5 +14,5 @@ struct Any {
     union {
         char primitive_value[8];
         struct ComplexValue * complex_value;
-    } value;
+    };
 };

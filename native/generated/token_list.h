@@ -1,6 +1,8 @@
 #pragma once
 
-#include "../tokenizer.h"
+#include <stddef.h>
+
+#include "minic/tokenizer.h"
 
 struct TokenList;
 
@@ -8,15 +10,19 @@ struct TokenListElement;
 
 struct TokenList * TokenList_create();
 
-void TokenList_delete(struct TokenList * list);
+struct TokenList * TokenList_delete(struct TokenList * instance);
 
-void TokenList_append(struct TokenList * list, struct Token *value);
+size_t TokenList_size(struct TokenList * self);
 
-void TokenList_prepend(struct TokenList * list, struct Token *value);
+void TokenList_append(struct TokenList * self, struct Token *value);
 
-struct TokenListElement * TokenList_begin(struct TokenList * list);
+void TokenList_prepend(struct TokenList * self, struct Token *value);
 
-struct TokenListElement * TokenList_end(struct TokenList * list);
+struct Token * TokenListIterator_to_array(struct TokenList * self);
+
+struct TokenListElement * TokenList_begin(struct TokenList * self);
+
+struct TokenListElement * TokenList_end(struct TokenList * self);
 
 struct TokenListElement * TokenListIterator_next(struct TokenListElement * iterator);
 
