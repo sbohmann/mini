@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <memory.h>
+#include <stdbool.h>
 
 #include "core/allocate.h"
 #include "core/errors.h"
@@ -22,7 +23,7 @@ static void collect_lines(const struct String *text, struct StringList *lines) {
     const char *iterator = text->value;
     const char *line_start = text->value;
     const char *end = text->value + text->length;
-    int current_line_processed = 0;
+    bool current_line_processed = 0;
     while (iterator != end) {
         if (*iterator == '\r' || *iterator == '\n') {
             if (!current_line_processed) {

@@ -1,6 +1,7 @@
 #include <stdio.h>
+#include <stdbool.h>
 
-int duplication() {
+bool duplication() {
     size_t value = 1;
     while (1) {
         value *= 2;

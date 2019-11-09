@@ -42,22 +42,28 @@ static void add_token(const char *path, size_t line, size_t column, struct Token
 
 static void process_line(const char *path, size_t line_number, struct TokenList *tokens, const struct String *line) {
     size_t column = 1;
-    struct StringBuilder *current_token_text = 0;
-    int inside_string_literal = 0;
-    for (size_t index = 0; index < line->length; ++index) {
-        char c = line->value[index];
-        check_character_legality(path, line_number, column, c);
-        if (whitespace(c)) {
-            add_token(path, line_number, column, tokens, &current_token_text);
-        } else {
-            if (!current_token_text) {
-                current_token_text = StringBuilder_create();
-            }
-            StringBuilder_append(current_token_text, c);
-        }
-        column = advance_column(column, c);
-    }
-    add_token(path, line_number, column, tokens, &current_token_text);
+    struct TokenReader *current_token_reader = 0;
+    size_t current_token_column = 0;
+    bool inside_string_literal = 0;
+//    for (size_t index = 0; index < line->length; ++index) {
+//        char c = line->value[index];
+//        check_character_legality(path, line_number, column, c);
+//        if (whitespace(c)) {
+//            add_token(path, line_number, current_token_column, tokens, &current_token_text);
+//        } else {
+//            if (!current_token_text) {
+//                current_token_reader = TokenReader_create();
+//                if (!current_token_reader) {
+//                    fail("Illegal character [%c] (%02x) at line %zu, column %zu, file [%s]",
+//                            c, (int)c, line_number, column, path);
+//                }
+//                current_token_column = column;
+//            }
+//            StringBuilder_append(current_token_text, c);
+//        }
+//        column = advance_column(column, c);
+//    }
+//    add_token(path, line_number, current_token_column, tokens, &current_token_text);
 }
 
 
