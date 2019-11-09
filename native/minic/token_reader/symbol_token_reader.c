@@ -1,13 +1,20 @@
-#include "symbol_token_reader.h"
-
 #include "token_reader_struct.h"
 
-static void process_char(char c) {
+#include "core/allocate.h"
 
+static bool process_char(struct TokenReader *self, char c) {
+    return is_name_part(c);
 }
 
-struct SymbolTokenReader *create_symbol_reader() {
-    struct TokenReader *result = allocate(sizeof(struct TokenReader));
-    TokenReader_init(process_char, 0);
+static struct Any create_value(struct TokenReader *self, const struct String *text) {
+    struct Any result = Any_create();
+    result.type = String;
+    result.string = text;
     return result;
+}
+
+struct TokenReader *SymbolTokenReader_create() {
+    struct TokenReader *self = allocate(sizeof(struct TokenReader));
+    TokenReader_init(self, process_char, create_value, 0);
+    return self;
 }

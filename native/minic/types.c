@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdatomic.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct ReferenceCount {
     atomic_size_t strong_count;
@@ -23,4 +24,10 @@ void release(struct ComplexValue *instance) {
     if (new_strong_count == 0) {
         free(instance);
     }
+}
+
+struct Any Any_create() {
+    struct Any result;
+    memset(&result, 0, sizeof(struct Any));
+    return result;
 }

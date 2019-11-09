@@ -1,5 +1,3 @@
 #pragma once
 
-#include <core/allocate.h>
-
-struct SymbolTokenReader *create_symbol_reader();
+struct TokenReader *SymbolTokenReader_create();

@@ -1,8 +1,10 @@
 #pragma once
 
+#include "minic/tokenizer.h"
+
 struct TokenReader;
 
-struct TokenReader *TokenReader_create(char initial_char);
+struct TokenReader *TokenReader_create(struct Position position, char initial_char);
 
 void TokenReader_delete(struct TokenReader *instance);
 
