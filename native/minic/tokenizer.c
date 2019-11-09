@@ -45,22 +45,29 @@ static void process_line(const char *path, size_t line_number, struct TokenList 
     for (size_t index = 0; index < line->length; ++index) {
         char c = line->value[index];
         check_character_legality(path, line_number, column, c);
-        if (!whitespace(c) && !current_token_reader) {
-            if (c == '#') {
-                break;
-            }
-            current_token_reader = TokenReader_create((struct Position) {path, line_number, column}, c);
-            if (!current_token_reader) {
-                fail("Illegal character [%c] (0x%02x) at line %zu, column %zu, file [%s]",
-                        c, (int)c, line_number, column, path);
-            }
-            current_token_column = column;
-        }
         if (current_token_reader) {
             if (!TokenReader_add_char(current_token_reader, c)) {
                 add_token(path, line_number, current_token_column, tokens, &current_token_reader);
             }
         }
+        if (!whitespace(c) && !current_token_reader) {
+            if (c == '#') {
+                break;
+            }
+            if (c != ';') {
+                current_token_reader = TokenReader_create((struct Position) {path, line_number, column}, c);
+                if (!current_token_reader) {
+                    fail("Illegal character [%c] (0x%02x) at line %zu, column %zu, file [%s]",
+                         c, (int) c, line_number, column, path);
+                }
+                if (!TokenReader_add_char(current_token_reader, c)) {
+                    fail("Newly created token reader did not acccept initial character [%c] (0x%02x) at line %zu, column %zu, file [%s]",
+                         c, (int) c, line_number, column, path);
+                }
+            }
+            current_token_column = column;
+        }
+
         column = advance_column(column, c);
     }
     add_token(path, line_number, current_token_column, tokens, &current_token_reader);

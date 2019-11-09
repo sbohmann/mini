@@ -12,6 +12,7 @@
 
 struct TokenReader *TokenReader_create(struct Position position, char initial_char) {
     struct TokenReader *result;
+    
     if (is_numeric(initial_char)) {
         result = NumberTokenReader_create();
     } else if (is_name_start(initial_char)) {
@@ -25,6 +26,11 @@ struct TokenReader *TokenReader_create(struct Position position, char initial_ch
     } else {
         result = 0;
     }
+    
+    if (result != 0) {
+        result->position = position;
+    }
+    
     return result;
 }
 
@@ -34,6 +40,7 @@ void TokenReader_init(struct TokenReader *self,
                       void (*delete)()) {
     self->buffer = StringBuilder_create();
     self->process_char = process_char;
+    self->create_value = create_value;
     self->delete = delete;
 }
 
@@ -124,6 +131,8 @@ bool is_operator_part(char c) {
         case '<':
         case '>':
         case '%':
+        case '.':
+        case ',':
             return true;
         default:
             return false;
