@@ -21,9 +21,12 @@ struct Elements {
 struct BracketElement {
     enum BracketType type;
     struct Elements elements;
+    const struct Token *opening_bracket;
+    const struct Token *closing_bracket;
 };
 
 struct Element {
+    struct Position position;
     enum ElementType type;
     union {
         const struct Token *token;

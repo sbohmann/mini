@@ -3,15 +3,10 @@
 #include <string.h>
 
 #include <core/allocate.h>
-#include <minic/tokens/token_queue.h>
-#include <stdlib.h>
+#include <generated/token_queue.h>
 #include <core/errors.h>
 
 #include "generated/element_list.h"
-
-bool equal(const struct String *lhs, const char *rhs) {
-    return strcmp(lhs->value, rhs) == 0;
-}
 
 static enum BracketType bracket_type(const struct Token *token) {
     const struct String *text = token->text;
@@ -28,6 +23,7 @@ static enum BracketType bracket_type(const struct Token *token) {
 
 struct Element *token_element(const struct Token *token) {
     struct Element *result = allocate(sizeof(struct Element));
+    result->position = token->position;
     result->type = TokenElement;
     result->token = token;
     return result;
@@ -52,24 +48,27 @@ static struct Elements flatten(struct ElementList *elements) {
 
 static struct ElementList *collect_elements(struct TokenQueue *tokens);
 
-void add_bracket(struct ElementList *elements, struct TokenQueue *tokens, const struct Token *openingBracket) {
+void add_bracket(struct ElementList *elements, struct TokenQueue *tokens, const struct Token *opening_bracket) {
     struct ElementList *bracket_elements = collect_elements(tokens);
     const struct Token *closing_bracket = TokenQueue_next(tokens);
     if (!closing_bracket) {
         fail("Missing closing bracket (opening bracket at line %zu, column %zu, file [%s])",
-             openingBracket->position.line, openingBracket->position.column, openingBracket->position.path);
+             opening_bracket->position.line, opening_bracket->position.column, opening_bracket->position.path);
         return; // dummy return
     }
-    enum BracketType type = bracket_type(openingBracket);
-    if (bracket_type(closing_bracket) != bracket_type(openingBracket)) {
+    enum BracketType type = bracket_type(opening_bracket);
+    if (bracket_type(closing_bracket) != bracket_type(opening_bracket)) {
         fail_at_position(closing_bracket->position,
                          "Bracket type mismatch (opening bracket at line %zu, column %zu, file [%s])",
-                         openingBracket->position.line, openingBracket->position.column, openingBracket->position.path);
+                         opening_bracket->position.line, opening_bracket->position.column, opening_bracket->position.path);
     }
-    struct Element *result = allocate(sizeof(struct BracketElement));
+    struct Element *result = allocate(sizeof(struct Element));
+    result->position = opening_bracket->position;
     result->type = BracketElement;
     result->bracket.type = type;
     result->bracket.elements = flatten(bracket_elements);
+    result->bracket.opening_bracket = opening_bracket;
+    result->bracket.closing_bracket = closing_bracket;
     ElementList_append(elements, result);
 }
 

@@ -101,7 +101,7 @@ struct Tokens *read_tokens(const char *path, const struct Source *source) {
     return flatten(tokens);
 }
 
-void fail_at_position(struct Position position, const char *format, ...) {
+_Noreturn void fail_at_position(struct Position position, const char *format, ...) {
     va_list arguments;
     va_start(arguments, format);
     vfprintf(stderr, format, arguments);

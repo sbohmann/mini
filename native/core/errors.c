@@ -16,7 +16,7 @@ static void newline() {
     fputc('\n', stderr);
 }
 
-void fail(const char *format, ...) {
+_Noreturn void fail(const char *format, ...) {
     if (format) {
         fputs("Failed. Reason: ", stderr);
         PRINT(format)
@@ -27,7 +27,7 @@ void fail(const char *format, ...) {
     exit(1);
 }
 
-void fail_errno(const char *format, ...) {
+_Noreturn void fail_errno(const char *format, ...) {
     fprintf(stderr, "Failed with errno: %d - %s\n", errno, strerror(errno));
     if (format) {
         fputs("Reason: ", stderr);

@@ -5,13 +5,13 @@
 #include <stdlib.h>
 
 struct TokenQueue {
-    const struct Tokens *tokens;
+    const struct Tokens *list;
     size_t index;
 };
 
-struct TokenQueue *TokenQueue_create(const struct Tokens *tokens) {
+struct TokenQueue *TokenQueue_create(const struct Tokens *list) {
     struct TokenQueue *result = allocate(sizeof(struct TokenQueue));
-    result->tokens = tokens;
+    result->list = list;
     result->index = 0;
     return result;
 }
@@ -21,16 +21,16 @@ void TokenQueue_delete(struct TokenQueue *instance) {
 }
 
 const struct Token *TokenQueue_peek(struct TokenQueue *self) {
-    if (self->index < self->tokens->size) {
-        return self->tokens->data + self->index;
+    if (self->index < self->list->size) {
+        return self->list->data + self->index;
     } else {
         return 0;
     }
 }
 
 const struct Token *TokenQueue_next(struct TokenQueue *self) {
-    if (self->index < self->tokens->size) {
-        const struct Token *result = self->tokens->data + self->index;
+    if (self->index < self->list->size) {
+        const struct Token *result = self->list->data + self->index;
         ++self->index;
         return result;
     } else {
