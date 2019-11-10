@@ -8,5 +8,6 @@ struct ParsedModule *read_file(const char *path) {
     result->path = path;
     result->source = read_source(path);
     result->tokens = read_tokens(path, result->source);
+    result->elements = read_elements(result->tokens);
     return result;
 }

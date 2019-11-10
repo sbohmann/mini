@@ -40,7 +40,7 @@ class ListGenerator():
 def generate_token_list():
     generator = ListGenerator('Token')
     generator.struct = True
-    generator.local_include = 'minic/tokens/tokenizer.h'
+    generator.local_include = 'minic/tokens/token.h'
     generator.run()
 
 

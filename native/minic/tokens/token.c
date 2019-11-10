@@ -3,6 +3,7 @@
 #include <core/stringbuilder.h>
 #include <minic/tokens/token_reader/token_reader.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include "token.h"
 
 #include "core/allocate.h"
@@ -75,12 +76,19 @@ static void process_line(const char *path, size_t line_number, struct TokenList 
     add_token(path, line_number, current_token_column, tokens, &current_token_reader);
 }
 
-static struct Tokens *flatten(struct TokenList *tokens) {
-    const size_t size = TokenList_size(tokens);
-    struct Tokens *result = allocate(sizeof(struct Tokens) * size);
-    result->size = size;
-    result->data = TokenList_to_array(tokens);
+static void delete_token_list(struct TokenList *tokens) {
+//    struct TokenListElement *iterator = TokenList_begin(tokens);
+//    while (iterator) {
+//        free(TokenListIterator_get(iterator));
+//    }
     TokenList_delete(tokens);
+}
+
+static struct Tokens *flatten(struct TokenList *tokens) {
+    struct Tokens *result = allocate(sizeof(struct Tokens));
+    result->size = TokenList_size(tokens);
+    result->data = TokenList_to_array(tokens);
+    delete_token_list(tokens);
     return result;
 }
 
@@ -95,9 +103,10 @@ struct Tokens *read_tokens(const char *path, const struct Source *source) {
 
 void fail_at_position(struct Position position, const char *format, ...) {
     va_list arguments;
-    va_start(arguments, (format));
-    vfprintf(stderr, (format), arguments);
+    va_start(arguments, format);
+    vfprintf(stderr, format, arguments);
     va_end(arguments);
-    fprintf(stderr, " at line %zu, column %zu, file [%path]",
+    fprintf(stderr, "\n");
+    fail("Parsing error at line %zu, column %zu, file [%path]",
             position.line, position.column, position.path);
 }

@@ -12,7 +12,7 @@ struct TokenQueue {
 struct TokenQueue *TokenQueue_create(const struct Tokens *tokens) {
     struct TokenQueue *result = allocate(sizeof(struct TokenQueue));
     result->tokens = tokens;
-    result.index = 0;
+    result->index = 0;
     return result;
 }
 

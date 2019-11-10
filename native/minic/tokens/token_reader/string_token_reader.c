@@ -62,7 +62,7 @@ void delete(struct TokenReader *base) {
 
 struct TokenReader *StringTokenReader_create(char quote_char) {
     struct StringTokenReader *self = allocate(sizeof(struct StringTokenReader));
-    TokenReader_init(&self->base, process_char, create_value, delete);
+    TokenReader_init(String, &self->base, process_char, create_value, delete);
     self->quote_char = quote_char;
     self->value = StringBuilder_create();
     return &self->base;

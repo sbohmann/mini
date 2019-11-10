@@ -31,4 +31,4 @@ struct Element {
     };
 };
 
-struct Elements * read_elements(struct Tokens *tokens);
+struct Elements * read_elements(const struct Tokens *tokens);
