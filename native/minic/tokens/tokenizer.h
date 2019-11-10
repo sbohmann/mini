@@ -3,8 +3,8 @@
 #include <stddef.h>
 
 #include "core/string.h"
-#include "source.h"
-#include "types.h"
+#include "minic/source.h"
+#include "minic/types.h"
 
 struct Position {
     const char *path;

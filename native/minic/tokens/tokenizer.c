@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <core/stringbuilder.h>
-#include <minic/token_reader/token_reader.h>
+#include <minic/tokens/token_reader/token_reader.h>
 #include <stdarg.h>
 #include "tokenizer.h"
 

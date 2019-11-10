@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-#include "minic/tokenizer.h"
+#include "minic/tokens/tokenizer.h"
 
 struct TokenList;
 
