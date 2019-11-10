@@ -10,7 +10,7 @@ struct TokenListElement;
 
 struct TokenList * TokenList_create();
 
-struct TokenList * TokenList_delete(struct TokenList * instance);
+void TokenList_delete(struct TokenList * instance);
 
 size_t TokenList_size(struct TokenList * self);
 

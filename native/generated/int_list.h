@@ -9,7 +9,7 @@ struct IntListElement;
 
 struct IntList * IntList_create();
 
-struct IntList * IntList_delete(struct IntList * instance);
+void IntList_delete(struct IntList * instance);
 
 size_t IntList_size(struct IntList * self);
 

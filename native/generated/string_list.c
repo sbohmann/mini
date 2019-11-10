@@ -21,7 +21,7 @@ struct StringList * StringList_create() {
     return allocate(sizeof(struct StringList));
 }
 
-struct StringList * StringList_delete(struct StringList * instance) {
+void StringList_delete(struct StringList * instance) {
     struct StringListElement *element = instance->first;
     while (element) {
         struct StringListElement *next = element->next;

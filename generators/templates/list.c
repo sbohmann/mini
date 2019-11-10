@@ -21,7 +21,7 @@ struct {{name}}List * {{name}}List_create() {
     return allocate(sizeof(struct {{name}}List));
 }
 
-struct {{name}}List * {{name}}List_delete(struct {{name}}List * instance) {
+void {{name}}List_delete(struct {{name}}List * instance) {
     struct {{name}}ListElement *element = instance->first;
     while (element) {
         struct {{name}}ListElement *next = element->next;

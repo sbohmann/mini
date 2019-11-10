@@ -21,7 +21,7 @@ struct ElementList * ElementList_create() {
     return allocate(sizeof(struct ElementList));
 }
 
-struct ElementList * ElementList_delete(struct ElementList * instance) {
+void ElementList_delete(struct ElementList * instance) {
     struct ElementListElement *element = instance->first;
     while (element) {
         struct ElementListElement *next = element->next;

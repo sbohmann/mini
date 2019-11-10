@@ -10,7 +10,7 @@ struct ElementListElement;
 
 struct ElementList * ElementList_create();
 
-struct ElementList * ElementList_delete(struct ElementList * instance);
+void ElementList_delete(struct ElementList * instance);
 
 size_t ElementList_size(struct ElementList * self);
 

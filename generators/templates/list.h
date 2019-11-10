@@ -11,7 +11,7 @@ struct {{name}}ListElement;
 
 struct {{name}}List * {{name}}List_create();
 
-struct {{name}}List * {{name}}List_delete(struct {{name}}List * instance);
+void {{name}}List_delete(struct {{name}}List * instance);
 
 size_t {{name}}List_size(struct {{name}}List * self);
 

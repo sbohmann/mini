@@ -19,7 +19,7 @@ struct StringBuilder *StringBuilder_create() {
     return result;
 }
 
-struct StringBuilder *StringBuilder_delete(struct StringBuilder *instance) {
+void StringBuilder_delete(struct StringBuilder *instance) {
     free(instance->buffer);
     free(instance);
 }
@@ -51,7 +51,7 @@ static void enlarge(struct StringBuilder *self, size_t minimum_capacity) {
     free(old_buffer);
 }
 
-struct StringBuilder *StringBuilder_append(struct StringBuilder *self, char c) {
+void StringBuilder_append(struct StringBuilder *self, char c) {
     if (self->capacity - self->length < 1) {
         enlarge(self, self->length + 1);
     }
@@ -59,7 +59,7 @@ struct StringBuilder *StringBuilder_append(struct StringBuilder *self, char c) {
     ++self->length;
 }
 
-struct StringBuilder *StringBuilder_append_string(struct StringBuilder *self, const struct String *value) {
+void StringBuilder_append_string(struct StringBuilder *self, const struct String *value) {
     if (self->capacity - self->length < value->length) {
         enlarge(self, self->length + value->length);
     }

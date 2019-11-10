@@ -21,7 +21,7 @@ struct TokenList * TokenList_create() {
     return allocate(sizeof(struct TokenList));
 }
 
-struct TokenList * TokenList_delete(struct TokenList * instance) {
+void TokenList_delete(struct TokenList * instance) {
     struct TokenListElement *element = instance->first;
     while (element) {
         struct TokenListElement *next = element->next;

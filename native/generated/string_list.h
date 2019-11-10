@@ -10,7 +10,7 @@ struct StringListElement;
 
 struct StringList * StringList_create();
 
-struct StringList * StringList_delete(struct StringList * instance);
+void StringList_delete(struct StringList * instance);
 
 size_t StringList_size(struct StringList * self);
 

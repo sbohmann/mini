@@ -21,7 +21,7 @@ struct IntList * IntList_create() {
     return allocate(sizeof(struct IntList));
 }
 
-struct IntList * IntList_delete(struct IntList * instance) {
+void IntList_delete(struct IntList * instance) {
     struct IntListElement *element = instance->first;
     while (element) {
         struct IntListElement *next = element->next;

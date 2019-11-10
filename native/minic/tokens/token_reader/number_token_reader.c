@@ -34,7 +34,6 @@ static bool process_char(struct TokenReader *base, char c) {
 }
 
 static struct Any create_hex_value(struct NumberTokenReader *self, const struct String *text) {
-    struct Position *position = &self->base.position;
     if (text->length < 3) {
         fail_at_position(self->base.position, "Incomplete hex literal [%s]", text->value);
     }
@@ -63,7 +62,7 @@ static struct Any create_value(struct TokenReader *base, const struct String *te
         fail_at_position(base->position, "Unsupported fractional hex literal [%s]", text->value);
     } else if (self->hex && self->negative) {
         fail_at_position(base->position, "Unsupported negative hex literal [%s]", text->value);
-    }else if (self->hex) {
+    } else if (self->hex) {
         return create_hex_value(self, text);
     } else if (self->fraction) {
         return create_fraction_value(self, text);
