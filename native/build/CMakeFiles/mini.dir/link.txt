@@ -1,1 +1,0 @@
-/usr/bin/cc  -std=c11   CMakeFiles/mini.dir/mini.c.o CMakeFiles/mini.dir/errors.c.o CMakeFiles/mini.dir/tokenizer.c.o CMakeFiles/mini.dir/allocate.c.o CMakeFiles/mini.dir/string.c.o  -o mini -rdynamic 

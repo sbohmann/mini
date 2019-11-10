@@ -1,3 +1,0 @@
-/home/seb/mini/native/build/CMakeFiles/rebuild_cache.dir
-/home/seb/mini/native/build/CMakeFiles/edit_cache.dir
-/home/seb/mini/native/build/CMakeFiles/mini.dir
