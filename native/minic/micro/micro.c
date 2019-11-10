@@ -51,7 +51,7 @@ void print(struct ElementQueue *arguments) {
             if (argument->token->value.type != String) {
                 fail_at_position(argument->position, "Corrupt string token");
             }
-            printf("%s", (int) argument->token->value.string->value);
+            printf("%s", argument->token->value.string->value);
         }
         first = false;
     }
