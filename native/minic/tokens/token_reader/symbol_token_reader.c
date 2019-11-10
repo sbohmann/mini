@@ -1,3 +1,5 @@
+#include "string_token_reader.h"
+
 #include "token_reader_struct.h"
 
 #include "core/allocate.h"

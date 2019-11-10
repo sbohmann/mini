@@ -1,7 +1,9 @@
+#include "string_token_reader.h"
+
 #include <core/stringbuilder.h>
 #include <core/errors.h>
-#include "token_reader_struct.h"
 
+#include "token_reader_struct.h"
 #include "core/allocate.h"
 
 struct StringTokenReader {
@@ -32,6 +34,7 @@ static bool process_char(struct TokenReader *base, char c) {
                     c, (int)c, self->quote_char, (int)self->quote_char);
         }
     } else if (self->escaped) {
+        self->escaped = false;
         StringBuilder_append(self->value, escape_sequence(c));
     } else {
         if (c == self->quote_char) {
@@ -49,6 +52,9 @@ static bool process_char(struct TokenReader *base, char c) {
 
 static struct Any create_value(struct TokenReader *base, const struct String *text) {
     struct StringTokenReader *self = (struct StringTokenReader *) base;
+    if (!self->closed) {
+        fail_at_position(base->position, "Unclosed string literal");
+    }
     struct Any result = Any_create();
     result.type = String;
     result.string = StringBuilder_result(self->value);
@@ -62,7 +68,7 @@ void delete(struct TokenReader *base) {
 
 struct TokenReader *StringTokenReader_create(char quote_char) {
     struct StringTokenReader *self = allocate(sizeof(struct StringTokenReader));
-    TokenReader_init(String, &self->base, process_char, create_value, delete);
+    TokenReader_init(StringLiteral, &self->base, process_char, create_value, delete);
     self->quote_char = quote_char;
     self->value = StringBuilder_create();
     return &self->base;

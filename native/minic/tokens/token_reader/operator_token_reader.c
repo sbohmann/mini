@@ -1,3 +1,5 @@
+#include "operator_token_reader.h"
+
 #include <core/stringbuilder.h>
 #include "token_reader_struct.h"
 

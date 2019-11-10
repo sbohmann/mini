@@ -18,7 +18,7 @@ struct TokenReader *TokenReader_create(struct Position position, char initial_ch
     } else if (is_name_start(initial_char)) {
         result = SymbolTokenReader_create();
     } else if (is_bracket(initial_char)) {
-        result = BracketTokenReader_create();
+        result = BracketTokenReader_create(initial_char);
     } else if (is_operator_part(initial_char)) {
         result = OperatorTokenReader_create();
     } else if (is_quote(initial_char)) {
@@ -38,7 +38,7 @@ void TokenReader_init(enum TokenType token_type,
                       struct TokenReader *self,
                       bool (*process_char)(struct TokenReader *, char),
                       struct Any (*create_value)(struct TokenReader *, const struct String *),
-                      void (*delete)()) {
+                      void (*delete)(struct TokenReader *)) {
     self->buffer = StringBuilder_create();
     self->token_type = token_type;
     self->process_char = process_char;

@@ -57,7 +57,7 @@ static void process_line(const char *path, size_t line_number, struct TokenList 
                 break;
             }
             if (c != ';') {
-                char next = (index < line->length - 1 ? line->value[index + 1] : 0);
+                char next = (char)(index < line->length - 1 ? line->value[index + 1] : 0);
                 current_token_reader = TokenReader_create((struct Position) {path, line_number, column}, c, next);
                 if (!current_token_reader) {
                     fail("Illegal character [%c] (0x%02x) at line %zu, column %zu, file [%s]",

@@ -1,3 +1,5 @@
+#include "number_token_reader.h"
+
 #include <stdbool.h>
 
 #include <core/allocate.h>
@@ -43,7 +45,7 @@ static struct Any create_hex_value(struct NumberTokenReader *self, const struct 
 }
 
 static struct Any create_fraction_value(struct NumberTokenReader *self, const struct String *text) {
-    struct Any result;
+    struct Any result = Any_create();
     // TODO
     return result;
 }

@@ -1,7 +1,9 @@
+#include "bracket_token_reader.h"
+
 #include <core/stringbuilder.h>
 #include <core/errors.h>
-#include "token_reader_struct.h"
 
+#include "token_reader_struct.h"
 #include "core/allocate.h"
 
 static bool process_char(struct TokenReader *self, char c) {

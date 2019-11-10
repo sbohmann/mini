@@ -14,10 +14,10 @@ struct String *read_text_file(const char *path) {
                        "ftell failed while reading source from path %s", path);
     rewind(file);
     
-    char *raw_result = allocate_raw(size + 1);
-    size_t bytes_read = fread(raw_result, 1, size, file);
+    char *raw_result = allocate_raw((size_t) size + 1);
+    size_t bytes_read = fread(raw_result, 1, (size_t) size, file);
     if (bytes_read != size) {
-        fail("fread read %ul bytes, expected: %ul, while reading source from path %s",
+        fail("fread read %l bytes, expected: %l, while reading source from path %s",
              bytes_read, size, path);
     }
     if (fclose(file) == EOF) {
