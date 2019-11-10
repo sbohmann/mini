@@ -1,6 +1,6 @@
 #pragma once
 
-#include "minic/tokens/tokenizer.h"
+#include "minic/tokens/token.h"
 
 struct TokenReader;
 

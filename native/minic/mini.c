@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "minic/tokens/tokenizer.h"
+#include "minic/module/module.h"
 
 static void print_source(const struct ParsedModule *module) {
     for (size_t index = 0; index < module->source->number_of_lines; ++index) {

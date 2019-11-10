@@ -12,7 +12,17 @@ struct Position {
     size_t column;
 };
 
+enum TokenType {
+    Symbol,
+    StringLiteral,
+    NumberLiteral,
+    Operator,
+    OpeningBracket,
+    ClosingBracket
+};
+
 struct Token {
+    enum TokenType type;
     const struct String *text;
     struct Any value;
     struct Position position;
@@ -23,13 +33,8 @@ struct Tokens {
     const struct Token *data;
 };
 
-struct ParsedModule
-{
-    const char *path;
-    const struct Source *source;
-    const struct Tokens *tokens;
-};
+struct TokenQueue;
 
-struct ParsedModule * read_file(const char *path);
+struct Tokens *read_tokens(const char *path, const struct Source *source);
 
 void fail_at_position(struct Position position, const char *format, ...);

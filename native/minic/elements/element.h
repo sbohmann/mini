@@ -1,10 +1,10 @@
 #pragma once
 
-#include <minic/tokens/tokenizer.h>
+#include <minic/tokens/token.h>
 
 enum ElementType {
-    Token,
-    Bracket
+    TokenElement,
+    BracketElement
 };
 
 enum BracketType {
@@ -13,16 +13,22 @@ enum BracketType {
     Curly
 };
 
+struct Elements {
+    size_t size;
+    const struct Element *data;
+};
+
 struct BracketElement {
     enum BracketType type;
-    size_t size;
-    struct Element *elements;
+    struct Elements elements;
 };
 
 struct Element {
     enum ElementType type;
     union {
-        struct Token *token;
+        const struct Token *token;
         struct BracketElement bracket;
     };
 };
+
+struct Elements * read_elements(struct Tokens *tokens);

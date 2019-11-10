@@ -7,14 +7,19 @@
 #include "token_reader.h"
 
 struct TokenReader {
+    enum TokenType token_type;
     struct Position position;
     struct StringBuilder *buffer;
+    
     bool (*process_char)(struct TokenReader *self, char);
+    
     struct Any (*create_value)(struct TokenReader *, const struct String *);
+    
     void (*delete)(struct TokenReader *self);
 };
 
-void TokenReader_init(struct TokenReader *self,
+void TokenReader_init(enum TokenType token_type,
+                      struct TokenReader *self,
                       bool (*process_char)(struct TokenReader *, char),
                       struct Any (*create_value)(struct TokenReader *, const struct String *),
                       void (*delete)(struct TokenReader *));

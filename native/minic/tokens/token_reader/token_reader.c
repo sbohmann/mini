@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <core/stringbuilder.h>
 #include <stdlib.h>
-#include <minic/tokens/tokenizer.h>
+#include <minic/tokens/token.h>
 #include <core/allocate.h>
 #include "token_reader_struct.h"
 #include "number_token_reader.h"
@@ -34,11 +34,13 @@ struct TokenReader *TokenReader_create(struct Position position, char initial_ch
     return result;
 }
 
-void TokenReader_init(struct TokenReader *self,
+void TokenReader_init(enum TokenType token_type,
+                      struct TokenReader *self,
                       bool (*process_char)(struct TokenReader *, char),
                       struct Any (*create_value)(struct TokenReader *, const struct String *),
                       void (*delete)()) {
     self->buffer = StringBuilder_create();
+    self->token_type = token_type;
     self->process_char = process_char;
     self->create_value = create_value;
     self->delete = delete;
@@ -62,6 +64,7 @@ bool TokenReader_add_char(struct TokenReader *self, char c) {
 
 struct Token *TokenReader_result(struct TokenReader *self) {
     struct Token *result = allocate(sizeof(struct Token));
+    result->type = self->token_type;
     result->text = StringBuilder_result(self->buffer);
     result->value = self->create_value(self, result->text);
     result->position = self->position;

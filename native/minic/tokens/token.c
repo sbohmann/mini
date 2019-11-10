@@ -3,7 +3,7 @@
 #include <core/stringbuilder.h>
 #include <minic/tokens/token_reader/token_reader.h>
 #include <stdarg.h>
-#include "tokenizer.h"
+#include "token.h"
 
 #include "core/allocate.h"
 #include "core/errors.h"
@@ -84,21 +84,13 @@ static struct Tokens *flatten(struct TokenList *tokens) {
     return result;
 }
 
-static struct Tokens *read_tokens(const char *path, const struct Source *source) {
+struct Tokens *read_tokens(const char *path, const struct Source *source) {
     struct TokenList *tokens = TokenList_create();
     for (size_t index = 0; index < source->number_of_lines; ++index) {
         const struct String *line = source->lines + index;
         process_line(path, index + 1, tokens, line);
     }
     return flatten(tokens);
-}
-
-struct ParsedModule *read_file(const char *path) {
-    struct ParsedModule *result = allocate(sizeof(struct Token));
-    result->path = path;
-    result->source = read_source(path);
-    result->tokens = read_tokens(path, result->source);
-    return result;
 }
 
 void fail_at_position(struct Position position, const char *format, ...) {

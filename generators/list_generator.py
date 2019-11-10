@@ -40,7 +40,14 @@ class ListGenerator():
 def generate_token_list():
     generator = ListGenerator('Token')
     generator.struct = True
-    generator.local_include = 'minic/tokenizer.h'
+    generator.local_include = 'minic/tokens/tokenizer.h'
+    generator.run()
+
+
+def generate_element_list():
+    generator = ListGenerator('Element')
+    generator.struct = True
+    generator.local_include = 'minic/elements/element.h'
     generator.run()
 
 
@@ -59,5 +66,6 @@ def generate_integer_list():
 
 
 generate_token_list()
+generate_element_list()
 generate_string_list()
 generate_integer_list()
