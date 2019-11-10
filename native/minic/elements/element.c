@@ -100,6 +100,12 @@ static struct ElementList *collect_elements(struct TokenQueue *tokens) {
 struct Elements *read_elements(const struct Tokens *tokens) {
     struct TokenQueue *queue = TokenQueue_create(tokens);
     struct ElementList *elements = collect_elements(queue);
+    struct Token *next_element = TokenQueue_peek(queue);
+    if (next_element) {
+        fail_at_position(next_element->position,
+                         "Unexpected token [%s] - too many closing brackets?",
+                         next_element->text->value);
+    }
     struct Elements *result = allocate(sizeof(struct Elements));
     *result = flatten(elements);
     return result;
