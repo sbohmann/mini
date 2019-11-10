@@ -79,7 +79,7 @@ void micro_run(struct ParsedModule *module) {
             fail("Unepected end of input");
         }
         if (next->type != BracketElement) {
-            fail_at_position(element->position, "Expected symbol, found [%s]", element_text(element));
+            fail_at_position(element->position, "Expected bracket expression, found [%s]", element_text(element));
         }
         call(element->token->text, &next->bracket.elements);
     }
