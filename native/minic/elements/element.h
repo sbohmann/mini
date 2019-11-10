@@ -22,7 +22,7 @@ struct BracketElement {
 struct Element {
     enum ElementType type;
     union {
-        struct Token token;
+        struct Token *token;
         struct BracketElement bracket;
     };
 };
