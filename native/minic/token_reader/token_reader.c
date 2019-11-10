@@ -10,10 +10,10 @@
 #include "operator_token_reader.h"
 #include "string_token_reader.h"
 
-struct TokenReader *TokenReader_create(struct Position position, char initial_char) {
+struct TokenReader *TokenReader_create(struct Position position, char initial_char, char next_char) {
     struct TokenReader *result;
     
-    if (is_numeric(initial_char)) {
+    if (is_numeric(initial_char) || (initial_char == '-' && is_numeric(next_char))) {
         result = NumberTokenReader_create();
     } else if (is_name_start(initial_char)) {
         result = SymbolTokenReader_create();

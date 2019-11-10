@@ -31,3 +31,5 @@ struct ParsedModule
 };
 
 struct ParsedModule * read_file(const char *path);
+
+void fail_at_position(struct Position position, const char *format, ...);

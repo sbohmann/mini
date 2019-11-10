@@ -4,7 +4,7 @@
 
 struct TokenReader;
 
-struct TokenReader *TokenReader_create(struct Position position, char initial_char);
+struct TokenReader *TokenReader_create(struct Position position, char initial_char, char next_char);
 
 void TokenReader_delete(struct TokenReader *instance);
 

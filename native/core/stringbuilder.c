@@ -28,6 +28,14 @@ size_t StringBuilder_length(struct StringBuilder *self) {
     return self->length;
 }
 
+char StringBuilder_char_at(struct StringBuilder *self, size_t index) {
+    if (index < self->length) {
+        return self->buffer[index];
+    } else {
+        fail("StringBuilder_char_at: index %zu out of bounds. Length: %zu", index, self->length);
+    }
+}
+
 static void enlarge(struct StringBuilder *self, size_t minimum_capacity) {
     size_t new_capacity = self->capacity;
     while (new_capacity < minimum_capacity) {

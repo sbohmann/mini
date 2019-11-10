@@ -13,10 +13,11 @@ void retain(struct ComplexValue *instance);
 void release(struct ComplexValue *instance);
 
 enum AnyType {
-    Flat = 0x00,
+    None = 0x00,
     Integer = 0x01,
-    String = 0x02,
-    Complex = 0x20
+    String = 0x11,
+    Complex = 0x21,
+    Flat = 0x22,
 };
 
 struct Any {

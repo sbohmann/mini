@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <core/stringbuilder.h>
 #include <minic/token_reader/token_reader.h>
+#include <stdarg.h>
 #include "tokenizer.h"
 
 #include "core/allocate.h"
@@ -55,7 +56,8 @@ static void process_line(const char *path, size_t line_number, struct TokenList 
                 break;
             }
             if (c != ';') {
-                current_token_reader = TokenReader_create((struct Position) {path, line_number, column}, c);
+                char next = (index < line->length - 1 ? line->value[index + 1] : 0);
+                current_token_reader = TokenReader_create((struct Position) {path, line_number, column}, c, next);
                 if (!current_token_reader) {
                     fail("Illegal character [%c] (0x%02x) at line %zu, column %zu, file [%s]",
                          c, (int) c, line_number, column, path);
@@ -97,4 +99,13 @@ struct ParsedModule *read_file(const char *path) {
     result->source = read_source(path);
     result->tokens = read_tokens(path, result->source);
     return result;
+}
+
+void fail_at_position(struct Position position, const char *format, ...) {
+    va_list arguments;
+    va_start(arguments, (format));
+    vfprintf(stderr, (format), arguments);
+    va_end(arguments);
+    fprintf(stderr, " at line %zu, column %zu, file [%path]",
+            position.line, position.column, position.path);
 }

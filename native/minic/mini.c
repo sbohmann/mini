@@ -11,6 +11,9 @@ static void print_source(const struct ParsedModule *module) {
 void print_tokens(const struct ParsedModule *module) {
     for (size_t index = 0; index < module->tokens->size; ++index) {
         const struct Token *token = module->tokens->data + index;
+        if (token->value.type == Integer) {
+            printf("integer value [%d] in token ", token->value.integer);
+        }
         printf("[%s] from line %zu, column %zu, file [%s]\n",
                 token->text->value, token->position.line, token->position.column, token->position.path);
     }
@@ -22,4 +25,8 @@ int main() {
     printf("source: %zu lines\n", module->source->number_of_lines);
     print_source(module);
     print_tokens(module);
+    printf("%d", 123);
+    printf("%d", 0x123);
+    printf("%d", -123);
+    printf("%d", 1234567890);
 }
