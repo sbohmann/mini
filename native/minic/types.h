@@ -30,4 +30,9 @@ struct Any {
     };
 };
 
+struct Variable {
+    const struct String *name;
+    struct Any value;
+};
+
 struct Any Any_create();

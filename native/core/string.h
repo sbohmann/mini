@@ -9,3 +9,5 @@ struct String {
 };
 
 bool equal(const struct String *lhs, const char *rhs);
+
+bool equals(const struct String *lhs, const struct String *rhs);

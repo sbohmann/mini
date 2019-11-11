@@ -3,9 +3,15 @@
 
 #include <generated/element_queue.h>
 #include <core/errors.h>
+#include <generated/variable_list.h>
+#include <core/allocate.h>
 #include "micro.h"
 
-const char * element_text(const struct Element *element) {
+#define DEBUG(format, ...) //printf((format), __VA_ARGS__)
+
+struct VariableList *variables = 0;
+
+const char *element_text(const struct Element *element) {
     if (element->type == TokenElement) {
         return element->token->text->value;
     } else if (element->type == BracketElement) {
@@ -13,6 +19,36 @@ const char * element_text(const struct Element *element) {
     } else {
         return "<unknown element>";
     }
+}
+
+void set_variable(const struct String *name, const struct String *text, const struct Any value) {
+    DEBUG("Setting variable %s to [%s]\n", name->value, text->value);
+    struct VariableListElement *iterator = VariableList_begin(variables);
+    while (iterator) {
+        struct Variable *variable = VariableListIterator_get(iterator);
+        if (equals(variable->name, name)) {
+            variable->value = value;
+            return;
+        }
+    }
+    struct Variable *variable = allocate(sizeof(struct Variable));
+    variable->name = name;
+    variable->value = value;
+    VariableList_append(variables, variable);
+}
+
+struct Any get_variable(const struct String *name) {
+    DEBUG("Getting variable %s\n", name->value);
+    struct VariableListElement *iterator = VariableList_begin(variables);
+    while (iterator) {
+        struct Variable *variable = VariableListIterator_get(iterator);
+        if (equals(variable->name, name)) {
+            return variable->value;
+        }
+    }
+    struct Any result;
+    memset(&result, 0, sizeof(result));
+    return result;
 }
 
 void read_comma(struct ElementQueue *arguments) {
@@ -25,7 +61,41 @@ void read_comma(struct ElementQueue *arguments) {
     }
 }
 
-void print(struct ElementQueue *arguments) {
+void let(struct ElementQueue *queue) {
+    const struct Element *next = ElementQueue_next(queue);
+    if (!next) {
+        fail("Unexpected end of input");
+    }
+    if (next->type != TokenElement || next->token->type != Symbol) {
+        fail_at_position(next->position, "Expected a symbol, found [%s]", element_text(next));
+    }
+    const struct String *variable_name = next->token->text;
+    next = ElementQueue_next(queue);
+    if (!next) {
+        fail("Unexpected end of input");
+    }
+    if (next->type != TokenElement || next->token->type != Operator || !equal(next->token->text, "=")) {
+        fail_at_position(next->position, "Expected '=', found [%s]", element_text(next));
+    }
+    next = ElementQueue_next(queue);
+    if (!next) {
+        fail("Unexpected end of input");
+    }
+    if (next->type != TokenElement) {
+        fail_at_position(next->position, "Expected expression, found [%s]", element_text(next));
+    }
+    struct Any value;
+    if (next->token->type == Symbol) {
+        value = get_variable(next->token->text);
+    } else if (next->token->type == NumberLiteral || next->token->type == StringLiteral) {
+        value = next->token->value;
+    } else {
+        fail_at_position(next->token->position, "Unexpected expression: [%s]", next->token->text);
+    };
+    set_variable(variable_name, next->token->text, value);
+}
+
+static void print(struct ElementQueue *arguments) {
     bool first = true;
     while (true) {
         if (!ElementQueue_peek(arguments)) {
@@ -52,19 +122,59 @@ void print(struct ElementQueue *arguments) {
                 fail_at_position(argument->position, "Corrupt string token");
             }
             printf("%s", argument->token->value.string->value);
+        } else if (argument->token->type == Symbol) {
+            const struct Element *next = ElementQueue_peek(arguments);
+            if (next && next->type == BracketElement) {
+                // TODO print result of call
+                printf("<call to %s>", argument->token->text->value);
+            } else {
+                struct Any value = get_variable(argument->token->text);
+                switch (value.type) {
+                    case None:
+                        printf("None");
+                        break;
+                    case Integer:
+                        printf("%d", (int)value.integer);
+                        break;
+                    case String:
+                        printf("%s", value.string->value);
+                        break;
+                    case Complex:
+                        // TODO
+                        printf("<complex>");
+                        break;
+                    case Flat:
+                        printf("[");
+                        for (size_t index = 0; index < 8; ++index) {
+                            printf("%s%02x", (index > 0 ? " " : ""), (uint8_t) value.flat_value[index]);
+                        }
+                        break;
+                    default:
+                        printf("<unknown>");
+                }
+            }
         }
         first = false;
     }
+    fflush(stdout);
 }
 
-void call(const struct String *name, const struct Elements *elements) {
-    struct ElementQueue *queue = ElementQueue_create(elements);
-    if (equal(name, "print")) {
-        print(queue);
+static void call(const struct String *function, struct ElementQueue *queue) {
+    const struct Element *next = ElementQueue_next(queue);
+    if (!next) {
+        fail("Unexpected end of input");
+    }
+    if (next->type != BracketElement) {
+        fail_at_position(next->position, "Expected bracket expression, found [%s]", element_text(next));
+    }
+    struct ElementQueue *arguments = ElementQueue_create(&next->bracket.elements);
+    if (equal(function, "print")) {
+        print(arguments);
     }
 }
 
 void micro_run(struct ParsedModule *module) {
+    variables = VariableList_create();
     struct ElementQueue *queue = ElementQueue_create(module->elements);
     while (true) {
         const struct Element *element = ElementQueue_next(queue);
@@ -74,18 +184,13 @@ void micro_run(struct ParsedModule *module) {
         if (element->type != TokenElement || element->token->type != Symbol) {
             fail_at_position(element->position, "Expected symbol, found [%s]", element_text(element));
         }
-        const struct Element *next = ElementQueue_next(queue);
-        if (!next) {
-            fail("Unepected end of input");
+        const struct String *symbol = element->token->text;
+        if (equal(symbol, "let")) {
+            let(queue);
+        } else {
+            call(symbol, queue);
         }
-        if (next->type != BracketElement) {
-            fail_at_position(element->position, "Expected bracket expression, found [%s]", element_text(element));
-        }
-        call(element->token->text, &next->bracket.elements);
     }
     ElementQueue_delete(queue);
-}
-
-bool equal(const struct String *lhs, const char *rhs) {
-    return strcmp(lhs->value, rhs) == 0;
+    VariableList_delete(variables);
 }
