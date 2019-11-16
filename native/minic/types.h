@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "core/string.h"
+
 enum AnyType {
     NoneType = 0x00,
     IntegerType = 0x01,
@@ -30,6 +32,8 @@ struct Variable {
 struct Any None();
 
 struct Any Undefined();
+
+struct Any String(const char *value);
 
 void Any_retain(struct Any instance);
 

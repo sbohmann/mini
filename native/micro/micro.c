@@ -148,6 +148,7 @@ static void print(struct ElementQueue *arguments) {
                         for (size_t index = 0; index < 8; ++index) {
                             printf("%s%02x", (index > 0 ? " " : ""), (uint8_t) value.flat_value[index]);
                         }
+                        printf("]");
                         break;
                     case UndefinedType:
                         printf("<undefined");
@@ -196,4 +197,9 @@ void micro_run(struct ParsedModule *module) {
     }
     ElementQueue_delete(queue);
     VariableList_delete(variables);
+}
+
+int main() {
+    struct ParsedModule *module = read_file("examples/print.micro");
+    micro_run(module);
 }

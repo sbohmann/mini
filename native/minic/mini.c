@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <minic/micro/micro.h>
 
 #include "minic/module/module.h"
 
@@ -20,13 +19,13 @@
 //    }
 //}
 
-int main() {
-//    struct ParsedModule *module = read_file("examples/brackets.mini");
-//    struct ParsedModule *module = read_file("native/minic/mini.c");
-    struct ParsedModule *module = read_file("examples/print.micro");
-//    printf("path: [%s]\n", module->path);
-//    printf("source: %zu lines\n", module->source->number_of_lines);
-//    print_source(module);
-//    print_tokens(module);
-    micro_run(module);
-}
+//int main() {
+////    struct ParsedModule *module = read_file("examples/brackets.mini");
+////    struct ParsedModule *module = read_file("native/minic/mini.c");
+//    struct ParsedModule *module = read_file("examples/print.micro");
+////    printf("path: [%s]\n", module->path);
+////    printf("source: %zu lines\n", module->source->number_of_lines);
+////    print_source(module);
+////    print_tokens(module);
+//    micro_run(module);
+//}

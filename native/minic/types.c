@@ -13,6 +13,16 @@ struct Any None() {
     return *result;
 }
 
+struct Any String(const char *value) {
+    struct Any result = None();
+    struct String *string = allocate(sizeof(struct String));
+    string->length = strlen(value);
+    string->value = value;
+    result.type = StringType;
+    result.string = string;
+    return result;
+}
+
 struct Any Undefined() {
     struct Any result = None();
     result.type = UndefinedType;
