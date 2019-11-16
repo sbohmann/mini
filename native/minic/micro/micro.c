@@ -112,13 +112,13 @@ static void print(struct ElementQueue *arguments) {
             fail_at_position(argument->position, "Expected a value, found [%s]", element_text(argument));
         }
         if (argument->token->type == NumberLiteral) {
-            if (argument->token->value.type == Integer) {
+            if (argument->token->value.type == IntegerType) {
                 printf("%d", (int) argument->token->value.integer);
             } else {
                 puts("<a somewhat complicated number>");
             }
         } else if (argument->token->type == StringLiteral) {
-            if (argument->token->value.type != String) {
+            if (argument->token->value.type != StringType) {
                 fail_at_position(argument->position, "Corrupt string token");
             }
             printf("%s", argument->token->value.string->value);
@@ -130,24 +130,27 @@ static void print(struct ElementQueue *arguments) {
             } else {
                 struct Any value = get_variable(argument->token->text);
                 switch (value.type) {
-                    case None:
+                    case NoneType:
                         printf("None");
                         break;
-                    case Integer:
+                    case IntegerType:
                         printf("%d", (int)value.integer);
                         break;
-                    case String:
+                    case StringType:
                         printf("%s", value.string->value);
                         break;
-                    case Complex:
+                    case ComplexType:
                         // TODO
                         printf("<complex>");
                         break;
-                    case Flat:
+                    case FlatType:
                         printf("[");
                         for (size_t index = 0; index < 8; ++index) {
                             printf("%s%02x", (index > 0 ? " " : ""), (uint8_t) value.flat_value[index]);
                         }
+                        break;
+                    case UndefinedType:
+                        printf("<undefined");
                         break;
                     default:
                         printf("<unknown>");

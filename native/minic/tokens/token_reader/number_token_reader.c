@@ -37,21 +37,21 @@ static struct Any create_hex_value(struct NumberTokenReader *self, const struct 
     if (text->length < 3) {
         fail_at_position(self->base.position, "Incomplete hex literal [%s]", text->value);
     }
-    struct Any result = Any_create();
-    result.type = Integer;
+    struct Any result = None();
+    result.type = IntegerType;
     result.integer = parse_integer(text->value + 2, text->length - 2, 16, true);
     return result;
 }
 
 static struct Any create_fraction_value(struct NumberTokenReader *self, const struct String *text) {
-    struct Any result = Any_create();
+    struct Any result = None();
     // TODO
     return result;
 }
 
 static struct Any create_decimal_value(struct NumberTokenReader *self, const struct String *text) {
     struct Any result;
-    result.type = Integer;
+    result.type = IntegerType;
     result.integer = parse_integer(text->value, text->length, 10, true);
     return result;
 }

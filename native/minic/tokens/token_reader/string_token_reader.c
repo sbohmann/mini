@@ -55,8 +55,8 @@ static struct Any create_value(struct TokenReader *base, const struct String *te
     if (!self->closed) {
         fail_at_position(base->position, "Unclosed string literal");
     }
-    struct Any result = Any_create();
-    result.type = String;
+    struct Any result = None();
+    result.type = StringType;
     result.string = StringBuilder_result(self->value);
     return result;
 }

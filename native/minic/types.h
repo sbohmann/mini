@@ -3,21 +3,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-struct ReferenceCount;
-
-struct ComplexValue {
-    struct ReferenceCount *reference_count;
-};
-
-void retain(struct ComplexValue *instance);
-void release(struct ComplexValue *instance);
-
 enum AnyType {
-    None = 0x00,
-    Integer = 0x01,
-    String = 0x11,
-    Complex = 0x21,
-    Flat = 0x22
+    NoneType = 0x00,
+    IntegerType = 0x01,
+    StringType = 0x11,
+    ComplexType = 0x21,
+    FlatType = 0x22,
+    UndefinedType = 0xff
 };
 
 struct Any {
@@ -35,4 +27,10 @@ struct Variable {
     struct Any value;
 };
 
-struct Any Any_create();
+struct Any None();
+
+struct Any Undefined();
+
+void Any_retain(struct Any instance);
+
+void Any_release(struct Any instance);

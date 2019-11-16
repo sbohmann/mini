@@ -10,8 +10,8 @@ static bool process_char(struct TokenReader *self, char c) {
 }
 
 static struct Any create_value(struct TokenReader *self, const struct String *text) {
-    struct Any result = Any_create();
-    result.type = String;
+    struct Any result = None();
+    result.type = StringType;
     result.string = text;
     return result;
 }
