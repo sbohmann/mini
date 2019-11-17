@@ -78,7 +78,7 @@ int64_t parse_integer(const char *str, size_t len, uint8_t radix, bool isSigned)
     }
     
     if (firstDigit) {
-        fail("No digits found in string %s while parsing an integer with radix %d",
+        fail("No digits found in string [%s] while parsing an integer with radix %d",
              str, (int) radix);
     }
     

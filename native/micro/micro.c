@@ -134,7 +134,7 @@ static void print(struct ElementQueue *arguments) {
                         printf("None");
                         break;
                     case IntegerType:
-                        printf("%d", (int)value.integer);
+                        printf("%d", (int) value.integer);
                         break;
                     case StringType:
                         printf("%s", value.string->value);

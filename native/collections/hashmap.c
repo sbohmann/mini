@@ -7,7 +7,7 @@
 
 #include "core/complex.h"
 
-static const uint8_t MaximumLevel = 12;
+static const uint8_t MaximumLevel = sizeof(size_t) == 8 ? 12 : 6;
 
 struct ValueList {
     Key key;
@@ -186,12 +186,15 @@ struct Node *Node_remove(struct Node *node, uint8_t level, Key key, size_t hash,
                 if (*found) {
                     fail("Found multiple entries for key %zu", key);
                 }
-                *source = values->next;
+                struct ValueList *next = values->next;
                 free(values);
+                *source = next;
+                values = next;
                 *found = true;
+            } else {
+                source = &values->next;
+                values = values->next;
             }
-            source = &values->next;
-            values = values->next;
         }
         if (node->values) {
             return node;
