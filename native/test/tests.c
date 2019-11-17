@@ -4,6 +4,7 @@
 
 #include <core/errors.h>
 #include <core/numbers.h>
+#include <inttypes.h>
 
 #include "collections/hashmap.h"
 #include "minic/any.h"
@@ -47,16 +48,16 @@ void print(struct Any value) {
     putchar('\n');
 }
 
-size_t determine_high_start() {
-    return (size_t) 18446744073707551614u;
+uint64_t determine_high_start() {
+    return 18446744073707551614u;
 //        return (size_t) 4292967294u;
 }
 
-#define PRN(message) if (key % 1000 == 0) { printf(#message ": %zu\n", key); }
+#define PRN(message) if (key % 1000 == 0) { printf(#message ": %" PRIu64 "\n", key); }
 
 void hashmap() {
     struct HashMap *map = HashMap_create();
-    size_t key = 1234567;
+    uint64_t key = 1234567;
     print(HashMap_get(map, Integer(key)));
     HashMap_put(map, Integer(key), String("Hi! :D"));
     print(HashMap_get(map, Integer(key)));
@@ -72,7 +73,7 @@ void hashmap() {
     for (key = 0; key < 2000000; key += 3) {
         PRN(build)
         char buffer[256];
-        snprintf(buffer, sizeof(buffer), "%zu", key);
+        snprintf(buffer, sizeof(buffer), "%" PRIu64, key);
         struct Any value;
         value.type = StringType;
         value.string = String_from_buffer(buffer, strlen(buffer));
@@ -122,12 +123,12 @@ void hashmap() {
         }
     }
     
-    size_t high_start = determine_high_start();
+    uint64_t high_start = determine_high_start();
     
-    for (key = high_start; key >= high_start ; key += 3) {
+    for (key = high_start; key >= high_start; key += 3) {
         PRN(build high)
         char buffer[256];
-        snprintf(buffer, sizeof(buffer), "%zu", key);
+        snprintf(buffer, sizeof(buffer), "%" PRIu64, key);
         struct Any value;
         value.type = StringType;
         value.string = String_from_buffer(buffer, strlen(buffer));

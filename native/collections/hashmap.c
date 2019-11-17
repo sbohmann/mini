@@ -62,9 +62,6 @@ void HashMap_delete(struct HashMap *instance) {
 }
 
 static uint32_t level_index(uint32_t hash, uint8_t level) {
-    if (level > 3) {
-        printf("Level %d!!!\n", level);
-    }
     if (5 * level >= 32) {
         fail("HashMap: illegal level: %d", (int) level);
     }
