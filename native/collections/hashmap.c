@@ -65,7 +65,7 @@ static size_t level_index(size_t hash, uint8_t level) {
     if (5 * level >= 64) {
         fail("HashMap: illegal level: %d", (int) level);
     }
-    return (hash >> (64u - 5 * level)) % 0x20;
+    return (hash >> (5 * level)) % 0x20;
 }
 
 bool replace_value(struct ValueList *values, Key key, Value value) {
