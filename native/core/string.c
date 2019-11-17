@@ -13,7 +13,7 @@ struct String *String_from_literal(const char *literal) {
 struct String *String_from_buffer(char *buffer) {
     struct String *result = allocate(sizeof(struct String));
     result->length = strlen(buffer);
-    char *value = allocate(result->length);
+    char *value = allocate(result->length + 1);
     memcpy(value, buffer, result->length);
     result->value = value;
     return result;

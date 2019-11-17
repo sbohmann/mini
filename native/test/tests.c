@@ -88,7 +88,7 @@ void hashmap() {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
-            size_t parsed = parse_integer(value.string->value, value.string->length, 10, false);
+            size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
                 fail("parsed [%zu] != key [%zu]", parsed, key);
             }
@@ -111,7 +111,7 @@ void hashmap() {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
-            size_t parsed = parse_integer(value.string->value, value.string->length, 10, false);
+            size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
                 fail("parsed [%zu] != key [%zu]", parsed, key);
             }
@@ -139,7 +139,7 @@ void hashmap() {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
-            size_t parsed = parse_integer(value.string->value, value.string->length, 10, false);
+            size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
                 fail("parsed [%zu] != key [%zu]", parsed, key);
             }
@@ -162,7 +162,7 @@ void hashmap() {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
-            size_t parsed = parse_integer(value.string->value, value.string->length, 10, false);
+            size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
                 fail("parsed [%zu] != key [%zu]", parsed, key);
             }
