@@ -38,7 +38,7 @@ int64_t parse_integer(const char *str, size_t len, uint8_t radix, bool isSigned)
             }
             
             if (positive) {
-                limit = INT64_MAX;
+                limit = isSigned ? INT64_MAX : UINT64_MAX;
                 limitBeforeShift = (int64_t) (limit / radix);
             } else {
                 limit = INT64_MIN;
