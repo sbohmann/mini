@@ -219,8 +219,8 @@ static void hash_map() {
 }
 
 void hashes() {
-    printf("%" PRIu64 "\n", int64_hash(1999998));
-    printf("%" PRIu64 "\n", int64_hash(-1999999));
+    printf("%d\n", int64_hash(1999998));
+    printf("%d\n", int64_hash(-1999999));
 }
 
 #define TEST(name) if (!name()) { fprintf(stderr, "Test case " #name " failed.\n"); exit(1); }
