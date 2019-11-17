@@ -55,7 +55,7 @@ size_t determine_high_start() {
     }
 }
 
-#define PRN if (key % 1000 == 0) { printf("%zu\n", key); }
+#define PRN(message) if (key % 1000 == 0) { printf(#message ": %zu\n", key); }
 
 void hashmap() {
     struct HashMap *map = HashMap_create();
@@ -73,7 +73,7 @@ void hashmap() {
     HashMap_remove(map, Integer(key + 1));
     
     for (key = 0; key < 2000000; key += 3) {
-        PRN
+        PRN(build)
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%zu", key);
         struct Any value;
@@ -83,7 +83,7 @@ void hashmap() {
     }
     
     for (key = 0; key < 2000000; ++key) {
-        PRN
+        PRN(check)
         struct Any value = HashMap_get(map, Integer(key));
         if (key % 3 == 0) {
             if (value.type != StringType) {
@@ -101,14 +101,14 @@ void hashmap() {
     }
     
     for (key = 0; key < 2000000; ++key) {
-        PRN
+        PRN(prune)
         if (key % 5 == 0) {
             HashMap_remove(map, Integer(key));
         }
     }
     
     for (key = 0; key < 2000000; ++key) {
-        PRN
+        PRN(check pruned)
         struct Any value = HashMap_get(map, Integer(key));
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
@@ -128,7 +128,7 @@ void hashmap() {
     size_t high_start = determine_high_start();
     
     for (key = high_start; key >= high_start ; key += 3) {
-        PRN
+        PRN(build high)
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%zu", key);
         struct Any value;
@@ -138,7 +138,7 @@ void hashmap() {
     }
     
     for (key = high_start; key >= high_start; ++key) {
-        PRN
+        PRN(check high)
         struct Any value = HashMap_get(map, Integer(key));
         if (key % 3 == 0) {
             if (value.type != StringType) {
@@ -156,14 +156,14 @@ void hashmap() {
     }
     
     for (key = high_start; key >= high_start; ++key) {
-        PRN
+        PRN(prune high)
         if (key % 5 == 0) {
             HashMap_remove(map, Integer(key));
         }
     }
     
     for (key = high_start; key >= high_start; ++key) {
-        PRN
+        PRN(check pruned high)
         struct Any value = HashMap_get(map, Integer(key));
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
