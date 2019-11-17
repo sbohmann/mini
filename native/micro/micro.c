@@ -11,6 +11,10 @@
 
 struct VariableList *variables = 0;
 
+static bool equal(const struct String *string, const char *literal) {
+    return String_equal_to_literal(string, literal);
+}
+
 const char *element_text(const struct Element *element) {
     if (element->type == TokenElement) {
         return element->token->text->value;
@@ -26,7 +30,7 @@ void set_variable(const struct String *name, const struct String *text, const st
     struct VariableListElement *iterator = VariableList_begin(variables);
     while (iterator) {
         struct Variable *variable = VariableListIterator_get(iterator);
-        if (equals(variable->name, name)) {
+        if (String_equal(variable->name, name)) {
             variable->value = value;
             return;
         }
@@ -42,7 +46,7 @@ struct Any get_variable(const struct String *name) {
     struct VariableListElement *iterator = VariableList_begin(variables);
     while (iterator) {
         struct Variable *variable = VariableListIterator_get(iterator);
-        if (equals(variable->name, name)) {
+        if (String_equal(variable->name, name)) {
             return variable->value;
         }
     }
@@ -149,9 +153,6 @@ static void print(struct ElementQueue *arguments) {
                             printf("%s%02x", (index > 0 ? " " : ""), (uint8_t) value.flat_value[index]);
                         }
                         printf("]");
-                        break;
-                    case UndefinedType:
-                        printf("<undefined");
                         break;
                     default:
                         printf("<unknown>");

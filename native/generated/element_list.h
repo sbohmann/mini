@@ -14,9 +14,9 @@ void ElementList_delete(struct ElementList * instance);
 
 size_t ElementList_size(struct ElementList * self);
 
-void ElementList_append(struct ElementList * self, struct Element *value);
+void ElementList_append(struct ElementList * self, const struct Element *value);
 
-void ElementList_prepend(struct ElementList * self, struct Element *value);
+void ElementList_prepend(struct ElementList * self, const struct Element *value);
 
 struct Element * ElementList_to_array(struct ElementList * self);
 
@@ -28,4 +28,4 @@ struct ElementListElement * ElementListIterator_next(struct ElementListElement *
 
 struct ElementListElement * ElementListIterator_previous(struct ElementListElement * iterator);
 
-struct Element * ElementListIterator_get(struct ElementListElement * value);
+const struct Element * ElementListIterator_get(struct ElementListElement * value);

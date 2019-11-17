@@ -5,7 +5,6 @@
 #include <stdbool.h>
 
 #include "core/allocate.h"
-#include "core/errors.h"
 #include "core/string.h"
 #include "core/files.h"
 #include "generated/string_list.h"
@@ -14,8 +13,7 @@ static void append_line(struct StringList *lines, const char *pointer, const cha
     size_t line_length = pointer - line_start;
     char *line_value = allocate(line_length + 1);
     memcpy(line_value, line_start, line_length);
-    struct String *line = allocate(sizeof(struct String));
-    *line = (struct String) {line_length, line_value};
+    const struct String *line = String_preallocated(line_value, line_length);
     StringList_append(lines, line);
 }
 
@@ -48,7 +46,7 @@ static struct String *flatten(struct StringList *lines) {
     return result_lines;
 }
 
-static struct Source *create_source(struct String *text) {
+static struct Source *create_source(const struct String *text) {
     struct StringList *lines = StringList_create();
     collect_lines(text, lines);
     const size_t size = StringList_size(lines);
@@ -62,8 +60,8 @@ static struct Source *create_source(struct String *text) {
 }
 
 struct Source *read_source(const char *path) {
-    struct String *source_text = read_text_file(path);
+    const struct String *source_text = read_text_file(path);
     struct Source *result = create_source(source_text);
-    free(source_text);
+    free((void *) source_text);
     return result;
 }

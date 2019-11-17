@@ -12,7 +12,7 @@ struct TokenList {
 };
 
 struct TokenListElement {
-    struct Token *value;
+    const struct Token *value;
     struct TokenListElement *next;
     struct TokenListElement *previous;
 };
@@ -35,7 +35,7 @@ size_t TokenList_size(struct TokenList * self) {
     return self->size;
 }
 
-void TokenList_append(struct TokenList * self, struct Token *value) {
+void TokenList_append(struct TokenList * self, const struct Token *value) {
     struct TokenListElement * element = allocate(sizeof(struct TokenListElement));
     element->value = value;
     if (self->size == 0) {
@@ -50,7 +50,7 @@ void TokenList_append(struct TokenList * self, struct Token *value) {
     }
 }
 
-void TokenList_prepend(struct TokenList * self, struct Token *value) {
+void TokenList_prepend(struct TokenList * self, const struct Token *value) {
     struct TokenListElement * element = allocate(sizeof(struct TokenListElement));
     element->value = value;
     if (self->size == 0) {
@@ -111,7 +111,7 @@ struct TokenListElement * TokenListIterator_previous(struct TokenListElement * i
     }
 }
 
-struct Token * TokenListIterator_get(struct TokenListElement * iterator) {
+const struct Token * TokenListIterator_get(struct TokenListElement * iterator) {
     if (iterator) {
         return iterator->value;
     } else {

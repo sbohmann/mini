@@ -12,7 +12,7 @@ struct ElementList {
 };
 
 struct ElementListElement {
-    struct Element *value;
+    const struct Element *value;
     struct ElementListElement *next;
     struct ElementListElement *previous;
 };
@@ -35,7 +35,7 @@ size_t ElementList_size(struct ElementList * self) {
     return self->size;
 }
 
-void ElementList_append(struct ElementList * self, struct Element *value) {
+void ElementList_append(struct ElementList * self, const struct Element *value) {
     struct ElementListElement * element = allocate(sizeof(struct ElementListElement));
     element->value = value;
     if (self->size == 0) {
@@ -50,7 +50,7 @@ void ElementList_append(struct ElementList * self, struct Element *value) {
     }
 }
 
-void ElementList_prepend(struct ElementList * self, struct Element *value) {
+void ElementList_prepend(struct ElementList * self, const struct Element *value) {
     struct ElementListElement * element = allocate(sizeof(struct ElementListElement));
     element->value = value;
     if (self->size == 0) {
@@ -111,7 +111,7 @@ struct ElementListElement * ElementListIterator_previous(struct ElementListEleme
     }
 }
 
-struct Element * ElementListIterator_get(struct ElementListElement * iterator) {
+const struct Element * ElementListIterator_get(struct ElementListElement * iterator) {
     if (iterator) {
         return iterator->value;
     } else {

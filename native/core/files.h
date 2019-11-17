@@ -2,4 +2,4 @@
 
 #include "string.h"
 
-struct String *read_text_file(const char *path);
+const struct String *read_text_file(const char *path);

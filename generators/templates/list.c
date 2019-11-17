@@ -111,7 +111,7 @@ struct {{name}}ListElement * {{name}}ListIterator_previous(struct {{name}}ListEl
     }
 }
 
-{{value}} {{name}}ListIterator_get(struct {{name}}ListElement * iterator) {
+{{constvalue}} {{name}}ListIterator_get(struct {{name}}ListElement * iterator) {
     if (iterator) {
         return iterator->value;
     } else {

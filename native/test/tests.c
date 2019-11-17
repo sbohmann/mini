@@ -6,7 +6,7 @@
 #include <core/numbers.h>
 
 #include "collections/hashmap.h"
-#include "minic/types.h"
+#include "minic/any.h"
 
 bool duplication() {
     size_t value = 1;
@@ -41,9 +41,6 @@ void print(struct Any value) {
             }
             printf("]");
             break;
-        case UndefinedType:
-            printf("<undefined>");
-            break;
         default:
             printf("<unknown>");
     }
@@ -61,39 +58,39 @@ size_t determine_high_start() {
 void hashmap() {
     struct HashMap *map = HashMap_create();
     size_t key = 1234567;
-    print(HashMap_get(map, key));
-    HashMap_put(map, key, String("Hi! :D"));
-    print(HashMap_get(map, key));
-    print(HashMap_get(map, key + 1));
-    HashMap_put(map, key + 1, String("Ok ^^"));
-    print(HashMap_get(map, key));
-    print(HashMap_get(map, key + 1));
-    HashMap_remove(map, key);
-    print(HashMap_get(map, key));
-    print(HashMap_get(map, key + 1));
-    HashMap_remove(map, key + 1);
+    print(HashMap_get(map, Integer(key)));
+    HashMap_put(map, Integer(key), String("Hi! :D"));
+    print(HashMap_get(map, Integer(key)));
+    print(HashMap_get(map, Integer(key + 1)));
+    HashMap_put(map, Integer(key + 1), String("Ok ^^"));
+    print(HashMap_get(map, Integer(key)));
+    print(HashMap_get(map, Integer(key + 1)));
+    HashMap_remove(map, Integer(key));
+    print(HashMap_get(map, Integer(key)));
+    print(HashMap_get(map, Integer(key + 1)));
+    HashMap_remove(map, Integer(key + 1));
     
     for (key = 0; key < 2000000; key += 3) {
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%zu", key);
         struct Any value;
         value.type = StringType;
-        value.string = String_from_buffer(buffer);
-        HashMap_put(map, key, value);
+        value.string = String_from_buffer(buffer, strlen(buffer));
+        HashMap_put(map, Integer(key), value);
     }
     
     for (key = 0; key < 2000000; ++key) {
-        struct Any value = HashMap_get(map, key);
+        struct Any value = HashMap_get(map, Integer(key));
         if (key % 3 == 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
             size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, key);
+                fail("parsed [%zu] != key [%zu]", parsed, Integer(key));
             }
         } else {
-            if (value.type != UndefinedType) {
+            if (value.type != NoneType) {
                 fail("Wrong type: %d", value.type);
             }
         }
@@ -101,22 +98,22 @@ void hashmap() {
     
     for (key = 0; key < 2000000; ++key) {
         if (key % 5 == 0) {
-            HashMap_remove(map, key);
+            HashMap_remove(map, Integer(key));
         }
     }
     
     for (key = 0; key < 2000000; ++key) {
-        struct Any value = HashMap_get(map, key);
+        struct Any value = HashMap_get(map, Integer(key));
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
             size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, key);
+                fail("parsed [%zu] != key [%zu]", parsed, Integer(key));
             }
         } else {
-            if (value.type != UndefinedType) {
+            if (value.type != NoneType) {
                 fail("Wrong type: %d", value.type);
             }
         }
@@ -129,22 +126,22 @@ void hashmap() {
         snprintf(buffer, sizeof(buffer), "%zu", key);
         struct Any value;
         value.type = StringType;
-        value.string = String_from_buffer(buffer);
-        HashMap_put(map, key, value);
+        value.string = String_from_buffer(buffer, strlen(buffer));
+        HashMap_put(map, Integer(key), value);
     }
     
     for (key = high_start; key >= high_start; ++key) {
-        struct Any value = HashMap_get(map, key);
+        struct Any value = HashMap_get(map, Integer(key));
         if (key % 3 == 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
             size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, key);
+                fail("parsed [%zu] != key [%zu]", parsed, Integer(key));
             }
         } else {
-            if (value.type != UndefinedType) {
+            if (value.type != NoneType) {
                 fail("Wrong type: %d", value.type);
             }
         }
@@ -152,22 +149,22 @@ void hashmap() {
     
     for (key = high_start; key >= high_start; ++key) {
         if (key % 5 == 0) {
-            HashMap_remove(map, key);
+            HashMap_remove(map, Integer(key));
         }
     }
     
     for (key = high_start; key >= high_start; ++key) {
-        struct Any value = HashMap_get(map, key);
+        struct Any value = HashMap_get(map, Integer(key));
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
             size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, key);
+                fail("parsed [%zu] != key [%zu]", parsed, Integer(key));
             }
         } else {
-            if (value.type != UndefinedType) {
+            if (value.type != NoneType) {
                 fail("Wrong type: %d", value.type);
             }
         }

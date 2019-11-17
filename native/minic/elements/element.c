@@ -8,6 +8,10 @@
 
 #include "generated/element_list.h"
 
+static bool equal(const struct String *string, const char *literal) {
+    return String_equal_to_literal(string, literal);
+}
+
 static enum BracketType bracket_type(const struct Token *token) {
     const struct String *text = token->text;
     if (equal(text, "(") || equal(text, ")")) {
@@ -54,7 +58,6 @@ void add_bracket(struct ElementList *elements, struct TokenQueue *tokens, const 
     if (!closing_bracket) {
         fail("Missing closing bracket (opening bracket at line %zu, column %zu, file [%s])",
              opening_bracket->position.line, opening_bracket->position.column, opening_bracket->position.path);
-        return; // dummy return
     }
     enum BracketType type = bracket_type(opening_bracket);
     if (bracket_type(closing_bracket) != bracket_type(opening_bracket)) {

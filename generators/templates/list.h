@@ -29,5 +29,5 @@ struct {{name}}ListElement * {{name}}ListIterator_next(struct {{name}}ListElemen
 
 struct {{name}}ListElement * {{name}}ListIterator_previous(struct {{name}}ListElement * iterator);
 
-{{value}} {{name}}ListIterator_get(struct {{name}}ListElement * value);
+{{constvalue}} {{name}}ListIterator_get(struct {{name}}ListElement * value);
 

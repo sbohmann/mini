@@ -12,7 +12,7 @@ struct StringList {
 };
 
 struct StringListElement {
-    struct String *value;
+    const struct String *value;
     struct StringListElement *next;
     struct StringListElement *previous;
 };
@@ -35,7 +35,7 @@ size_t StringList_size(struct StringList * self) {
     return self->size;
 }
 
-void StringList_append(struct StringList * self, struct String *value) {
+void StringList_append(struct StringList * self, const struct String *value) {
     struct StringListElement * element = allocate(sizeof(struct StringListElement));
     element->value = value;
     if (self->size == 0) {
@@ -50,7 +50,7 @@ void StringList_append(struct StringList * self, struct String *value) {
     }
 }
 
-void StringList_prepend(struct StringList * self, struct String *value) {
+void StringList_prepend(struct StringList * self, const struct String *value) {
     struct StringListElement * element = allocate(sizeof(struct StringListElement));
     element->value = value;
     if (self->size == 0) {
@@ -111,7 +111,7 @@ struct StringListElement * StringListIterator_previous(struct StringListElement 
     }
 }
 
-struct String * StringListIterator_get(struct StringListElement * iterator) {
+const struct String * StringListIterator_get(struct StringListElement * iterator) {
     if (iterator) {
         return iterator->value;
     } else {

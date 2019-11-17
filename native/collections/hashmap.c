@@ -7,7 +7,7 @@
 
 #include "core/complex.h"
 
-static const uint8_t MaximumLevel = sizeof(size_t) == 8 ? 12 : 6;
+static const uint8_t MaximumLevel = (sizeof(size_t) == 8 ? 12 : 6);
 
 struct ValueList {
     Key key;
@@ -61,11 +61,6 @@ void HashMap_delete(struct HashMap *instance) {
     free(instance);
 }
 
-size_t calculate_hash(Key key) {
-    // TODO
-    return key;
-}
-
 static size_t level_index(size_t hash, uint8_t level) {
     if (5 * level >= 64) {
         fail("HashMap: illegal level: %d", (int) level);
@@ -75,7 +70,7 @@ static size_t level_index(size_t hash, uint8_t level) {
 
 bool replace_value(struct ValueList *values, Key key, Value value) {
     while (values) {
-        if (values->key == key) {
+        if (Any_equal(values->key, key)) {
             Any_release(values->value);
             values->value = value;
             return true;
@@ -141,11 +136,13 @@ static struct Node *Node_put(struct Node *node, uint8_t level, Key key, size_t h
 }
 
 void HashMap_put(struct HashMap *self, Key key, struct Any value) {
-    if (self->root) {
-        self->root = Node_put(self->root, 0, key, calculate_hash(key), value, &self->size);
-    } else {
-        self->root = create_value_node(key, calculate_hash(key), value);
-        self->size = 1;
+    if (value.type != NoneType) {
+        if (self->root) {
+            self->root = Node_put(self->root, 0, key, Any_hash(key), value, &self->size);
+        } else {
+            self->root = create_value_node(key, Any_hash(key), value);
+            self->size = 1;
+        }
     }
 }
 
@@ -153,27 +150,27 @@ Value Node_get(struct Node *node, uint8_t level, Key key, size_t hash) {
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         while (values) {
-            if (values->key == key) {
+            if (Any_equal(values->key, key)) {
                 return values->value;
             }
             values = values->next;
         }
-        return Undefined();
+        return None();
     } else {
         size_t index = level_index(hash, level);
         if (node->sub_nodes[index]) {
             return Node_get(node->sub_nodes[index], level + 1, key, hash);
         } else {
-            return Undefined();
+            return None();
         }
     }
 }
 
 Value HashMap_get(struct HashMap *self, Key key) {
     if (self->root) {
-        return Node_get(self->root, 0, key, calculate_hash(key));
+        return Node_get(self->root, 0, key, Any_hash(key));
     } else {
-        return Undefined();
+        return None();
     }
 }
 
@@ -182,7 +179,7 @@ struct Node *Node_remove(struct Node *node, uint8_t level, Key key, size_t hash,
         struct ValueList *values = node->values;
         struct ValueList **source = &node->values;
         while (values) {
-            if (values->key == key) {
+            if (Any_equal(values->key, key)) {
                 if (*found) {
                     fail("Found multiple entries for key %zu", key);
                 }
@@ -222,7 +219,7 @@ struct Node *Node_remove(struct Node *node, uint8_t level, Key key, size_t hash,
 bool HashMap_remove(struct HashMap *self, Key key) {
     if (self->root) {
         bool found = false;
-        self->root = Node_remove(self->root, 0, key, calculate_hash(key), &found);
+        self->root = Node_remove(self->root, 0, key, Any_hash(key), &found);
         if (found) {
             --self->size;
         }

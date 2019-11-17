@@ -6,12 +6,15 @@
 struct String {
     size_t length;
     const char * value;
+    size_t hash;
 };
 
-struct String *String_from_literal(const char *literal);
+const struct String *String_from_literal(const char *literal);
 
-struct String *String_from_buffer(char *literal);
+const struct String *String_preallocated(const char *literal, size_t length);
 
-bool equal(const struct String *lhs, const char *rhs);
+const struct String *String_from_buffer(char *literal, size_t length);
 
-bool equals(const struct String *lhs, const struct String *rhs);
+bool String_equal(const struct String *lhs, const struct String *rhs);
+
+bool String_equal_to_literal(const struct String *lhs, const char *rhs);

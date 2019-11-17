@@ -12,14 +12,15 @@ class Generator:
         self.kind = kind
         self.name = typename[0].upper() + typename[1:]
         self.struct = False
+        self.mutable = False
         self.system_include = None
         self.local_include = None
 
     def run(self):
         self.type_name = 'struct ' + self.raw_type if self.struct else self.raw_type
         self.value_type = 'struct ' + self.raw_type + ' *' if self.struct else self.raw_type
-        self.const_value_type = 'const ' + self.value_type if self.struct else self.value_type
-        self.value_type_prefix = self.value_type if self.struct else self.value_type + ' '
+        self.const_value_type = 'const ' + self.value_type if (self.struct and not self.mutable) else self.value_type
+        self.value_type_prefix = self.const_value_type if self.struct else self.value_type + ' '
         self.value_dereference = '*' if self.struct else ''
         self.file_name = self.name.lower() + '_' + self.kind
         self._render('h')
@@ -85,7 +86,8 @@ def generate_integer_list():
 def generate_variable_list():
     generator = Generator('Variable', 'list')
     generator.struct = True
-    generator.local_include = 'minic/types.h'
+    generator.mutable = True
+    generator.local_include = 'minic/any.h'
     generator.run()
 
 

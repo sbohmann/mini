@@ -1,11 +1,11 @@
 #pragma once
 
 #include <stddef.h>
-#include <minic/types.h>
+#include <minic/any.h>
 
 struct HashMap;
 
-typedef size_t Key;
+typedef struct Any Key;
 typedef struct Any Value;
 
 struct HashMap * HashMap_create();

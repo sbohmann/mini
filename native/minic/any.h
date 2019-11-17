@@ -10,8 +10,7 @@ enum AnyType {
     IntegerType = 0x01,
     StringType = 0x11,
     ComplexType = 0x21,
-    FlatType = 0x22,
-    UndefinedType = 0xff
+    FlatType = 0x22
 };
 
 struct Any {
@@ -31,10 +30,20 @@ struct Variable {
 
 struct Any None();
 
-struct Any Undefined();
-
 struct Any String(const char *value);
+
+struct Any Integer(int64_t value);
 
 void Any_retain(struct Any instance);
 
 void Any_release(struct Any instance);
+
+size_t int64_hash(int64_t value);
+
+size_t uint64_hash(uint64_t value);
+
+size_t string_hash(const char *data, size_t length);
+
+size_t Any_hash(struct Any value);
+
+bool Any_equal(struct Any lhs, struct Any rhs);

@@ -67,11 +67,6 @@ void StringBuilder_append_string(struct StringBuilder *self, const struct String
     self->length += value->length;
 }
 
-struct String *StringBuilder_result(struct StringBuilder *self) {
-    struct String *result = allocate(sizeof(struct String));
-    char *copy = allocate_raw(self->length + 1);
-    memcpy(copy, self->buffer, self->length);
-    copy[self->length] = 0;
-    *result = (struct String) {self->length, copy};
-    return result;
+const struct String *StringBuilder_result(struct StringBuilder *self) {
+    return String_from_buffer(self->buffer, self->length);
 }

@@ -4,7 +4,7 @@
 #include "errors.h"
 #include "string.h"
 
-struct String *read_text_file(const char *path) {
+const struct String *read_text_file(const char *path) {
     FILE *file = fopen(path, "rb");
     non_null_errno(file, "Failed to open source path %s", path);
     non_negative_errno(fseek(file, 0, SEEK_END),
@@ -26,7 +26,5 @@ struct String *read_text_file(const char *path) {
     
     raw_result[size] = 0;
     
-    struct String *result = allocate(sizeof(struct String));
-    *result = (struct String) {size, raw_result};
-    return result;
+    return String_preallocated(raw_result, size);
 }
