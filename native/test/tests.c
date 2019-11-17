@@ -55,6 +55,8 @@ size_t determine_high_start() {
     }
 }
 
+#define PRN if (key % 1000 == 0) { printf("%zu\n", key); }
+
 void hashmap() {
     struct HashMap *map = HashMap_create();
     size_t key = 1234567;
@@ -103,6 +105,7 @@ void hashmap() {
     }
     
     for (key = 0; key < 2000000; ++key) {
+        PRN
         struct Any value = HashMap_get(map, Integer(key));
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
