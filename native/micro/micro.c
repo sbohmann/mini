@@ -36,14 +36,35 @@ struct Any get_variable(const struct String *name) {
     return HashMap_get(variables, String(name));
 }
 
-void read_comma(struct ElementQueue *arguments) {
-    const struct Element *comma = ElementQueue_next(arguments);
+void read_comma(struct ElementQueue *elements) {
+    const struct Element *comma = ElementQueue_next(elements);
     if (!comma) {
         fail("Unexpected end of input");
     }
     if (comma->type != TokenElement || comma->token->type != Operator || !equal(comma->token->text, ",")) {
         fail_at_position(comma->position, "Expected comma, found [%s]", element_text(comma));
     }
+}
+
+void read_operator(struct ElementQueue *elements, const char *text) {
+    const struct Element *comma = ElementQueue_next(elements);
+    if (!comma) {
+        fail("Unexpected end of input");
+    }
+    if (comma->type != TokenElement || comma->token->type != Operator || !equal(comma->token->text, text)) {
+        fail_at_position(comma->position, "Expected %s, found [%s]", text, element_text(comma));
+    }
+}
+
+const struct Token *read_token(struct ElementQueue *elements) {
+    const struct Element *next = ElementQueue_next(elements);
+    if (!next) {
+        fail("Unexpected end of input");
+    }
+    if (next->type != TokenElement) {
+        fail_at_position(next->position, "Expected expression, found [%s]", element_text(next));
+    }
+    return next->token;
 }
 
 void let(struct ElementQueue *queue) {
@@ -55,29 +76,17 @@ void let(struct ElementQueue *queue) {
         fail_at_position(next->position, "Expected a symbol, found [%s]", element_text(next));
     }
     const struct String *variable_name = next->token->text;
-    next = ElementQueue_next(queue);
-    if (!next) {
-        fail("Unexpected end of input");
-    }
-    if (next->type != TokenElement || next->token->type != Operator || !equal(next->token->text, "=")) {
-        fail_at_position(next->position, "Expected '=', found [%s]", element_text(next));
-    }
-    next = ElementQueue_next(queue);
-    if (!next) {
-        fail("Unexpected end of input");
-    }
-    if (next->type != TokenElement) {
-        fail_at_position(next->position, "Expected expression, found [%s]", element_text(next));
-    }
+    read_operator(queue, "=");
+    const struct Token *rhs = read_token(queue);
     struct Any value;
-    if (next->token->type == Symbol) {
-        value = get_variable(next->token->text);
-    } else if (next->token->type == NumberLiteral || next->token->type == StringLiteral) {
-        value = next->token->value;
+    if (rhs->type == Symbol) {
+        value = get_variable(rhs->text);
+    } else if (rhs->type == NumberLiteral || rhs->type == StringLiteral) {
+        value = rhs->value;
     } else {
-        fail_at_position(next->token->position, "Unexpected expression: [%s]", next->token->text);
+        fail_at_position(rhs->position, "Unexpected expression: [%s]", rhs->text);
     };
-    set_variable(variable_name, next->token->text, value);
+    set_variable(variable_name, rhs->text, value);
 }
 
 static void print(struct ElementQueue *arguments) {
