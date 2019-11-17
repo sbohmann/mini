@@ -62,7 +62,10 @@ void HashMap_delete(struct HashMap *instance) {
 }
 
 static size_t level_index(uint32_t hash, uint8_t level) {
-    if (5 * level >= 64) {
+    if (level == MaximumLevel) {
+        printf("Maximum Level!!!\n");
+    }
+    if (5 * level >= 32) {
         fail("HashMap: illegal level: %d", (int) level);
     }
     return (hash >> (5 * level)) % 0x20;
