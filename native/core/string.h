@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "typedefs.h"
+
 struct String {
     size_t length;
     const char * value;
-    uint32_t hash;
+    Hash hash;
 };
 
 const struct String *String_from_literal(const char *literal);

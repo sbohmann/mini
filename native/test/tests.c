@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 
 #include <core/errors.h>
@@ -9,18 +8,7 @@
 #include "collections/hashmap.h"
 #include "minic/any.h"
 
-bool duplication() {
-    size_t value = 1;
-    while (1) {
-        value *= 2;
-        printf("%zu\n", value);
-        if (value == 0) {
-            return 1;
-        }
-    }
-}
-
-void print(struct Any value) {
+static void print(struct Any value) {
     switch (value.type) {
         case NoneType:
             printf("None");
@@ -48,14 +36,14 @@ void print(struct Any value) {
     putchar('\n');
 }
 
-uint64_t determine_high_start() {
+static uint64_t determine_high_start() {
     return 18446744073707551614u;
 //        return (size_t) 4292967294u;
 }
 
-#define PRN(message) if (key % 1000 == 0) { printf(#message ": %" PRIu64 "\n", key); }
+#define PRN(message) if (key % 1000 == 0) { printf(#message ": %llu\n", key); }
 
-void hashmap() {
+static void hash_map() {
     struct HashMap *map = HashMap_create();
     uint64_t key = 1234567;
     print(HashMap_get(map, Integer(key)));
@@ -73,7 +61,7 @@ void hashmap() {
     for (key = 0; key < 2000000; key += 3) {
         PRN(build)
         char buffer[256];
-        snprintf(buffer, sizeof(buffer), "%" PRIu64, key);
+        snprintf(buffer, sizeof(buffer), "%llu", key);
         struct Any value;
         value.type = StringType;
         value.string = String_from_buffer(buffer, strlen(buffer));
@@ -89,7 +77,7 @@ void hashmap() {
             }
             size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, Integer(key));
+                fail("parsed [%zu] != key [%zu]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
@@ -112,9 +100,9 @@ void hashmap() {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
-            size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
+            uint64_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, Integer(key));
+                fail("parsed [%zu] != key [%zu]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
@@ -128,7 +116,7 @@ void hashmap() {
     for (key = high_start; key >= high_start; key += 3) {
         PRN(build high)
         char buffer[256];
-        snprintf(buffer, sizeof(buffer), "%" PRIu64, key);
+        snprintf(buffer, sizeof(buffer), "%llu", key);
         struct Any value;
         value.type = StringType;
         value.string = String_from_buffer(buffer, strlen(buffer));
@@ -142,9 +130,9 @@ void hashmap() {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
-            size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
+            uint64_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, Integer(key));
+                fail("parsed [%llu] != key [%llu]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
@@ -167,9 +155,9 @@ void hashmap() {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
             }
-            size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
+            uint64_t parsed = parse_uint64(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, Integer(key));
+                fail("parsed [%llu] != key [%llu]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
@@ -179,9 +167,15 @@ void hashmap() {
     }
 }
 
+void hashes() {
+    printf("%llu\n", int64_hash(1999998));
+    printf("%llu\n", int64_hash(-1999999));
+}
+
 #define TEST(name) if (!name()) { fprintf(stderr, "Test case " #name " failed.\n"); exit(1); }
 
 int main() {
-    hashmap();
+    hashes();
+    hash_map();
     printf("Success.\n");
 }

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <core/errors.h>
 
+#include "core/typedefs.h"
 #include "core/complex.h"
 
 static const uint8_t MaximumLevel = 6;
@@ -20,7 +21,7 @@ struct Node {
     union {
         struct Node *sub_nodes[32];
         struct {
-            uint32_t hash;
+            Hash hash;
             struct ValueList *values;
         };
     };
@@ -61,7 +62,7 @@ void HashMap_delete(struct HashMap *instance) {
     free(instance);
 }
 
-static uint32_t level_index(uint32_t hash, uint8_t level) {
+static size_t level_index(Hash hash, uint8_t level) {
     if (5 * level >= 32) {
         fail("HashMap: illegal level: %d", (int) level);
     }
@@ -88,7 +89,7 @@ struct ValueList *insert_value(struct ValueList *existing_values, Key key, Value
     return new_values;
 }
 
-struct Node *create_value_node(Key key, uint32_t hash, Value value) {
+struct Node *create_value_node(Key key, Hash hash, Value value) {
     struct Node *new_node = allocate(sizeof(struct Node));
     new_node->is_value_node = true;
     new_node->hash = hash;
@@ -99,7 +100,7 @@ struct Node *create_value_node(Key key, uint32_t hash, Value value) {
     return new_node;
 }
 
-static struct Node *Node_put(struct Node *node, uint8_t level, Key key, uint32_t hash, Value value, size_t *size) {
+static struct Node *Node_put(struct Node *node, uint8_t level, Key key, Hash hash, Value value, size_t *size) {
     size_t index = level_index(hash, level);
     if (node->is_value_node) {
         struct ValueList *existing_values = node->values;
@@ -147,7 +148,7 @@ void HashMap_put(struct HashMap *self, Key key, struct Any value) {
     }
 }
 
-Value Node_get(struct Node *node, uint8_t level, Key key, uint32_t hash) {
+Value Node_get(struct Node *node, uint8_t level, Key key, Hash hash) {
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         while (values) {
@@ -175,7 +176,7 @@ Value HashMap_get(struct HashMap *self, Key key) {
     }
 }
 
-struct Node *Node_remove(struct Node *node, uint8_t level, Key key, uint32_t hash, bool *found) {
+struct Node *Node_remove(struct Node *node, uint8_t level, Key key, Hash hash, bool *found) {
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         struct ValueList **source = &node->values;
