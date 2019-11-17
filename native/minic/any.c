@@ -15,11 +15,10 @@ struct Any None() {
     return *result;
 }
 
-struct Any String(const char *value) {
+struct Any String(const struct String *value) {
     struct Any result = None();
-    const struct String *string = String_from_literal(value);
     result.type = StringType;
-    result.string = string;
+    result.string = value;
     return result;
 }
 

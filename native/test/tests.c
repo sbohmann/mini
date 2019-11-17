@@ -42,10 +42,10 @@ static void hash_map() {
     struct HashMap *map = HashMap_create();
     uint64_t key = 1234567;
     print(HashMap_get(map, Integer(key)));
-    HashMap_put(map, Integer(key), String("Hi! :D"));
+    HashMap_put(map, Integer(key), String(String_from_literal("Hi! :D")));
     print(HashMap_get(map, Integer(key)));
     print(HashMap_get(map, Integer(key + 1)));
-    HashMap_put(map, Integer(key + 1), String("Ok ^^"));
+    HashMap_put(map, Integer(key + 1), String(String_from_literal("Ok ^^")));
     print(HashMap_get(map, Integer(key)));
     print(HashMap_get(map, Integer(key + 1)));
     HashMap_remove(map, Integer(key));

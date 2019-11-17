@@ -1,15 +1,16 @@
+#include "micro.h"
+
 #include <string.h>
 #include <stdio.h>
 
 #include <generated/element_queue.h>
 #include <core/errors.h>
-#include <generated/variable_list.h>
 #include <core/allocate.h>
-#include "micro.h"
+#include <collections/hashmap.h>
 
 #define DEBUG(format, ...) //printf((format), __VA_ARGS__)
 
-struct VariableList *variables = 0;
+struct HashMap *variables = 0;
 
 static bool equal(const struct String *string, const char *literal) {
     return String_equal_to_literal(string, literal);
@@ -27,32 +28,12 @@ const char *element_text(const struct Element *element) {
 
 void set_variable(const struct String *name, const struct String *text, const struct Any value) {
     DEBUG("Setting variable %s to [%s]\n", name->value, text->value);
-    struct VariableListElement *iterator = VariableList_begin(variables);
-    while (iterator) {
-        struct Variable *variable = VariableListIterator_get(iterator);
-        if (String_equal(variable->name, name)) {
-            variable->value = value;
-            return;
-        }
-    }
-    struct Variable *variable = allocate(sizeof(struct Variable));
-    variable->name = name;
-    variable->value = value;
-    VariableList_append(variables, variable);
+    HashMap_put(variables, String(name), value);
 }
 
 struct Any get_variable(const struct String *name) {
     DEBUG("Getting variable %s\n", name->value);
-    struct VariableListElement *iterator = VariableList_begin(variables);
-    while (iterator) {
-        struct Variable *variable = VariableListIterator_get(iterator);
-        if (String_equal(variable->name, name)) {
-            return variable->value;
-        }
-    }
-    struct Any result;
-    memset(&result, 0, sizeof(result));
-    return result;
+    return HashMap_get(variables, String(name));
 }
 
 void read_comma(struct ElementQueue *arguments) {
@@ -179,7 +160,7 @@ static void call(const struct String *function, struct ElementQueue *queue) {
 }
 
 void micro_run(struct ParsedModule *module) {
-    variables = VariableList_create();
+    variables = HashMap_create();
     struct ElementQueue *queue = ElementQueue_create(module->elements);
     while (true) {
         const struct Element *element = ElementQueue_next(queue);
@@ -197,7 +178,7 @@ void micro_run(struct ParsedModule *module) {
         }
     }
     ElementQueue_delete(queue);
-    VariableList_delete(variables);
+    HashMap_delete(variables);
 }
 
 int main() {

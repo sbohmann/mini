@@ -83,18 +83,9 @@ def generate_integer_list():
     generator.run()
 
 
-def generate_variable_list():
-    generator = Generator('Variable', 'list')
-    generator.struct = True
-    generator.mutable = True
-    generator.local_include = 'minic/any.h'
-    generator.run()
-
-
 generate_token_list()
 generate_token_queue()
 generate_element_list()
 generate_element_queue()
 generate_string_list()
 generate_integer_list()
-generate_variable_list()

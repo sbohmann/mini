@@ -23,14 +23,9 @@ struct Any {
     };
 };
 
-struct Variable {
-    const struct String *name;
-    struct Any value;
-};
-
 struct Any None();
 
-struct Any String(const char *value);
+struct Any String(const struct String *value);
 
 struct Any Integer(int64_t value);
 
