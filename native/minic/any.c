@@ -52,11 +52,7 @@ size_t int64_hash(int64_t value) {
 }
 
 size_t uint64_hash(uint64_t value) {
-    if (sizeof(size_t) == 8) {
-        return (size_t) (value | (value >> 32));
-    } else {
-        return (size_t) value;
-    }
+    return (size_t) (value | (value >> 32));
 }
 
 size_t string_hash(const char *data, size_t length) {

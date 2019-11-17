@@ -7,7 +7,7 @@
 
 #include "core/complex.h"
 
-static const uint8_t MaximumLevel = (sizeof(size_t) == 8 ? 12 : 6);
+static const uint8_t MaximumLevel = 6;
 
 struct ValueList {
     Key key;
