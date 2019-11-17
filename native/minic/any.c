@@ -47,16 +47,16 @@ void Any_release(struct Any instance) {
     }
 }
 
-size_t int64_hash(int64_t value) {
+uint32_t int64_hash(int64_t value) {
     return uint64_hash(value);
 }
 
-size_t uint64_hash(uint64_t value) {
-    return (size_t) (value | (value >> 32));
+uint32_t uint64_hash(uint64_t value) {
+    return (size_t) (value | (value >> 32u));
 }
 
-size_t string_hash(const char *data, size_t length) {
-    size_t result = uint64_hash(0x898cc428c6d364b8);
+uint32_t string_hash(const char *data, size_t length) {
+    uint32_t result = uint64_hash(0x898cc428c6d364b8);
     for (size_t index = 0; index < length; ++index) {
         result *= reasonable_prime;
         result += data[index];
@@ -64,7 +64,7 @@ size_t string_hash(const char *data, size_t length) {
     return result;
 }
 
-size_t Any_hash(struct Any value) {
+uint32_t Any_hash(struct Any value) {
     switch (value.type) {
         case NoneType:
             return 0;

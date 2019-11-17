@@ -38,12 +38,12 @@ void Any_retain(struct Any instance);
 
 void Any_release(struct Any instance);
 
-size_t int64_hash(int64_t value);
+uint32_t int64_hash(int64_t value);
 
-size_t uint64_hash(uint64_t value);
+uint32_t uint64_hash(uint64_t value);
 
-size_t string_hash(const char *data, size_t length);
+uint32_t string_hash(const char *data, size_t length);
 
-size_t Any_hash(struct Any value);
+uint32_t Any_hash(struct Any value);
 
 bool Any_equal(struct Any lhs, struct Any rhs);

@@ -48,11 +48,8 @@ void print(struct Any value) {
 }
 
 size_t determine_high_start() {
-    if (sizeof(size_t) == 8) {
-        return (size_t) 18446744073707551614u;
-    } else {
-        return (size_t) 4292967294u;
-    }
+    return (size_t) 18446744073707551614u;
+//        return (size_t) 4292967294u;
 }
 
 #define PRN(message) if (key % 1000 == 0) { printf(#message ": %zu\n", key); }

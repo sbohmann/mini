@@ -2,11 +2,12 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 struct String {
     size_t length;
     const char * value;
-    size_t hash;
+    uint32_t hash;
 };
 
 const struct String *String_from_literal(const char *literal);
