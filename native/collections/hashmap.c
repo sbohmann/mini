@@ -61,7 +61,7 @@ void HashMap_delete(struct HashMap *instance) {
     free(instance);
 }
 
-static size_t level_index(uint32_t hash, uint8_t level) {
+static uint32_t level_index(uint32_t hash, uint8_t level) {
     if (level == MaximumLevel) {
         printf("Maximum Level!!!\n");
     }
