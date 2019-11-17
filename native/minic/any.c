@@ -52,7 +52,7 @@ uint32_t int64_hash(int64_t value) {
 }
 
 uint32_t uint64_hash(uint64_t value) {
-    return (size_t) (value | (value >> 32u));
+    return (size_t) (value ^ (value >> 32u));
 }
 
 uint32_t string_hash(const char *data, size_t length) {

@@ -106,6 +106,7 @@ static struct Node *Node_put(struct Node *node, uint8_t level, Key key, uint32_t
         if (replace_value(existing_values, key, value)) {
             return node;
         } else if (level == MaximumLevel || node->hash == hash) {
+//            printf("Collision!!!");
             node->values = insert_value(existing_values, key, &value);
             ++(*size);
             return node;
