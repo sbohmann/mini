@@ -8,6 +8,19 @@
 
 #include "generated/element_list.h"
 
+const char *bracket_type_name(enum BracketType type) {
+    switch (type) {
+        case Paren:
+            return "Paren";
+        case Square:
+            return "Square";
+        case Curly:
+            return "Curly";
+        default:
+            return "<unknown>";
+    }
+}
+
 static bool equal(const struct String *string, const char *literal) {
     return String_equal_to_literal(string, literal);
 }

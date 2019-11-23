@@ -3,28 +3,15 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <generated/element_queue.h>
 #include <core/errors.h>
-#include <core/allocate.h>
 #include <collections/hashmap.h>
+#include <generated/element_queue.h>
+
+#include "expressions.h"
 
 #define DEBUG(format, ...) //printf((format), __VA_ARGS__)
 
 struct HashMap *variables = 0;
-
-static bool equal(const struct String *string, const char *literal) {
-    return String_equal_to_literal(string, literal);
-}
-
-const char *element_text(const struct Element *element) {
-    if (element->type == TokenElement) {
-        return element->token->text->value;
-    } else if (element->type == BracketElement) {
-        return element->bracket.opening_bracket->text->value;
-    } else {
-        return "<unknown element>";
-    }
-}
 
 void set_variable(const struct String *name, const struct String *text, const struct Any value) {
     DEBUG("Setting variable %s to [%s]\n", name->value, text->value);
@@ -34,37 +21,6 @@ void set_variable(const struct String *name, const struct String *text, const st
 struct Any get_variable(const struct String *name) {
     DEBUG("Getting variable %s\n", name->value);
     return HashMap_get(variables, String(name));
-}
-
-void read_comma(struct ElementQueue *elements) {
-    const struct Element *comma = ElementQueue_next(elements);
-    if (!comma) {
-        fail("Unexpected end of input");
-    }
-    if (comma->type != TokenElement || comma->token->type != Operator || !equal(comma->token->text, ",")) {
-        fail_at_position(comma->position, "Expected comma, found [%s]", element_text(comma));
-    }
-}
-
-void read_operator(struct ElementQueue *elements, const char *text) {
-    const struct Element *comma = ElementQueue_next(elements);
-    if (!comma) {
-        fail("Unexpected end of input");
-    }
-    if (comma->type != TokenElement || comma->token->type != Operator || !equal(comma->token->text, text)) {
-        fail_at_position(comma->position, "Expected %s, found [%s]", text, element_text(comma));
-    }
-}
-
-const struct Token *read_token(struct ElementQueue *elements) {
-    const struct Element *next = ElementQueue_next(elements);
-    if (!next) {
-        fail("Unexpected end of input");
-    }
-    if (next->type != TokenElement) {
-        fail_at_position(next->position, "Expected expression, found [%s]", element_text(next));
-    }
-    return next->token;
 }
 
 void let(struct ElementQueue *queue) {
@@ -155,34 +111,29 @@ static void print(struct ElementQueue *arguments) {
 }
 
 static void call(const struct String *function, struct ElementQueue *queue) {
-    const struct Element *next = ElementQueue_next(queue);
-    if (!next) {
-        fail("Unexpected end of input");
-    }
-    if (next->type != BracketElement) {
-        fail_at_position(next->position, "Expected bracket expression, found [%s]", element_text(next));
-    }
-    struct ElementQueue *arguments = ElementQueue_create(&next->bracket.elements);
+    struct ElementQueue *arguments = read_paren_block(queue);
     if (equal(function, "print")) {
         print(arguments);
     }
+    ElementQueue_delete(arguments);
+}
+
+static void fn(struct ElementQueue *queue) {
+    const struct String *name = read_symbol(queue);
+//    read_
 }
 
 void micro_run(struct ParsedModule *module) {
     variables = HashMap_create();
     struct ElementQueue *queue = ElementQueue_create(module->elements);
-    while (true) {
-        const struct Element *element = ElementQueue_next(queue);
-        if (!element) {
-            break;
-        }
-        if (element->type != TokenElement || element->token->type != Symbol) {
-            fail_at_position(element->position, "Expected symbol, found [%s]", element_text(element));
-        }
-        const struct String *symbol = element->token->text;
+    while (ElementQueue_peek(queue)) {
+        const struct String *symbol = read_symbol(queue);
         if (equal(symbol, "let")) {
             let(queue);
-        } else {
+        } else if (equal(symbol, "fn")) {
+            fn(queue);
+        }
+        else {
             call(symbol, queue);
         }
     }

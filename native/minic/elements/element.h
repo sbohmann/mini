@@ -13,6 +13,8 @@ enum BracketType {
     Curly
 };
 
+const char *bracket_type_name(enum BracketType type);
+
 struct Elements {
     size_t size;
     const struct Element *data;
