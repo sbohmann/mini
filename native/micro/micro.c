@@ -7,7 +7,7 @@
 #include <collections/hashmap.h>
 #include <generated/element_queue.h>
 
-#include "expressions.h"
+#include "minic/expressions/expressions.h"
 
 #define DEBUG(format, ...) //printf((format), __VA_ARGS__)
 
