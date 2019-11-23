@@ -69,6 +69,13 @@ def generate_element_queue():
     generator.run()
 
 
+def generate_elements_list():
+    generator = Generator('Elements', 'list')
+    generator.struct = True
+    generator.local_include = 'minic/elements/element.h'
+    generator.run()
+
+
 def generate_string_list():
     generator = Generator('String', 'list')
     generator.struct = True
@@ -87,5 +94,6 @@ generate_token_list()
 generate_token_queue()
 generate_element_list()
 generate_element_queue()
+generate_elements_list()
 generate_string_list()
 generate_integer_list()

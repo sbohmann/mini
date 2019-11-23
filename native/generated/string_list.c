@@ -31,7 +31,7 @@ void StringList_delete(struct StringList * instance) {
     free(instance);
 }
 
-size_t StringList_size(struct StringList * self) {
+size_t StringList_size(const struct StringList * self) {
     return self->size;
 }
 
@@ -65,7 +65,7 @@ void StringList_prepend(struct StringList * self, const struct String *value) {
     }
 }
 
-struct String * StringList_to_array(struct StringList * self) {
+struct String * StringList_to_array(const struct StringList * self) {
     const size_t size = StringList_size(self);
     const size_t element_size = sizeof(struct String);
     const size_t result_size = element_size * size;
@@ -87,11 +87,11 @@ struct String * StringList_to_array(struct StringList * self) {
     return result;
 }
 
-struct StringListElement * StringList_begin(struct StringList * self) {
+struct StringListElement * StringList_begin(const struct StringList * self) {
     return self->first;
 }
 
-struct StringListElement * StringList_end(struct StringList * self) {
+struct StringListElement * StringList_end(const struct StringList * self) {
     return self->last;
 }
 

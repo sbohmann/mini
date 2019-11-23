@@ -11,17 +11,17 @@ struct IntList * IntList_create();
 
 void IntList_delete(struct IntList * instance);
 
-size_t IntList_size(struct IntList * self);
+size_t IntList_size(const struct IntList * self);
 
 void IntList_append(struct IntList * self, int64_t value);
 
 void IntList_prepend(struct IntList * self, int64_t value);
 
-int64_t * IntList_to_array(struct IntList * self);
+int64_t * IntList_to_array(const struct IntList * self);
 
-struct IntListElement * IntList_begin(struct IntList * self);
+struct IntListElement * IntList_begin(const struct IntList * self);
 
-struct IntListElement * IntList_end(struct IntList * self);
+struct IntListElement * IntList_end(const struct IntList * self);
 
 struct IntListElement * IntListIterator_next(struct IntListElement * iterator);
 

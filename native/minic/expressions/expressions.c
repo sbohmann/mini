@@ -62,7 +62,7 @@ const struct String *read_symbol(struct ElementQueue *elements) {
     return element->token->text;
 }
 
-static struct Elements *read_block(struct ElementQueue *elements, enum BracketType type) {
+static const struct Elements *read_block(struct ElementQueue *elements, enum BracketType type) {
     const struct Element *next = ElementQueue_next(elements);
     if (!next) {
         fail("Unexpected end of input");
@@ -75,17 +75,17 @@ static struct Elements *read_block(struct ElementQueue *elements, enum BracketTy
         fail_at_position(next->position, "Unexpected bracket type [%s], expected, [%s]",
                 bracket_type_name(next->bracket.type), bracket_type_name(type));
     }
-    return &next->bracket.elements;
+    return next->bracket.elements;
 }
 
-struct Elements *read_paren_block(struct ElementQueue *elements) {
+const struct Elements *read_paren_block(struct ElementQueue *elements) {
     return read_block(elements, Paren);
 }
 
-struct Elements *read_square_block(struct ElementQueue *elements) {
+const struct Elements *read_square_block(struct ElementQueue *elements) {
     return read_block(elements, Square);
 }
 
-struct Elements *read_curly_block(struct ElementQueue *elements) {
+const struct Elements *read_curly_block(struct ElementQueue *elements) {
     return read_block(elements, Curly);
 }

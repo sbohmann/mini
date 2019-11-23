@@ -31,7 +31,7 @@ void IntList_delete(struct IntList * instance) {
     free(instance);
 }
 
-size_t IntList_size(struct IntList * self) {
+size_t IntList_size(const struct IntList * self) {
     return self->size;
 }
 
@@ -65,7 +65,7 @@ void IntList_prepend(struct IntList * self, int64_t value) {
     }
 }
 
-int64_t * IntList_to_array(struct IntList * self) {
+int64_t * IntList_to_array(const struct IntList * self) {
     const size_t size = IntList_size(self);
     const size_t element_size = sizeof(int64_t);
     const size_t result_size = element_size * size;
@@ -87,11 +87,11 @@ int64_t * IntList_to_array(struct IntList * self) {
     return result;
 }
 
-struct IntListElement * IntList_begin(struct IntList * self) {
+struct IntListElement * IntList_begin(const struct IntList * self) {
     return self->first;
 }
 
-struct IntListElement * IntList_end(struct IntList * self) {
+struct IntListElement * IntList_end(const struct IntList * self) {
     return self->last;
 }
 

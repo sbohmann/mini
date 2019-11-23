@@ -31,7 +31,7 @@ void ElementList_delete(struct ElementList * instance) {
     free(instance);
 }
 
-size_t ElementList_size(struct ElementList * self) {
+size_t ElementList_size(const struct ElementList * self) {
     return self->size;
 }
 
@@ -65,7 +65,7 @@ void ElementList_prepend(struct ElementList * self, const struct Element *value)
     }
 }
 
-struct Element * ElementList_to_array(struct ElementList * self) {
+struct Element * ElementList_to_array(const struct ElementList * self) {
     const size_t size = ElementList_size(self);
     const size_t element_size = sizeof(struct Element);
     const size_t result_size = element_size * size;
@@ -87,11 +87,11 @@ struct Element * ElementList_to_array(struct ElementList * self) {
     return result;
 }
 
-struct ElementListElement * ElementList_begin(struct ElementList * self) {
+struct ElementListElement * ElementList_begin(const struct ElementList * self) {
     return self->first;
 }
 
-struct ElementListElement * ElementList_end(struct ElementList * self) {
+struct ElementListElement * ElementList_end(const struct ElementList * self) {
     return self->last;
 }
 

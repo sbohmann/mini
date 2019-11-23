@@ -31,7 +31,7 @@ void {{name}}List_delete(struct {{name}}List * instance) {
     free(instance);
 }
 
-size_t {{name}}List_size(struct {{name}}List * self) {
+size_t {{name}}List_size(const struct {{name}}List * self) {
     return self->size;
 }
 
@@ -65,7 +65,7 @@ void {{name}}List_prepend(struct {{name}}List * self, {{prefix}}value) {
     }
 }
 
-{{type}} * {{name}}List_to_array(struct {{name}}List * self) {
+{{type}} * {{name}}List_to_array(const struct {{name}}List * self) {
     const size_t size = {{name}}List_size(self);
     const size_t element_size = sizeof({{type}});
     const size_t result_size = element_size * size;
@@ -87,11 +87,11 @@ void {{name}}List_prepend(struct {{name}}List * self, {{prefix}}value) {
     return result;
 }
 
-struct {{name}}ListElement * {{name}}List_begin(struct {{name}}List * self) {
+struct {{name}}ListElement * {{name}}List_begin(const struct {{name}}List * self) {
     return self->first;
 }
 
-struct {{name}}ListElement * {{name}}List_end(struct {{name}}List * self) {
+struct {{name}}ListElement * {{name}}List_end(const struct {{name}}List * self) {
     return self->last;
 }
 

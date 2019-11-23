@@ -20,9 +20,13 @@ struct Elements {
     const struct Element *data;
 };
 
+struct ElementList;
+
+struct Elements *Elements_from_list(struct ElementList *elements);
+
 struct BracketElement {
     enum BracketType type;
-    struct Elements elements;
+    const struct Elements *elements;
     const struct Token *opening_bracket;
     const struct Token *closing_bracket;
 };

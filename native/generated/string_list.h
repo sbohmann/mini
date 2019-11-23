@@ -12,17 +12,17 @@ struct StringList * StringList_create();
 
 void StringList_delete(struct StringList * instance);
 
-size_t StringList_size(struct StringList * self);
+size_t StringList_size(const struct StringList * self);
 
 void StringList_append(struct StringList * self, const struct String *value);
 
 void StringList_prepend(struct StringList * self, const struct String *value);
 
-struct String * StringList_to_array(struct StringList * self);
+struct String * StringList_to_array(const struct StringList * self);
 
-struct StringListElement * StringList_begin(struct StringList * self);
+struct StringListElement * StringList_begin(const struct StringList * self);
 
-struct StringListElement * StringList_end(struct StringList * self);
+struct StringListElement * StringList_end(const struct StringList * self);
 
 struct StringListElement * StringListIterator_next(struct StringListElement * iterator);
 

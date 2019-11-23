@@ -18,8 +18,8 @@ const uint32_t FunctionType = 0xd6dce275;
 struct Function {
     struct ComplexValue base;
     uint32_t type;
-    struct StringList *parameter_names;
-    struct Elements *body;
+    const struct StringList *parameter_names;
+    const struct Elements *body;
 };
 
 void let(struct ElementQueue *queue) {
@@ -56,7 +56,7 @@ static void fn(struct ElementQueue *queue) {
         }
         first = false;
     }
-    struct Elements *body = read_curly_block(queue);
+    const struct Elements *body = read_curly_block(queue);
     struct Function *function = allocate(sizeof(struct Function));
     function->type= FunctionType;
     function->parameter_names = parameter_names;

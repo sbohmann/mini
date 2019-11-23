@@ -12,17 +12,17 @@ struct ElementList * ElementList_create();
 
 void ElementList_delete(struct ElementList * instance);
 
-size_t ElementList_size(struct ElementList * self);
+size_t ElementList_size(const struct ElementList * self);
 
 void ElementList_append(struct ElementList * self, const struct Element *value);
 
 void ElementList_prepend(struct ElementList * self, const struct Element *value);
 
-struct Element * ElementList_to_array(struct ElementList * self);
+struct Element * ElementList_to_array(const struct ElementList * self);
 
-struct ElementListElement * ElementList_begin(struct ElementList * self);
+struct ElementListElement * ElementList_begin(const struct ElementList * self);
 
-struct ElementListElement * ElementList_end(struct ElementList * self);
+struct ElementListElement * ElementList_end(const struct ElementList * self);
 
 struct ElementListElement * ElementListIterator_next(struct ElementListElement * iterator);
 

@@ -21,6 +21,13 @@ const char *bracket_type_name(enum BracketType type) {
     }
 }
 
+struct Elements *Elements_from_list(struct ElementList *elements) {
+    struct Elements *result = allocate(sizeof(struct Elements));
+    result->size = ElementList_size(elements);
+    result->data = ElementList_to_array(elements);
+    return result;
+}
+
 static bool equal(const struct String *string, const char *literal) {
     return String_equal_to_literal(string, literal);
 }
@@ -46,23 +53,6 @@ struct Element *token_element(const struct Token *token) {
     return result;
 }
 
-static void delete_element_list(struct ElementList *elements) {
-//    struct ElementListElement *iterator = ElementList_begin(elements);
-//    while (iterator) {
-//        free(ElementListIterator_get(iterator));
-//    }
-    ElementList_delete(elements);
-}
-
-static struct Elements flatten(struct ElementList *elements) {
-    struct Elements result;
-    memset(&result, 0, sizeof(struct Elements));
-    result.size = ElementList_size(elements);
-    result.data = ElementList_to_array(elements);
-    delete_element_list(elements);
-    return result;
-}
-
 static struct ElementList *collect_elements(struct TokenQueue *tokens);
 
 void add_bracket(struct ElementList *elements, struct TokenQueue *tokens, const struct Token *opening_bracket) {
@@ -82,7 +72,8 @@ void add_bracket(struct ElementList *elements, struct TokenQueue *tokens, const 
     result->position = opening_bracket->position;
     result->type = BracketElement;
     result->bracket.type = type;
-    result->bracket.elements = flatten(bracket_elements);
+    result->bracket.elements = Elements_from_list(bracket_elements);
+    ElementList_delete(bracket_elements);
     result->bracket.opening_bracket = opening_bracket;
     result->bracket.closing_bracket = closing_bracket;
     ElementList_append(elements, result);
@@ -122,7 +113,7 @@ struct Elements *read_elements(const struct Tokens *tokens) {
                          "Unexpected token [%s] - too many closing brackets?",
                          next_element->text->value);
     }
-    struct Elements *result = allocate(sizeof(struct Elements));
-    *result = flatten(elements);
+    struct Elements *result = Elements_from_list(elements);
+    ElementList_delete(elements);
     return result;
 }
