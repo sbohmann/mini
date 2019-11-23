@@ -50,10 +50,7 @@ static struct Any create_fraction_value(struct NumberTokenReader *self, const st
 }
 
 static struct Any create_decimal_value(struct NumberTokenReader *self, const struct String *text) {
-    struct Any result;
-    result.type = IntegerType;
-    result.integer = parse_int64(text->value, text->length, 10);
-    return result;
+    return Integer(parse_int64(text->value, text->length, 10));
 }
 
 static struct Any create_value(struct TokenReader *base, const struct String *text) {

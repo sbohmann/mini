@@ -9,6 +9,33 @@
 #include "variables.h"
 #include "debug.h"
 
+void print_value(struct Any value) {
+    switch (value.type) {
+        case NoneType:
+            printf("None");
+            break;
+        case IntegerType:
+            printf("%d", (int) value.integer);
+            break;
+        case StringType:
+            printf("%s", value.string->value);
+            break;
+        case ComplexType:
+            // TODO
+            printf("<complex>");
+            break;
+        case FlatType:
+            printf("[");
+            for (size_t index = 0; index < 8; ++index) {
+                printf("%s%02x", (index > 0 ? " " : ""), (uint8_t) value.flat_value[index]);
+            }
+            printf("]");
+            break;
+        default:
+            printf("<unknown>");
+    }
+}
+
 void print(struct ElementQueue *arguments) {
     bool first = true;
     while (true) {
@@ -43,30 +70,7 @@ void print(struct ElementQueue *arguments) {
                 printf("<call to %s>", argument->token->text->value);
             } else {
                 struct Any value = get_variable(argument->token->text);
-                switch (value.type) {
-                    case NoneType:
-                        printf("None");
-                        break;
-                    case IntegerType:
-                        printf("%d", (int) value.integer);
-                        break;
-                    case StringType:
-                        printf("%s", value.string->value);
-                        break;
-                    case ComplexType:
-                        // TODO
-                        printf("<complex>");
-                        break;
-                    case FlatType:
-                        printf("[");
-                        for (size_t index = 0; index < 8; ++index) {
-                            printf("%s%02x", (index > 0 ? " " : ""), (uint8_t) value.flat_value[index]);
-                        }
-                        printf("]");
-                        break;
-                    default:
-                        printf("<unknown>");
-                }
+                print_value(value);
             }
         }
         first = false;

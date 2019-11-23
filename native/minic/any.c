@@ -23,9 +23,17 @@ struct Any String(const struct String *value) {
 }
 
 struct Any Integer(int64_t value) {
-    struct Any result;
+    struct Any result = None();
     result.type = IntegerType;
     result.integer = value;
+    return result;
+}
+
+struct Any Complex(struct ComplexValue *instance) {
+    struct Any result = None();
+    result.type = ComplexType;
+    result.complex_value = instance;
+    retain(result.complex_value);
     return result;
 }
 

@@ -29,6 +29,8 @@ struct Any String(const struct String *value);
 
 struct Any Integer(int64_t value);
 
+struct Any Complex(struct ComplexValue *instance);
+
 void Any_retain(struct Any instance);
 
 void Any_release(struct Any instance);

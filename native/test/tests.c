@@ -57,9 +57,7 @@ static void hash_map() {
         PRN(build)
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%" PRIu64, key);
-        struct Any value;
-        value.type = StringType;
-        value.string = String_from_buffer(buffer, strlen(buffer));
+        struct Any value = String(String_from_buffer(buffer, strlen(buffer)));
         HashMap_put(map, Integer(key), value);
     }
     
@@ -168,9 +166,7 @@ static void hash_map() {
         PRN(build high)
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%" PRIu64, key);
-        struct Any value;
-        value.type = StringType;
-        value.string = String_from_buffer(buffer, strlen(buffer));
+        struct Any value = String(String_from_buffer(buffer, strlen(buffer)));
         HashMap_put(map, Integer(key), value);
     }
     
