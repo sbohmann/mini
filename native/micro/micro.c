@@ -58,6 +58,7 @@ static void fn(struct ElementQueue *queue) {
     }
     const struct Elements *body = read_curly_block(queue);
     struct Function *function = allocate(sizeof(struct Function));
+    Complex_init(&function->base);
     function->type= FunctionType;
     function->parameter_names = parameter_names;
     function->body = body;

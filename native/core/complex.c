@@ -1,5 +1,6 @@
 #include "complex.h"
 #include "errors.h"
+#include "allocate.h"
 
 #include <stdatomic.h>
 #include <stdlib.h>
@@ -9,6 +10,10 @@ struct ReferenceCount {
     atomic_size_t strong_count;
     atomic_size_t weak_count;
 };
+
+void Complex_init(struct ComplexValue *instance) {
+    instance->reference_count = allocate(sizeof(struct ReferenceCount));
+}
 
 void retain(struct ComplexValue *instance) {
     if (!instance) {

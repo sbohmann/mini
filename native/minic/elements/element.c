@@ -37,9 +37,9 @@ static enum BracketType bracket_type(const struct Token *token) {
     if (equal(text, "(") || equal(text, ")")) {
         return Paren;
     } else if (equal(text, "[") || equal(text, "]")) {
-        return Paren;
+        return Square;
     } else if (equal(text, "{") || equal(text, "}")) {
-        return Paren;
+        return Curly;
     } else {
         fail_at_position(token->position, "Not a bracket [%s]", text->value);
     }
