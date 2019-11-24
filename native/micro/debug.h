@@ -1,4 +1,4 @@
-#define DEBUG_ENABLED true
+#define DEBUG_ENABLED false
 
 #if DEBUG_ENABLED
 #include <stdio.h>
