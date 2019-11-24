@@ -24,34 +24,6 @@ struct Function {
     const struct Elements *body;
 };
 
-void let(struct Variables *context, struct ElementQueue *queue) {
-    const struct Element *next = ElementQueue_next(queue);
-    if (!next) {
-        fail("Unexpected end of input");
-    }
-    if (next->type != TokenElement || next->token->type != Symbol) {
-        fail_at_position(next->position, "Expected a symbol, found [%s]", element_text(next));
-    }
-    const struct String *variable_name = next->token->text;
-    read_operator(queue, "=");
-    const struct Token *rhs = read_token(queue);
-    struct Any value;
-    if (rhs->type == Symbol) {
-        struct HashMapResult result = get_variable(context, rhs->text);
-        if (result.found) {
-            // TODO allow calls by using peek
-            value = result.value;
-        } else {
-            fail_at_position(rhs->position, "Undefined variable: [%s]", rhs->text);
-        }
-    } else if (rhs->type == NumberLiteral || rhs->type == StringLiteral) {
-        value = rhs->value;
-    } else {
-        fail_at_position(rhs->position, "Unexpected expression: [%s]", rhs->text);
-    }
-    create_variable(context, variable_name, value);
-}
-
 static void fn(struct Variables *context, struct ElementQueue *queue) {
     const struct String *name = read_symbol(queue);
     struct ElementQueue *parameters = ElementQueue_create(read_paren_block(queue));
@@ -97,16 +69,17 @@ struct FunctionCallResult {
     };
 };
 
-static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct ElementQueue *queue);
+static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct Position position, struct ElementQueue *arguments);
 
 struct Any evaluate_expression(struct Variables *context, struct ElementQueue *queue) {
     const struct Token *first_token = read_token(queue);
     struct Any result;
     if (first_token->type == Symbol) {
         if (ElementQueue_peek(queue)) {
+            const struct Element *opening_bracket = ElementQueue_peek(queue);
             const struct Elements *arguments = read_paren_block(queue);
             struct ElementQueue *arguments_queue = ElementQueue_create(arguments);
-            struct FunctionCallResult call_result = call(context, first_token->text, arguments_queue);
+            struct FunctionCallResult call_result = call(context, first_token->text, opening_bracket->position, arguments_queue);
             ElementQueue_delete(arguments_queue);
             if (call_result.type == Success) {
                 result = call_result.value;
@@ -133,8 +106,16 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
     return result;
 }
 
-static struct FunctionCallResult
-call_function(struct Variables *context, struct Function *function, struct ElementQueue *arguments) {
+void print(struct Variables *context, struct SplitElements *arguments) {
+    for (size_t index = 0; index < arguments->size; ++index) {
+        struct ElementQueue *argument_queue = ElementQueue_create(&arguments->data[index]);
+        struct Any value = evaluate_expression(context, argument_queue);
+        print_value(value);
+    }
+    fflush(stdout);
+}
+
+static struct FunctionCallResult call_function(struct Variables *context, struct Function *function, struct ElementQueue *arguments) {
     struct SplitElements *split_elements = SplitElements_by_comma(arguments);
     if (split_elements->size != StringList_size(function->parameter_names)) {
         struct FunctionCallResult result;
@@ -176,12 +157,10 @@ call_function(struct Variables *context, struct Function *function, struct Eleme
     return result;
 }
 
-static struct FunctionCallResult
-call(struct Variables *context, const struct String *name, struct ElementQueue *queue) {
-    const struct Element *opening_bracket = ElementQueue_peek(queue);
-    struct ElementQueue *arguments = ElementQueue_create(read_paren_block(queue));
+static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct Position position, struct ElementQueue *arguments) {
     if (equal(name, "print")) {
-        print(context, arguments);
+        struct SplitElements *split_arguments = SplitElements_by_comma(arguments);
+        print(context, split_arguments);
         struct FunctionCallResult result;
         result.type = Success;
         result.value = None();
@@ -189,7 +168,7 @@ call(struct Variables *context, const struct String *name, struct ElementQueue *
     } else {
         struct HashMapResult result = get_variable(context, name);
         if (!result.found) {
-            fail_at_position(opening_bracket->position, "Call to undefined value [%s]", name->value);
+            fail_at_position(position, "Call to undefined value [%s]", name->value);
         }
         if (result.value.type == ComplexType) {
             struct Function *function = (struct Function *) result.value.complex_value;
@@ -231,6 +210,7 @@ void print_statement(struct Elements *statement) {
         }
     }
     puts("]");
+    fflush(stdout);
 }
 
 struct StatementResult {
@@ -242,13 +222,17 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
     struct ElementQueue *queue = ElementQueue_create(statement);
     const struct String *symbol = read_symbol(queue);
     if (equal(symbol, "let")) {
-        let(context, queue);
+        const struct String *name = read_symbol(queue);
+        read_operator(queue, "=");
+        create_variable(context, name, evaluate_expression(context, queue));
     } else if (equal(symbol, "fn")) {
         fn(context, queue);
     } else if (equal(symbol, "return")) {
         return (struct StatementResult) { true, evaluate_expression(context, queue) };
     } else {
-        call(context, symbol, queue);
+        const struct Element *opening_bracket = ElementQueue_peek(queue);
+        struct ElementQueue *arguments = ElementQueue_create(read_paren_block(queue));
+        call(context, symbol, opening_bracket->position, arguments);
     }
     return (struct StatementResult) { false, None() };
 }

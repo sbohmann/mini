@@ -4,7 +4,10 @@ print(1, ", ", 2, ", ", 3, ", and a string\n")
 print("variables would be neat. Oh, there is one: ", x, "\n")
 
 fn f(x) {
-    print("Hello from function f!!! :D - x: ", x, ", y: ", y)
+    print("Hello from function f!!! :D - x: ", x, ", y: ", y, "\n")
+    return 8
 }
 
-f(7)
+let z = f(7)
+print("result: ", z, "\n")
+print("result: ", f(9), "\n")

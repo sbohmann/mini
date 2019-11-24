@@ -6,4 +6,4 @@ void print_value(struct Any value);
 
 struct Variables;
 
-void print(struct Variables *context, struct ElementQueue *arguments);
+struct SplitElements;
