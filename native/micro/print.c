@@ -36,7 +36,7 @@ void print_value(struct Any value) {
     }
 }
 
-void print(struct ElementQueue *arguments) {
+void print(struct Variables *context, struct ElementQueue *arguments) {
     bool first = true;
     while (true) {
         if (!ElementQueue_peek(arguments)) {
@@ -69,7 +69,7 @@ void print(struct ElementQueue *arguments) {
                 // TODO print result of call
                 printf("<call to %s>", argument->token->text->value);
             } else {
-                struct Any value = get_variable(argument->token->text);
+                struct Any value = get_variable(context, argument->token->text);
                 print_value(value);
             }
         }

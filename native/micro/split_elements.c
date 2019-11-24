@@ -26,8 +26,7 @@ bool is_comma(const struct Element *element) {
            equal(element->token->text, ",");
 }
 
-struct SplitElements *SplitElements_by_comma(struct Elements *elements) {
-    struct ElementQueue *queue = ElementQueue_create(elements);
+struct SplitElements *SplitElements_by_comma(struct ElementQueue *queue) {
     struct ElementsList *raw_result = ElementsList_create();
     struct ElementList *group = ElementList_create();
     while (true) {
@@ -42,6 +41,8 @@ struct SplitElements *SplitElements_by_comma(struct Elements *elements) {
             ElementsList_append(raw_result, Elements_from_list(group));
             ElementList_delete(group);
             group = ElementList_create();
+        } else {
+            ElementList_append(group, element);
         }
     }
     if (ElementList_size(group) > 0) {

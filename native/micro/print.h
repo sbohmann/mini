@@ -4,4 +4,6 @@
 
 void print_value(struct Any value);
 
-void print(struct ElementQueue *arguments);
+struct Variables;
+
+void print(struct Variables *context, struct ElementQueue *arguments);

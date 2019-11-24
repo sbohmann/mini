@@ -4,31 +4,63 @@
 
 #include <minic/any.h>
 #include <core/errors.h>
+#include <core/allocate.h>
+#include <stdlib.h>
+#include <core/complex.h>
 #include "debug.h"
 
-struct HashMap *variables = 0;
+struct Variables {
+    struct ComplexValue base;
+    struct HashMap *scope;
+    struct Variables *context;
+};
 
-void set_variable(const struct String *name, const struct String *text, struct Any value) {
+struct Variables *Variables_create(struct Variables *context) {
+    struct Variables *result = allocate(sizeof(struct Variables));
+    Complex_init(&result->base);
+    result->scope = HashMap_create();
+    result->context = context;
+    if (context) {
+        Variables_retain(context);
+    }
+    return result;
+}
+
+void Variables_retain(struct Variables *instance) {
+    retain(&instance->base);
+}
+
+void Variables_release(struct Variables *instance) {
+    struct HashMap *scope = instance->scope;
+    struct Variables *context = instance->context;
+    if (release(&instance->base)) {
+        HashMap_delete(scope);
+        Variables_release(context);
+        free(instance);
+    }
+}
+
+bool set_variable(struct Variables *self, const struct String *name, struct Any value) {
     DEBUG("Setting variable %s to [%s]\n", name->value, text->value);
-    HashMap_put(variables, String(name), value);
+    bool result = HashMap_set(self->scope, String(name), value);
+    if (!result && self->context) {
+        return set_variable(self->context, name, value);
+    }
+    return result;
 }
 
-struct Any get_variable(const struct String *name) {
+void create_variable(struct Variables *self, const struct String *name, struct Any value) {
+    DEBUG("Setting variable %s to [%s]\n", name->value, text->value);
+    // TODO implement and use put if absent and return a bool
+    HashMap_put(self->scope, String(name), value);
+}
+
+struct Any get_variable(struct Variables *self, const struct String *name) {
     DEBUG("Getting variable %s\n", name->value);
-    return HashMap_get(variables, String(name));
-}
-
-void initialize_variables() {
-    if (variables != 0) {
-        fail("variables already initialized");
+    // TODO make None distinguishable from undefined, i.e. not in the map
+    struct Any result = HashMap_get(self->scope, String(name));
+    if (result.type == NoneType && self->context) {
+        return get_variable(self->context, name);
     }
-    variables = HashMap_create();
-}
-
-void release_variables() {
-    if (variables == 0) {
-        fail("variables not initialized");
-    }
-    HashMap_delete(variables);
-    variables = 0;
+    return result;
 }

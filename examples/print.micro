@@ -2,6 +2,8 @@ let x = 5
 print(1, ", ", 2, ", ", 3, ", and a string\n")
 print("variables would be neat. Oh, there is one: ", x, "\n")
 
-fn f() {
-
+fn f(x) {
+    print("Hello from function f!!! :D")
 }
+
+f(7)

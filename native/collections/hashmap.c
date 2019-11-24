@@ -137,7 +137,7 @@ static struct Node *Node_put(struct Node *node, uint8_t level, Key key, Hash has
     }
 }
 
-void HashMap_put(struct HashMap *self, Key key, struct Any value) {
+void HashMap_put(struct HashMap *self, Key key, Value value) {
     if (value.type != NoneType) {
         if (self->root) {
             self->root = Node_put(self->root, 0, key, Any_hash(key), value, &self->size);
@@ -146,6 +146,38 @@ void HashMap_put(struct HashMap *self, Key key, struct Any value) {
             self->size = 1;
         }
     }
+}
+
+bool Node_set(struct Node *node, uint8_t level, Key key, Hash hash, Value value) {
+    if (node->is_value_node) {
+        struct ValueList *values = node->values;
+        while (values) {
+            if (Any_equal(values->key, key)) {
+                values->value = value;
+                return true;
+            }
+            values = values->next;
+        }
+        return false;
+    } else {
+        size_t index = level_index(hash, level);
+        if (node->sub_nodes[index]) {
+            return Node_set(node->sub_nodes[index], level + 1, key, hash, value);
+        } else {
+            return false;
+        }
+    }
+}
+
+bool HashMap_set(struct HashMap *self, Key key, Value value) {
+    if (value.type != NoneType) {
+        if (self->root) {
+            return Node_set(self->root, 0, key, Any_hash(key), value);
+        } else {
+            return false;
+        }
+    }
+    return false;
 }
 
 Value Node_get(struct Node *node, uint8_t level, Key key, Hash hash) {

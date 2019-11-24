@@ -3,8 +3,16 @@
 #include <core/string.h>
 #include <minic/any.h>
 
-void set_variable(const struct String *name, const struct String *text, struct Any value);
+struct Variables;
 
-struct Any get_variable(const struct String *name);
+struct Variables *Variables_create(struct Variables *context);
 
-void initialize_variables();
+void Variables_retain(struct Variables *instance);
+
+void Variables_release(struct Variables *instance);
+
+bool set_variable(struct Variables *, const struct String *name, struct Any value);
+
+void create_variable(struct Variables *self, const struct String *name, struct Any value);
+
+struct Any get_variable(struct Variables *, const struct String *name);

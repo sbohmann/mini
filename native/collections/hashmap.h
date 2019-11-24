@@ -14,6 +14,8 @@ void HashMap_delete(struct HashMap *instance);
 
 void HashMap_put(struct HashMap *self, Key key, Value value);
 
+bool HashMap_set(struct HashMap *self, Key key, Value value);
+
 Value HashMap_get(struct HashMap *self, Key key);
 
 bool HashMap_remove(struct HashMap *self, Key key);
