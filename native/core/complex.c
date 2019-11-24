@@ -37,7 +37,7 @@ bool release(struct ComplexValue *instance) {
     size_t new_weak_count = --instance->reference_count->weak_count;
     if (DEBUG_ENABLED) fprintf(stderr, "released to %zu, %zu\n", instance->reference_count->strong_count, instance->reference_count->weak_count);
     if (new_weak_count == 0) {
-        fprintf(stderr, "both zero\n");
+        if (DEBUG_ENABLED) fprintf(stderr, "both zero\n");
         free(instance->reference_count);
         if (new_strong_count != 0) {
             fail("weak count went to zero but strong count went to %zu\n", new_strong_count);
