@@ -55,11 +55,11 @@ void create_variable(struct Variables *self, const struct String *name, struct A
     HashMap_put(self->scope, String(name), value);
 }
 
-struct Any get_variable(struct Variables *self, const struct String *name) {
+struct HashMapResult get_variable(struct Variables *self, const struct String *name) {
     DEBUG("Getting variable %s\n", name->value);
     // TODO make None distinguishable from undefined, i.e. not in the map
-    struct Any result = HashMap_get(self->scope, String(name));
-    if (result.type == NoneType && self->context) {
+    struct HashMapResult result = HashMap_get(self->scope, String(name));
+    if (!result.found && self->context) {
         return get_variable(self->context, name);
     }
     return result;

@@ -69,8 +69,12 @@ void print(struct Variables *context, struct ElementQueue *arguments) {
                 // TODO print result of call
                 printf("<call to %s>", argument->token->text->value);
             } else {
-                struct Any value = get_variable(context, argument->token->text);
-                print_value(value);
+                struct HashMapResult result = get_variable(context, argument->token->text);
+                if (result.found) {
+                    print_value(result.value);
+                } else {
+                    printf("<undefined>");
+                }
             }
         }
         first = false;

@@ -15,4 +15,4 @@ bool set_variable(struct Variables *, const struct String *name, struct Any valu
 
 void create_variable(struct Variables *self, const struct String *name, struct Any value);
 
-struct Any get_variable(struct Variables *, const struct String *name);
+struct HashMapResult get_variable(struct Variables *, const struct String *name);

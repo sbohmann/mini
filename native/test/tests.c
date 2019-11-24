@@ -41,16 +41,16 @@ static void print(struct Any value) {
 static void hash_map() {
     struct HashMap *map = HashMap_create();
     uint64_t key = 1234567;
-    print(HashMap_get(map, Integer(key)));
+    print(HashMap_get(map, Integer(key)).value);
     HashMap_put(map, Integer(key), String(String_from_literal("Hi! :D")));
-    print(HashMap_get(map, Integer(key)));
-    print(HashMap_get(map, Integer(key + 1)));
+    print(HashMap_get(map, Integer(key)).value);
+    print(HashMap_get(map, Integer(key + 1)).value);
     HashMap_put(map, Integer(key + 1), String(String_from_literal("Ok ^^")));
-    print(HashMap_get(map, Integer(key)));
-    print(HashMap_get(map, Integer(key + 1)));
+    print(HashMap_get(map, Integer(key)).value);
+    print(HashMap_get(map, Integer(key + 1)).value);
     HashMap_remove(map, Integer(key));
-    print(HashMap_get(map, Integer(key)));
-    print(HashMap_get(map, Integer(key + 1)));
+    print(HashMap_get(map, Integer(key)).value);
+    print(HashMap_get(map, Integer(key + 1)).value);
     HashMap_remove(map, Integer(key + 1));
     
     for (key = 0; key < 2000000; key += 3) {
@@ -63,7 +63,7 @@ static void hash_map() {
     
     for (key = 0; key < 2000000; ++key) {
         PRN(check)
-        struct Any value = HashMap_get(map, Integer(key));
+        struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
@@ -88,7 +88,7 @@ static void hash_map() {
     
     for (key = 0; key < 2000000; ++key) {
         PRN(check pruned)
-        struct Any value = HashMap_get(map, Integer(key));
+        struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
@@ -119,7 +119,7 @@ static void hash_map() {
     
     for (key = middle_start; key < middle_end; ++key) {
         PRN(check middle)
-        struct Any value = HashMap_get(map, Integer(key));
+        struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
@@ -144,7 +144,7 @@ static void hash_map() {
     
     for (key = middle_start; key < middle_end; ++key) {
         PRN(check pruned middle)
-        struct Any value = HashMap_get(map, Integer(key));
+        struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
@@ -172,7 +172,7 @@ static void hash_map() {
     
     for (key = high_start; key >= high_start; ++key) {
         PRN(check high)
-        struct Any value = HashMap_get(map, Integer(key));
+        struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);
@@ -197,7 +197,7 @@ static void hash_map() {
     
     for (key = high_start; key >= high_start; ++key) {
         PRN(check pruned high)
-        struct Any value = HashMap_get(map, Integer(key));
+        struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
                 fail("Wrong type: %d", value.type);

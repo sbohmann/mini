@@ -36,7 +36,13 @@ void let(struct Variables *context, struct ElementQueue *queue) {
     const struct Token *rhs = read_token(queue);
     struct Any value;
     if (rhs->type == Symbol) {
-        value = get_variable(context, rhs->text);
+        struct HashMapResult result = get_variable(context, rhs->text);
+        if (result.found) {
+            // TODO allow calls by using peek
+            value = result.value;
+        } else {
+            fail_at_position(rhs->position, "Undefined variable: [%s]", rhs->text);
+        }
     } else if (rhs->type == NumberLiteral || rhs->type == StringLiteral) {
         value = rhs->value;
     } else {
@@ -95,7 +101,6 @@ static struct FunctionCallResult call(struct Variables *context, const struct St
 struct Any evaluate_expression(struct Variables *context, const struct Elements* expression) {
     struct ElementQueue *queue = ElementQueue_create(expression);
     const struct Token *first_token = read_token(queue);
-    struct Any value;
     if (first_token->type == Symbol) {
         if (ElementQueue_peek(queue)) {
             const struct Elements *arguments = read_paren_block(queue);
@@ -108,14 +113,18 @@ struct Any evaluate_expression(struct Variables *context, const struct Elements*
                 fail_at_position(first_token->position, "Call to function %s failed.", first_token->text);
             }
         } else {
-            return get_variable(context, first_token->text);
+            struct HashMapResult result = get_variable(context, first_token->text);
+            if (result.found) {
+                return result.value;
+            } else {
+                fail_at_position(first_token->position, "Undefined variable [%s]", first_token->text);
+            }
         }
     } else if (first_token->type == NumberLiteral || first_token->type == StringLiteral) {
-        value = first_token->value;
+        return first_token->value;
     } else {
         fail_at_position(first_token->position, "Unexpected expression: [%s]", first_token->text);
     }
-    return value;
 }
 
 static struct FunctionCallResult call_function(struct Variables *context, struct Function *function, struct ElementQueue *arguments) {
@@ -157,6 +166,7 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
 }
 
 static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct ElementQueue *queue) {
+    const struct Element *opening_bracket = ElementQueue_peek(queue);
     struct ElementQueue *arguments = ElementQueue_create(read_paren_block(queue));
     if (equal(name, "print")) {
         print(context, arguments);
@@ -165,9 +175,12 @@ static struct FunctionCallResult call(struct Variables *context, const struct St
         result.value = None();
         return result;
     } else {
-        struct Any value = get_variable(context, name);
-        if (value.type == ComplexType) {
-            struct Function *function = (struct Function *)value.complex_value;
+        struct HashMapResult result = get_variable(context, name);
+        if (!result.found) {
+            fail_at_position(opening_bracket->position, "Call to undefined value [%s]", name->value);
+        }
+        if (result.value.type == ComplexType) {
+            struct Function *function = (struct Function *)result.value.complex_value;
             if (function->type == FunctionType) {
                 struct FunctionCallResult result = call_function(context, function, arguments);
                 if (result.type == ArgumentNumberMismatch) {
@@ -178,11 +191,11 @@ static struct FunctionCallResult call(struct Variables *context, const struct St
             } else {
                 printf("Error: failed to call non-function complex value %s\n", name->value);
             }
-        } else if (value.type == NoneType) {
+        } else if (result.value.type == NoneType) {
             printf("Error: failed to call unknown function %s\n", name->value);
         } else {
             printf("Error: failed to call non-function value %s [", name->value);
-            print_value(value);
+            print_value(result.value);
             puts("]\n");
         }
     }
