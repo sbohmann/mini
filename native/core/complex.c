@@ -14,7 +14,7 @@ struct ReferenceCount {
 void Complex_init(struct ComplexValue *instance) {
     instance->reference_count = allocate(sizeof(struct ReferenceCount));
     instance->reference_count->weak_count = 1;
-    instance->reference_count->strong_count = 0;
+    instance->reference_count->strong_count = 1;
 }
 
 void retain(struct ComplexValue *instance) {

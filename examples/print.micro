@@ -1,9 +1,10 @@
 let x = 5
+let y = 6
 print(1, ", ", 2, ", ", 3, ", and a string\n")
 print("variables would be neat. Oh, there is one: ", x, "\n")
 
 fn f(x) {
-    print("Hello from function f!!! :D")
+    print("Hello from function f!!! :D - x: ", x, ", y: ", y)
 }
 
 f(7)

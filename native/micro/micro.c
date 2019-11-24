@@ -67,7 +67,7 @@ static void fn(struct Variables *context, struct ElementQueue *queue) {
     const struct Elements *body = read_curly_block(queue);
     struct Function *function = allocate(sizeof(struct Function));
     Complex_init(&function->base);
-    function->type= FunctionType;
+    function->type = FunctionType;
     function->parameter_names = parameter_names;
     function->body = body;
     static const struct String *text = 0;
@@ -98,36 +98,43 @@ struct FunctionCallResult {
 
 static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct ElementQueue *queue);
 
-struct Any evaluate_expression(struct Variables *context, const struct Elements* expression) {
+struct Any evaluate_expression(struct Variables *context, const struct Elements *expression) {
     struct ElementQueue *queue = ElementQueue_create(expression);
     const struct Token *first_token = read_token(queue);
+    struct Any result;
     if (first_token->type == Symbol) {
         if (ElementQueue_peek(queue)) {
             const struct Elements *arguments = read_paren_block(queue);
             struct ElementQueue *arguments_queue = ElementQueue_create(arguments);
-            struct FunctionCallResult result = call(context, first_token->text, arguments_queue);
+            struct FunctionCallResult call_result = call(context, first_token->text, arguments_queue);
             ElementQueue_delete(arguments_queue);
-            if (result.type == Success) {
-                return result.value;
+            if (call_result.type == Success) {
+                result = call_result.value;
             } else {
                 fail_at_position(first_token->position, "Call to function %s failed.", first_token->text);
             }
         } else {
-            struct HashMapResult result = get_variable(context, first_token->text);
-            if (result.found) {
-                return result.value;
+            struct HashMapResult variable = get_variable(context, first_token->text);
+            if (variable.found) {
+                result = variable.value;
             } else {
                 fail_at_position(first_token->position, "Undefined variable [%s]", first_token->text);
             }
         }
     } else if (first_token->type == NumberLiteral || first_token->type == StringLiteral) {
-        return first_token->value;
+        result = first_token->value;
     } else {
         fail_at_position(first_token->position, "Unexpected expression: [%s]", first_token->text);
     }
+    const struct Element *next_element = ElementQueue_peek(queue);
+    if (next_element) {
+        fail_at_position(next_element->position, "Unexpected token");
+    }
+    return result;
 }
 
-static struct FunctionCallResult call_function(struct Variables *context, struct Function *function, struct ElementQueue *arguments) {
+static struct FunctionCallResult
+call_function(struct Variables *context, struct Function *function, struct ElementQueue *arguments) {
     struct SplitElements *split_elements = SplitElements_by_comma(arguments);
     if (split_elements->size != StringList_size(function->parameter_names)) {
         struct FunctionCallResult result;
@@ -136,7 +143,7 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
         result.arguments_expected = StringList_size(function->parameter_names);
         return result;
     }
-    struct HashMap *locals = HashMap_create();
+    struct Variables *locals = Variables_create(context);
     struct StringListElement *name_iterator = StringList_begin(function->parameter_names);
     size_t index = 0;
     while (name_iterator) {
@@ -146,7 +153,7 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
         }
         struct Elements *expression = &split_elements->data[index];
         struct Any value = evaluate_expression(context, expression);
-        HashMap_put(locals, String(name), value);
+        create_variable(locals, name, value);
         name_iterator = StringListIterator_next(name_iterator);
         ++index;
     }
@@ -156,8 +163,9 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
     // TODO split by line
     // evaluate_expression(function->body);
     struct ElementQueue *body_queue = ElementQueue_create(function->body);
-    run_block(context, body_queue);
+    run_block(locals, body_queue);
     ElementQueue_delete(body_queue);
+    Variables_release(locals);
     // TODO determine function return value
     struct FunctionCallResult result;
     result.type = Success;
@@ -165,7 +173,8 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
     return result;
 }
 
-static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct ElementQueue *queue) {
+static struct FunctionCallResult
+call(struct Variables *context, const struct String *name, struct ElementQueue *queue) {
     const struct Element *opening_bracket = ElementQueue_peek(queue);
     struct ElementQueue *arguments = ElementQueue_create(read_paren_block(queue));
     if (equal(name, "print")) {
@@ -180,19 +189,17 @@ static struct FunctionCallResult call(struct Variables *context, const struct St
             fail_at_position(opening_bracket->position, "Call to undefined value [%s]", name->value);
         }
         if (result.value.type == ComplexType) {
-            struct Function *function = (struct Function *)result.value.complex_value;
+            struct Function *function = (struct Function *) result.value.complex_value;
             if (function->type == FunctionType) {
                 struct FunctionCallResult result = call_function(context, function, arguments);
                 if (result.type == ArgumentNumberMismatch) {
                     printf("Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.",
-                            name->value, result.arguments_passed, result.arguments_expected);
+                           name->value, result.arguments_passed, result.arguments_expected);
                 }
                 return result;
             } else {
                 printf("Error: failed to call non-function complex value %s\n", name->value);
             }
-        } else if (result.value.type == NoneType) {
-            printf("Error: failed to call unknown function %s\n", name->value);
         } else {
             printf("Error: failed to call non-function value %s [", name->value);
             print_value(result.value);

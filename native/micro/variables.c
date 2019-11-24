@@ -3,7 +3,6 @@
 #include <collections/hashmap.h>
 
 #include <minic/any.h>
-#include <core/errors.h>
 #include <core/allocate.h>
 #include <stdlib.h>
 #include <core/complex.h>
@@ -41,7 +40,6 @@ void Variables_release(struct Variables *instance) {
 }
 
 bool set_variable(struct Variables *self, const struct String *name, struct Any value) {
-    DEBUG("Setting variable %s to [%s]\n", name->value, text->value);
     bool result = HashMap_set(self->scope, String(name), value);
     if (!result && self->context) {
         return set_variable(self->context, name, value);
@@ -50,14 +48,11 @@ bool set_variable(struct Variables *self, const struct String *name, struct Any 
 }
 
 void create_variable(struct Variables *self, const struct String *name, struct Any value) {
-    DEBUG("Setting variable %s to [%s]\n", name->value, text->value);
     // TODO implement and use put if absent and return a bool
     HashMap_put(self->scope, String(name), value);
 }
 
 struct HashMapResult get_variable(struct Variables *self, const struct String *name) {
-    DEBUG("Getting variable %s\n", name->value);
-    // TODO make None distinguishable from undefined, i.e. not in the map
     struct HashMapResult result = HashMap_get(self->scope, String(name));
     if (!result.found && self->context) {
         return get_variable(self->context, name);
