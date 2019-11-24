@@ -5,6 +5,7 @@
 #include <stdatomic.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <micro/debug.h>
 
 struct ReferenceCount {
     atomic_size_t strong_count;
@@ -21,24 +22,30 @@ void retain(struct ComplexValue *instance) {
     if (!instance) {
         fail("Attempting to retain a null ComplexValue pointer");
     }
+    if (DEBUG_ENABLED) fprintf(stderr, "retain from %zu, %zu\n", instance->reference_count->strong_count, instance->reference_count->weak_count);
     ++instance->reference_count->weak_count;
     ++instance->reference_count->strong_count;
+    if (DEBUG_ENABLED) fprintf(stderr, "retained to %zu, %zu\n", instance->reference_count->strong_count, instance->reference_count->weak_count);
 }
 
 bool release(struct ComplexValue *instance) {
     if (!instance) {
         fail("Attempting to release a null ComplexValue pointer");
     }
+    if (DEBUG_ENABLED) fprintf(stderr, "release from %zu, %zu\n", instance->reference_count->strong_count, instance->reference_count->weak_count);
     size_t new_strong_count = --instance->reference_count->strong_count;
     size_t new_weak_count = --instance->reference_count->weak_count;
+    if (DEBUG_ENABLED) fprintf(stderr, "released to %zu, %zu\n", instance->reference_count->strong_count, instance->reference_count->weak_count);
     if (new_weak_count == 0) {
+        fprintf(stderr, "both zero\n");
         free(instance->reference_count);
         if (new_strong_count != 0) {
-            fail("weak count went to zero but strong count went to %zu", new_strong_count);
+            fail("weak count went to zero but strong count went to %zu\n", new_strong_count);
         }
         free(instance);
         return true;
     } else if (new_strong_count == 0) {
+        if (DEBUG_ENABLED) fprintf(stderr, "strong zero\n");
         free(instance);
         return true;
     }
