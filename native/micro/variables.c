@@ -34,7 +34,9 @@ void Variables_release(struct Variables *instance) {
     struct Variables *context = instance->context;
     if (release(&instance->base)) {
         HashMap_delete(scope);
-        Variables_release(context);
+        if (context) {
+            Variables_release(context);
+        }
         free(instance);
     }
 }
