@@ -53,3 +53,31 @@ struct SplitElements *SplitElements_by_comma(struct ElementQueue *queue) {
     ElementsList_delete(raw_result);
     return result;
 }
+
+struct SplitElements *SplitElements_by_line(struct ElementQueue *queue) {
+    struct ElementsList *raw_result = ElementsList_create();
+    struct ElementList *group = ElementList_create();
+    size_t line = 0;
+    while (true) {
+        const struct Element *element = ElementQueue_next(queue);
+        if (!element) {
+            break;
+        }
+        if (element->position.line != line) {
+            if (ElementList_size(group) > 0) {
+                ElementsList_append(raw_result, Elements_from_list(group));
+                ElementList_delete(group);
+                group = ElementList_create();
+            }
+            line = element->position.line;
+        }
+        ElementList_append(group, element);
+    }
+    if (ElementList_size(group) > 0) {
+        ElementsList_append(raw_result, Elements_from_list(group));
+    }
+    ElementList_delete(group);
+    struct SplitElements *result = SplitElements_from_list(raw_result);
+    ElementsList_delete(raw_result);
+    return result;
+}

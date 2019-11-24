@@ -8,6 +8,7 @@
 #include <generated/string_list.h>
 #include <core/complex.h>
 #include <core/allocate.h>
+#include <stdlib.h>
 
 #include "debug.h"
 #include "print.h"
@@ -77,7 +78,7 @@ static void fn(struct Variables *context, struct ElementQueue *queue) {
     create_variable(context, name, Complex(&function->base));
 }
 
-void run_block(struct Variables *context, struct ElementQueue *queue);
+struct Any run_block(struct Variables *context, struct ElementQueue *queue);
 
 enum FunctionCallResultType {
     Success,
@@ -98,8 +99,7 @@ struct FunctionCallResult {
 
 static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct ElementQueue *queue);
 
-struct Any evaluate_expression(struct Variables *context, const struct Elements *expression) {
-    struct ElementQueue *queue = ElementQueue_create(expression);
+struct Any evaluate_expression(struct Variables *context, struct ElementQueue *queue) {
     const struct Token *first_token = read_token(queue);
     struct Any result;
     if (first_token->type == Symbol) {
@@ -152,7 +152,9 @@ call_function(struct Variables *context, struct Function *function, struct Eleme
             fail("Logical error");
         }
         struct Elements *expression = &split_elements->data[index];
-        struct Any value = evaluate_expression(context, expression);
+        struct ElementQueue *expression_queue = ElementQueue_create(expression);
+        struct Any value = evaluate_expression(context, expression_queue);
+        ElementQueue_delete(expression_queue);
         create_variable(locals, name, value);
         name_iterator = StringListIterator_next(name_iterator);
         ++index;
@@ -160,16 +162,17 @@ call_function(struct Variables *context, struct Function *function, struct Eleme
     if (index != split_elements->size) {
         fail("Logical error");
     }
+    SplitElements_delete(split_elements);
     // TODO split by line
     // evaluate_expression(function->body);
     struct ElementQueue *body_queue = ElementQueue_create(function->body);
-    run_block(locals, body_queue);
+    struct Any function_result = run_block(locals, body_queue);
     ElementQueue_delete(body_queue);
     Variables_release(locals);
     // TODO determine function return value
     struct FunctionCallResult result;
     result.type = Success;
-    result.value = None();
+    result.value = function_result;
     return result;
 }
 
@@ -212,17 +215,60 @@ call(struct Variables *context, const struct String *name, struct ElementQueue *
     return result;
 }
 
-void run_block(struct Variables *context, struct ElementQueue *queue) {
-    while (ElementQueue_peek(queue)) {
-        const struct String *symbol = read_symbol(queue);
-        if (equal(symbol, "let")) {
-            let(context, queue);
-        } else if (equal(symbol, "fn")) {
-            fn(context, queue);
+void print_statement(struct Elements *statement) {
+    printf("Executing statement [");
+    for (size_t index = 0; index < statement->size; ++index) {
+        if (index > 0) {
+            putchar(' ');
+        }
+        struct Element element = statement->data[index];
+        if (element.type == TokenElement) {
+            printf("%s", element.token->text->value);
+        } else if (element.type == BracketElement) {
+            printf("%s", bracket_type_name(element.bracket.type));
         } else {
-            call(context, symbol, queue);
+            printf("???");
         }
     }
+    puts("]");
+}
+
+struct StatementResult {
+    bool is_return;
+    struct Any value;
+};
+
+struct StatementResult execute_statement(struct Variables *context, struct Elements *statement) {
+    struct ElementQueue *queue = ElementQueue_create(statement);
+    const struct String *symbol = read_symbol(queue);
+    if (equal(symbol, "let")) {
+        let(context, queue);
+    } else if (equal(symbol, "fn")) {
+        fn(context, queue);
+    } else if (equal(symbol, "return")) {
+        return (struct StatementResult) { true, evaluate_expression(context, queue) };
+    } else {
+        call(context, symbol, queue);
+    }
+    return (struct StatementResult) { false, None() };
+}
+
+struct Any run_block(struct Variables *context, struct ElementQueue *queue) {
+    struct Any result = None();
+    struct SplitElements *statements = SplitElements_by_line(queue);
+    for (size_t index = 0; index < statements->size; ++index) {
+        struct Elements *statement = &statements->data[index];
+        if (DEBUG_ENABLED) {
+            print_statement(statement);
+        }
+        struct StatementResult statement_result = execute_statement(context, statement);
+        if (statement_result.is_return) {
+            result = statement_result.value;
+            break;
+        }
+    }
+    SplitElements_delete(statements);
+    return result;
 }
 
 void micro_run(struct ParsedModule *module) {

@@ -18,3 +18,5 @@ void SplitElements_delete(struct SplitElements *instance);
 struct ElementQueue;
 
 struct SplitElements *SplitElements_by_comma(struct ElementQueue *queue);
+
+struct SplitElements *SplitElements_by_line(struct ElementQueue *queue);
