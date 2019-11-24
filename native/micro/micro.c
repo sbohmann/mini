@@ -17,6 +17,8 @@
 
 const uint32_t FunctionType = 0xd6dce275;
 
+struct Variables *global_context;
+
 struct Function {
     struct ComplexValue base;
     uint32_t type;
@@ -43,7 +45,7 @@ static struct Function *Function_create(struct Variables *bindings, const struct
 static struct Variables *create_bindings(struct Variables *context, const struct Elements *names) {
     struct ElementQueue *queue = ElementQueue_create(names);
     struct SplitElements *split_names = SplitElements_by_comma(queue);
-    struct Variables *result = Variables_create(0);
+    struct Variables *result = Variables_create(global_context);
     for (size_t index = 0; index < names->size; ++index) {
         struct Elements *part = &split_names->data[index];
         if (part->size == 0) {
@@ -125,20 +127,20 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
             if (call_result.type == Success) {
                 result = call_result.value;
             } else {
-                fail_at_position(first_token->position, "Call to function %s failed.", first_token->text);
+                fail_at_position(first_token->position, "Call to function %s failed.", first_token->text->value);
             }
         } else {
             struct HashMapResult variable = get_variable(context, first_token->text);
             if (variable.found) {
                 result = variable.value;
             } else {
-                fail_at_position(first_token->position, "Undefined variable [%s]", first_token->text);
+                fail_at_position(first_token->position, "Undefined variable [%s]", first_token->text->value);
             }
         }
     } else if (first_token->type == NumberLiteral || first_token->type == StringLiteral) {
         result = first_token->value;
     } else {
-        fail_at_position(first_token->position, "Unexpected expression: [%s]", first_token->text);
+        fail_at_position(first_token->position, "Unexpected expression: [%s]", first_token->text->value);
     }
     const struct Element *next_element = ElementQueue_peek(queue);
     if (next_element) {
@@ -165,7 +167,7 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
         result.arguments_expected = StringList_size(function->parameter_names);
         return result;
     }
-    struct Variables *locals = Variables_create(context);
+    struct Variables *locals = Variables_create(function->bindings ? function->bindings : global_context);
     struct StringListElement *name_iterator = StringList_begin(function->parameter_names);
     size_t index = 0;
     while (name_iterator) {
@@ -298,9 +300,12 @@ struct Any run_block(struct Variables *context, struct ElementQueue *queue) {
 
 void micro_run(struct ParsedModule *module) {
     struct Variables *globals = Variables_create(0);
+    global_context = globals;
     struct ElementQueue *queue = ElementQueue_create(module->elements);
     run_block(globals, queue);
     ElementQueue_delete(queue);
+    global_context = 0;
+    Variables_release(globals);
 }
 
 int main() {
