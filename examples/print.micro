@@ -15,7 +15,7 @@ print("mining output, call: ", f(9), " <- result... and more output ^^\n")
 fn outer() {
     let local = 123
     fn inner[local]() {
-        print(local)
+        print(local, "\n")
     }
     return inner
 }
