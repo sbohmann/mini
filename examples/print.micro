@@ -10,4 +10,4 @@ fn f(x) {
 
 let z = f(7)
 print("result: ", z, "\n")
-print("result: ", f(9), "\n")
+print("mining output, call: ", f(9), " <- result... and more output ^^\n")
