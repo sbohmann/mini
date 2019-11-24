@@ -6,6 +6,7 @@ struct ReferenceCount;
 
 struct ComplexValue {
     struct ReferenceCount *reference_count;
+    void (*destructor)(struct ComplexValue *);
 };
 
 void Complex_init(struct ComplexValue *instance);

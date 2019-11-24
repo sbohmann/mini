@@ -42,10 +42,16 @@ bool release(struct ComplexValue *instance) {
         if (new_strong_count != 0) {
             fail("weak count went to zero but strong count went to %zu\n", new_strong_count);
         }
+        if (instance->destructor) {
+            instance->destructor(instance);
+        }
         free(instance);
         return true;
     } else if (new_strong_count == 0) {
         if (DEBUG_ENABLED) fprintf(stderr, "strong zero\n");
+        if (instance->destructor) {
+            instance->destructor(instance);
+        }
         free(instance);
         return true;
     }

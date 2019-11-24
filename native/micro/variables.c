@@ -4,7 +4,6 @@
 
 #include <minic/any.h>
 #include <core/allocate.h>
-#include <stdlib.h>
 #include <core/complex.h>
 #include "debug.h"
 
@@ -14,9 +13,17 @@ struct Variables {
     struct Variables *context;
 };
 
+static void Variables_destructor(struct Variables *instance) {
+    HashMap_delete(instance->scope);
+    if (instance->context) {
+        Variables_release(instance->context);
+    }
+}
+
 struct Variables *Variables_create(struct Variables *context) {
     struct Variables *result = allocate(sizeof(struct Variables));
     Complex_init(&result->base);
+    result->base.destructor = (void (*) (struct ComplexValue *)) Variables_destructor;
     result->scope = HashMap_create();
     result->context = context;
     if (context) {
@@ -30,14 +37,7 @@ void Variables_retain(struct Variables *instance) {
 }
 
 void Variables_release(struct Variables *instance) {
-    struct HashMap *scope = instance->scope;
-    struct Variables *context = instance->context;
-    if (release(&instance->base)) {
-        HashMap_delete(scope);
-        if (context) {
-            Variables_release(context);
-        }
-    }
+    release(&instance->base);
 }
 
 bool set_variable(struct Variables *self, const struct String *name, struct Any value) {

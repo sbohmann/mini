@@ -20,12 +20,61 @@ const uint32_t FunctionType = 0xd6dce275;
 struct Function {
     struct ComplexValue base;
     uint32_t type;
+    struct Variables *bindings;
     const struct StringList *parameter_names;
     const struct Elements *body;
 };
 
+static void Function_destructor(struct Function *instance) {
+    Variables_release(instance->bindings);
+}
+
+static struct Function *Function_create(struct Variables *bindings, const struct StringList *parameter_names, const struct Elements *body) {
+    struct Function *result = allocate(sizeof(struct Function));
+    Complex_init(&result->base);
+    result->base.destructor = (void (*) (struct ComplexValue *)) Function_destructor;
+    result->type = FunctionType;
+    result->bindings = bindings;
+    result->parameter_names = parameter_names;
+    result->body = body;
+    return result;
+}
+
+static struct Variables *create_bindings(struct Variables *context, const struct Elements *names) {
+    struct ElementQueue *queue = ElementQueue_create(names);
+    struct SplitElements *split_names = SplitElements_by_comma(queue);
+    struct Variables *result = Variables_create(0);
+    for (size_t index = 0; index < names->size; ++index) {
+        struct Elements *part = &split_names->data[index];
+        if (part->size == 0) {
+            fail("logical_error");
+        } else if (part->size > 1) {
+            fail_at_position(part->data[1].position, "Unexpected token");
+        }
+        const struct Element *name_element = &part->data[0];
+        if (name_element->type != TokenElement || name_element->token->type != Symbol) {
+            fail_at_position(name_element->position, "Unexpected token");
+        }
+        const struct String *name = name_element->token->text;
+        struct HashMapResult get_result = get_variable(context, name);
+        if (!get_result.found) {
+            fail_at_position(name_element->position, "Binding undefined variable %s", name->value);
+        }
+        create_variable(result, name, get_result.value);
+    }
+    ElementQueue_delete(queue);
+    return result;
+}
+
 static void fn(struct Variables *context, struct ElementQueue *queue) {
     const struct String *name = read_symbol(queue);
+    struct Variables *bindings = 0;
+    if (is_bracket_element_of_type(ElementQueue_peek(queue), Square)) {
+        const struct Elements *bindings_block = read_square_block(queue);
+        if (bindings_block->size > 0) {
+            bindings = create_bindings(context, bindings_block);
+        }
+    }
     struct ElementQueue *parameters = ElementQueue_create(read_paren_block(queue));
     bool first = true;
     struct StringList *parameter_names = StringList_create();
@@ -38,15 +87,7 @@ static void fn(struct Variables *context, struct ElementQueue *queue) {
     }
     ElementQueue_delete(parameters);
     const struct Elements *body = read_curly_block(queue);
-    struct Function *function = allocate(sizeof(struct Function));
-    Complex_init(&function->base);
-    function->type = FunctionType;
-    function->parameter_names = parameter_names;
-    function->body = body;
-    static const struct String *text = 0;
-    if (!text) {
-        text = String_from_literal("function");
-    }
+    struct Function *function = Function_create(bindings, parameter_names, body);
     create_variable(context, name, Complex(&function->base));
 }
 
@@ -173,12 +214,12 @@ static struct FunctionCallResult call(struct Variables *context, const struct St
         if (result.value.type == ComplexType) {
             struct Function *function = (struct Function *) result.value.complex_value;
             if (function->type == FunctionType) {
-                struct FunctionCallResult result = call_function(context, function, arguments);
-                if (result.type == ArgumentNumberMismatch) {
+                struct FunctionCallResult call_result = call_function(context, function, arguments);
+                if (call_result.type == ArgumentNumberMismatch) {
                     printf("Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.",
-                           name->value, result.arguments_passed, result.arguments_expected);
+                           name->value, call_result.arguments_passed, call_result.arguments_expected);
                 }
-                return result;
+                return call_result;
             } else {
                 printf("Error: failed to call non-function complex value %s\n", name->value);
             }

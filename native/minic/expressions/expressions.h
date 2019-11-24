@@ -25,3 +25,8 @@ const struct Elements *read_paren_block(struct ElementQueue *elements);
 const struct Elements *read_square_block(struct ElementQueue *elements);
 
 const struct Elements *read_curly_block(struct ElementQueue *elements);
+
+bool is_bracket_element(const struct Element *element);
+
+bool is_bracket_element_of_type(const struct Element *element, enum BracketType type);
+
