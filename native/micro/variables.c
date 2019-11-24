@@ -37,7 +37,6 @@ void Variables_release(struct Variables *instance) {
         if (context) {
             Variables_release(context);
         }
-        free(instance);
     }
 }
 
