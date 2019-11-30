@@ -241,7 +241,7 @@ bool is_plus_operator(const struct Element *element) {
 
 struct Any evaluate_additive_expression(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_plus_operator)) {
-        struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_plus_operator());
+        struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_plus_operator);
         struct Any result = None();
         for (size_t index = 0; index < split_elements->size; ++split_elements) {
             struct Elements *group = &split_elements->data[index];
@@ -268,10 +268,10 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
         struct Any result = evaluate_expression(context, contained_expression_queue);
         ElementQueue_delete(contained_expression_queue);
         return result;
-    } else if (is_bracket_element_of_type(Square)) {
+    } else if (is_bracket_element_of_type(first_element, Square)) {
         // TODO list literal
         fail_at_position(first_element->position, "TODO array literal [1, \"2\", [3]]");
-    } else if (is_bracket_element_of_type(Curly)) {
+    } else if (is_bracket_element_of_type(first_element, Curly)) {
         // TODO list literal
         fail_at_position(first_element->position, "TODO map / set literal {a: 1, \"b\": 2, 3: 3} / {1, 2, 3}");
     } else if (ElementQueue_contains(queue, is_operator)) {

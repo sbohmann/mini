@@ -62,7 +62,7 @@ struct SplitElements *SplitElements_by_operator(struct ElementQueue *queue, cons
         if (!element) {
             break;
         }
-        if (is_operator_with_text(element, text->value)) {
+        if (is_operator_with_text(element, text)) {
             if (ElementList_size(group) == 0) {
                 fail_at_position(element->position, "Unexpected token");
             }
