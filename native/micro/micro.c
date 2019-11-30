@@ -28,7 +28,9 @@ struct Function {
 };
 
 static void Function_destructor(struct Function *instance) {
-    Variables_release(instance->bindings);
+    if (instance->bindings) {
+        Variables_release(instance->bindings);
+    }
 }
 
 static struct Function *Function_create(struct Variables *bindings, const struct StringList *parameter_names, const struct Elements *body) {
@@ -42,7 +44,7 @@ static struct Function *Function_create(struct Variables *bindings, const struct
     return result;
 }
 
-static struct Variables *create_bindings(struct Variables *context, const struct Elements *names) {
+static struct Variables *create_bindings(const struct Variables *context, const struct Elements *names) {
     struct ElementQueue *queue = ElementQueue_create(names);
     struct SplitElements *split_names = SplitElements_by_comma(queue);
     struct Variables *result = Variables_create(global_context);
@@ -68,8 +70,7 @@ static struct Variables *create_bindings(struct Variables *context, const struct
     return result;
 }
 
-static void fn(struct Variables *context, struct ElementQueue *queue) {
-    const struct String *name = read_symbol(queue);
+struct Function *read_function(const struct Variables *context, struct ElementQueue *queue) {
     struct Variables *bindings = 0;
     if (is_bracket_element_of_type(ElementQueue_peek(queue), Square)) {
         const struct Elements *bindings_block = read_square_block(queue);
@@ -84,12 +85,17 @@ static void fn(struct Variables *context, struct ElementQueue *queue) {
         if (!first) {
             read_comma(parameters);
         }
-        StringList_append(parameter_names, read_symbol(parameters));
+        StringList_append(parameter_names, read_symbol(parameters)->text);
         first = false;
     }
     ElementQueue_delete(parameters);
     const struct Elements *body = read_curly_block(queue);
-    struct Function *function = Function_create(bindings, parameter_names, body);
+    return Function_create(bindings, parameter_names, body);
+}
+
+static void fn(struct Variables *context, struct ElementQueue *queue) {
+    const struct String *name = read_symbol(queue)->text;
+    struct Function *function = read_function(context, queue);
     create_variable(context, name, Complex(&function->base));
 }
 
@@ -118,7 +124,10 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
     const struct Token *first_token = read_token(queue);
     struct Any result;
     if (first_token->type == Symbol) {
-        if (ElementQueue_peek(queue)) {
+        if (equal(first_token->text, "fn")) {
+            struct Function *function = read_function(context, queue);
+            return Complex(&function->base);
+        } else if (ElementQueue_peek(queue)) {
             const struct Element *opening_bracket = ElementQueue_peek(queue);
             const struct Elements *arguments = read_paren_block(queue);
             struct ElementQueue *arguments_queue = ElementQueue_create(arguments);
@@ -263,15 +272,21 @@ struct StatementResult {
 
 struct StatementResult execute_statement(struct Variables *context, struct Elements *statement) {
     struct ElementQueue *queue = ElementQueue_create(statement);
-    const struct String *symbol = read_symbol(queue);
+    const struct Token *symbol_token = read_symbol(queue);
+    const struct String *symbol = symbol_token->text;
     if (equal(symbol, "let")) {
-        const struct String *name = read_symbol(queue);
+        const struct String *name = read_symbol(queue)->text;
         read_operator(queue, "=");
         create_variable(context, name, evaluate_expression(context, queue));
     } else if (equal(symbol, "fn")) {
         fn(context, queue);
     } else if (equal(symbol, "return")) {
-        return (struct StatementResult) { true, evaluate_expression(context, queue) };
+        return (struct StatementResult) {true, evaluate_expression(context, queue)};
+    } else if (is_operator(ElementQueue_peek(queue), "=")) {
+        ElementQueue_next(queue);
+        if (!set_variable(context, symbol, evaluate_expression(context, queue))) {
+            fail_at_position(symbol_token->position, "Undefined variable [%s]", symbol->value);
+        }
     } else {
         const struct Element *opening_bracket = ElementQueue_peek(queue);
         struct ElementQueue *arguments = ElementQueue_create(read_paren_block(queue));

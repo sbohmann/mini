@@ -40,6 +40,13 @@ void read_operator(struct ElementQueue *elements, const char *text) {
     }
 }
 
+bool is_operator(const struct Element *candidate, const char *text) {
+    return candidate &&
+           candidate->type == TokenElement &&
+           candidate->token->type == Operator &&
+           equal(candidate->token->text, text);
+}
+
 const struct Token *read_token(struct ElementQueue *elements) {
     const struct Element *next = ElementQueue_next(elements);
     if (!next) {
@@ -51,7 +58,7 @@ const struct Token *read_token(struct ElementQueue *elements) {
     return next->token;
 }
 
-const struct String *read_symbol(struct ElementQueue *elements) {
+const struct Token *read_symbol(struct ElementQueue *elements) {
     const struct Element *element = ElementQueue_next(elements);
     if (!element) {
         fail("Unexpected end of input");
@@ -59,7 +66,7 @@ const struct String *read_symbol(struct ElementQueue *elements) {
     if (element->type != TokenElement || element->token->type != Symbol) {
         fail_at_position(element->position, "Expected symbol, found [%s]", element_text(element));
     }
-    return element->token->text;
+    return element->token;
 }
 
 static const struct Elements *read_block(struct ElementQueue *elements, enum BracketType type) {
@@ -72,7 +79,7 @@ static const struct Elements *read_block(struct ElementQueue *elements, enum Bra
     }
     if (next->bracket.type != type) {
         fail_at_position(next->position, "Unexpected bracket type [%s], expected, [%s]",
-                bracket_type_name(next->bracket.type), bracket_type_name(type));
+                         bracket_type_name(next->bracket.type), bracket_type_name(type));
     }
     return next->bracket.elements;
 }

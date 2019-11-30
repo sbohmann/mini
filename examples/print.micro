@@ -22,3 +22,11 @@ fn outer() {
 
 let inner = outer()
 inner()
+
+let f = fn() {
+    print("Yes\n")
+}
+
+f()
+
+huhu = 11

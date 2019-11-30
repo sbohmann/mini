@@ -17,6 +17,7 @@ static void newline() {
 }
 
 _Noreturn void fail(const char *format, ...) {
+    fflush(stdout);
     if (format) {
         fputs("Failed. Reason: ", stderr);
         PRINT(format)
@@ -28,6 +29,8 @@ _Noreturn void fail(const char *format, ...) {
 }
 
 _Noreturn void fail_errno(const char *format, ...) {
+    fflush(stdout);
+    fflush(stderr);
     fprintf(stderr, "Failed with errno: %d - %s\n", errno, strerror(errno));
     if (format) {
         fputs("Reason: ", stderr);

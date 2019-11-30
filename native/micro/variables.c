@@ -53,7 +53,7 @@ void create_variable(struct Variables *self, const struct String *name, struct A
     HashMap_put(self->scope, String(name), value);
 }
 
-struct HashMapResult get_variable(struct Variables *self, const struct String *name) {
+struct HashMapResult get_variable(const struct Variables *self, const struct String *name) {
     struct HashMapResult result = HashMap_get(self->scope, String(name));
     if (!result.found && self->context) {
         return get_variable(self->context, name);

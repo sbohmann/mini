@@ -33,7 +33,6 @@ struct Any Complex(struct ComplexValue *instance) {
     struct Any result = None();
     result.type = ComplexType;
     result.complex_value = instance;
-    retain(result.complex_value);
     return result;
 }
 
