@@ -30,7 +30,6 @@ _Noreturn void fail(const char *format, ...) {
 
 _Noreturn void fail_errno(const char *format, ...) {
     fflush(stdout);
-    fflush(stderr);
     fprintf(stderr, "Failed with errno: %d - %s\n", errno, strerror(errno));
     if (format) {
         fputs("Reason: ", stderr);

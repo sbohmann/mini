@@ -16,7 +16,9 @@ void read_comma(struct ElementQueue *elements);
 
 void read_operator(struct ElementQueue *elements, const char *text);
 
-bool is_operator(const struct Element *candidate, const char *text);
+bool is_operator(const struct Element *candidate);
+
+bool is_operator_with_text(const struct Element *candidate, const char *text);
 
 const struct Token *read_token(struct ElementQueue *elements);
 

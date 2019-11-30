@@ -40,10 +40,14 @@ void read_operator(struct ElementQueue *elements, const char *text) {
     }
 }
 
-bool is_operator(const struct Element *candidate, const char *text) {
+bool is_operator(const struct Element *candidate) {
     return candidate &&
            candidate->type == TokenElement &&
-           candidate->token->type == Operator &&
+           candidate->token->type == Operator;
+}
+
+bool is_operator_with_text(const struct Element *candidate, const char *text) {
+    return is_operator(candidate) &&
            equal(candidate->token->text, text);
 }
 

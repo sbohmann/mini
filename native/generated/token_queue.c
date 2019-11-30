@@ -37,3 +37,13 @@ const struct Token *TokenQueue_next(struct TokenQueue *self) {
         return 0;
     }
 }
+
+bool TokenQueue_contains(struct TokenQueue *self, bool (*predicate)(const struct Element *)) {
+    size_t size = self->list->size;
+    for (size_t index = self->index; index < size; ++index) {
+        if (predicate(&self->list->data[index])) {
+            return true;
+        }
+    }
+    return false;
+}

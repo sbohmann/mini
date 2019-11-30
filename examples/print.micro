@@ -23,10 +23,12 @@ fn outer() {
 let inner = outer()
 inner()
 
-let f = fn() {
+f = fn() {
     print("Yes\n")
 }
 
 f()
 
-huhu = 11
+let huhu = 11
+huhu = 12
+print(huhu)

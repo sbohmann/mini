@@ -37,3 +37,13 @@ const struct Element *ElementQueue_next(struct ElementQueue *self) {
         return 0;
     }
 }
+
+bool ElementQueue_contains(struct ElementQueue *self, bool (*predicate)(const struct Element *)) {
+    size_t size = self->list->size;
+    for (size_t index = self->index; index < size; ++index) {
+        if (predicate(&self->list->data[index])) {
+            return true;
+        }
+    }
+    return false;
+}

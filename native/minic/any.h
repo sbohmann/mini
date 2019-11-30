@@ -44,3 +44,11 @@ Hash string_hash(const char *data, size_t length);
 Hash Any_hash(struct Any value);
 
 bool Any_equal(struct Any lhs, struct Any rhs);
+
+struct Any Any_add(const struct Any lhs, const struct Any *rhs);
+
+struct Any Any_subtract(const struct Any lhs, const struct Any *rhs);
+
+struct Any Any_multiply(const struct Any lhs, const struct Any *rhs);
+
+struct Any Any_divide(const struct Any lhs, const struct Any *rhs);

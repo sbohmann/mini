@@ -108,3 +108,19 @@ bool Any_equal(struct Any lhs, struct Any rhs) {
             fail("Any_equal: value has unknown type %d", type);
     }
 }
+
+struct Any Any_add(const struct Any lhs, const struct Any *rhs) {
+    fail("TODO implement addition");
+}
+
+struct Any Any_subtract(const struct Any lhs, const struct Any *rhs) {
+    fail("TODO implement subtraction");
+}
+
+struct Any Any_multiply(const struct Any lhs, const struct Any *rhs) {
+    fail("TODO implement multiplication");
+}
+
+struct Any Any_divide(const struct Any lhs, const struct Any *rhs) {
+    fail("TODO implement division");
+}
