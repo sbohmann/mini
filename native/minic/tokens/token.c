@@ -107,6 +107,6 @@ _Noreturn void fail_at_position(struct Position position, const char *format, ..
     vfprintf(stderr, format, arguments);
     va_end(arguments);
     fprintf(stderr, "\n");
-    fail("Parsing error at line %zu, column %zu, file [%path]",
+    fail("Parsing error at line %zu, column %zu, file [%s]",
             position.line, position.column, position.path);
 }
