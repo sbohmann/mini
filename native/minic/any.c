@@ -138,6 +138,38 @@ struct Any Any_unequal(struct Any lhs, struct Any rhs) {
     return Not(Any_equal(lhs, rhs));
 }
 
+struct Any Any_less_than(struct Any lhs, struct Any rhs) {
+    if (lhs.type == IntegerType && rhs.type == IntegerType) {
+        return Boolean(lhs.integer < rhs.integer);
+    } else {
+        fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
+    }
+}
+
+struct Any Any_greater_than(struct Any lhs, struct Any rhs) {
+    if (lhs.type == IntegerType && rhs.type == IntegerType) {
+        return Boolean(lhs.integer > rhs.integer);
+    } else {
+        fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
+    }
+}
+
+struct Any Any_less_than_or_equal(struct Any lhs, struct Any rhs) {
+    if (lhs.type == IntegerType && rhs.type == IntegerType) {
+        return Boolean(lhs.integer <= rhs.integer);
+    } else {
+        fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
+    }
+}
+
+struct Any Any_greater_than_or_equal(struct Any lhs, struct Any rhs) {
+    if (lhs.type == IntegerType && rhs.type == IntegerType) {
+        return Boolean(lhs.integer >= rhs.integer);
+    } else {
+        fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
+    }
+}
+
 struct Any Any_true(struct Any value) {
     switch (value.type) {
         case NoneType:

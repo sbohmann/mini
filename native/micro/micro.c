@@ -118,7 +118,7 @@ struct FunctionCallResult {
 };
 
 static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct Position position,
-        struct ElementQueue *arguments);
+                                      struct ElementQueue *arguments);
 
 struct Any with_queue(struct Variables *context, const struct Elements *elements,
                       struct Any (*function)(struct Variables *context, struct ElementQueue *queue)) {
@@ -264,24 +264,58 @@ struct Any evaluate_addition(struct Variables *context, struct ElementQueue *que
     }
 }
 
-bool is_equality_level_operator(const struct Element *element) {
+bool is_comparison_operator(const struct Element *element) {
     return is_operator(element) &&
-            (equal(element->token->text, "==") || equal(element->token->text, "!="));
+           (equal(element->token->text, "<") ||
+            equal(element->token->text, ">") ||
+            equal(element->token->text, "<=") ||
+            equal(element->token->text, ">="));
+}
+
+struct Any evaluate_comparison(struct Variables *context, struct ElementQueue *queue) {
+    if (ElementQueue_contains(queue, is_comparison_operator)) {
+        struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_comparison_operator);
+        if (split_elements->size != 2) {
+            fail_at_position(split_elements->data[0].data[0].position, "Unsupported chained equality check");
+        }
+        const struct String *operator_name = split_elements->separators[0].token->text;
+        struct Any lhs_result = with_queue(context, &split_elements->data[0], evaluate_addition);
+        struct Any rhs_result = with_queue(context, &split_elements->data[1], evaluate_addition);
+        SplitElements_delete(split_elements);
+        if (equal(operator_name, "<")) {
+            return Any_less_than(lhs_result, rhs_result);
+        } else if (equal(operator_name, ">")) {
+            return Any_greater_than(lhs_result, rhs_result);
+        } else if (equal(operator_name, "<=>")) {
+            return Any_less_than_or_equal(lhs_result, rhs_result);
+        } else if (equal(operator_name, ">=")) {
+            return Any_greater_than_or_equal(lhs_result, rhs_result);
+        } else {
+            fail("Logical error");
+        }
+    } else {
+        return evaluate_addition(context, queue);
+    }
+}
+
+bool is_equality_operator(const struct Element *element) {
+    return is_operator(element) &&
+           (equal(element->token->text, "==") || equal(element->token->text, "!="));
 }
 
 struct Any evaluate_equality(struct Variables *context, struct ElementQueue *queue) {
-    if (ElementQueue_contains(queue, is_equality_level_operator)) {
-        struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_equality_level_operator);
+    if (ElementQueue_contains(queue, is_equality_operator)) {
+        struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_equality_operator);
         if (split_elements->size != 2) {
             fail_at_position(split_elements->data[0].data[0].position, "Unsupported chained equality check");
         }
         bool equality_check = is_symbol_of_name(&split_elements->separators[0], "==");
-        struct Any lhs_result = with_queue(context, &split_elements->data[0], evaluate_addition);
-        struct Any rhs_result = with_queue(context, &split_elements->data[1], evaluate_addition);
+        struct Any lhs_result = with_queue(context, &split_elements->data[0], evaluate_comparison);
+        struct Any rhs_result = with_queue(context, &split_elements->data[1], evaluate_comparison);
         SplitElements_delete(split_elements);
         return equality_check ? Any_equal(lhs_result, rhs_result) : Any_unequal(lhs_result, rhs_result);
     } else {
-        return evaluate_addition(context, queue);
+        return evaluate_comparison(context, queue);
     }
 }
 
@@ -423,7 +457,8 @@ void print_statement(struct Elements *statement) {
 }
 
 struct StatementResult run_with_queue(struct Variables *context, const struct Elements *elements,
-                      struct StatementResult (*function)(struct Variables *context, struct ElementQueue *queue)) {
+                                      struct StatementResult (*function)(struct Variables *context,
+                                                                         struct ElementQueue *queue)) {
     struct ElementQueue *queue = ElementQueue_create(elements);
     struct StatementResult result = function(context, queue);
     ElementQueue_delete(queue);
