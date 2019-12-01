@@ -7,11 +7,10 @@
 struct SplitElements {
     size_t size;
     struct Elements *data;
+    struct Element *separators;
 };
 
 struct ElementsList;
-
-struct SplitElements *SplitElements_from_list(const struct ElementsList *list);
 
 void SplitElements_delete(struct SplitElements *instance);
 

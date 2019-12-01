@@ -24,6 +24,10 @@ const struct Token *read_token(struct ElementQueue *elements);
 
 const struct Token *read_symbol(struct ElementQueue *elements);
 
+bool is_symbol(const struct Element *element);
+
+bool is_symbol_of_name(const struct Element *element, const char *name);
+
 const struct Elements *read_paren_block(struct ElementQueue *elements);
 
 const struct Elements *read_square_block(struct ElementQueue *elements);

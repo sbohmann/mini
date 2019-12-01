@@ -33,10 +33,11 @@ static void Function_destructor(struct Function *instance) {
     }
 }
 
-static struct Function *Function_create(struct Variables *bindings, const struct StringList *parameter_names, const struct Elements *body) {
+static struct Function *Function_create(struct Variables *bindings, const struct StringList *parameter_names,
+                                        const struct Elements *body) {
     struct Function *result = allocate(sizeof(struct Function));
     Complex_init(&result->base);
-    result->base.destructor = (void (*) (struct ComplexValue *)) Function_destructor;
+    result->base.destructor = (void (*)(struct ComplexValue *)) Function_destructor;
     result->type = FunctionType;
     result->bindings = bindings;
     result->parameter_names = parameter_names;
@@ -99,8 +100,6 @@ static void fn(struct Variables *context, struct ElementQueue *queue) {
     create_variable(context, name, Complex(&function->base));
 }
 
-struct Any run_block(struct Variables *context, struct ElementQueue *queue);
-
 enum FunctionCallResultType {
     Success,
     Error,
@@ -118,7 +117,16 @@ struct FunctionCallResult {
     };
 };
 
-static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct Position position, struct ElementQueue *arguments);
+static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct Position position,
+        struct ElementQueue *arguments);
+
+struct Any with_queue(struct Variables *context, const struct Elements *elements,
+                      struct Any (*function)(struct Variables *context, struct ElementQueue *queue)) {
+    struct ElementQueue *queue = ElementQueue_create(elements);
+    struct Any result = function(context, queue);
+    ElementQueue_delete(queue);
+    return result;
+}
 
 struct Any evaluate_simple_expression(struct Variables *context, struct ElementQueue *queue) {
     const struct Token *first_token = read_token(queue);
@@ -164,14 +172,13 @@ bool is_division_operator(const struct Element *element) {
     return is_operator_with_text(element, "/");
 }
 
-struct Any evaluate_division_expression(struct Variables *context, struct ElementQueue *queue) {
+struct Any evaluate_division(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_division_operator)) {
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_division_operator);
         struct Any result = None();
-        for (size_t index = 0; index < split_elements->size; ++split_elements) {
+        for (size_t index = 0; index < split_elements->size; ++index) {
             struct Elements *group = &split_elements->data[index];
-            struct ElementQueue *group_queue = ElementQueue_create(group);
-            struct Any group_result = evaluate_simple_expression(context, group_queue);
+            struct Any group_result = with_queue(context, group, evaluate_simple_expression);
             if (index == 0) {
                 result = group_result;
             } else {
@@ -189,14 +196,13 @@ bool is_multiplication_operator(const struct Element *element) {
     return is_operator_with_text(element, "*");
 }
 
-struct Any evaluate_multiplication_expression(struct Variables *context, struct ElementQueue *queue) {
+struct Any evaluate_multiplication(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_multiplication_operator)) {
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_multiplication_operator);
         struct Any result = None();
-        for (size_t index = 0; index < split_elements->size; ++split_elements) {
+        for (size_t index = 0; index < split_elements->size; ++index) {
             struct Elements *group = &split_elements->data[index];
-            struct ElementQueue *group_queue = ElementQueue_create(group);
-            struct Any group_result = evaluate_division_expression(context, group_queue);
+            struct Any group_result = with_queue(context, group, evaluate_division);
             if (index == 0) {
                 result = group_result;
             } else {
@@ -206,7 +212,7 @@ struct Any evaluate_multiplication_expression(struct Variables *context, struct 
         SplitElements_delete(split_elements);
         return result;
     } else {
-        return evaluate_division_expression(context, queue);
+        return evaluate_division(context, queue);
     }
 }
 
@@ -214,14 +220,13 @@ bool is_minus_operator(const struct Element *element) {
     return is_operator_with_text(element, "-");
 }
 
-struct Any evaluate_subtraction_expression(struct Variables *context, struct ElementQueue *queue) {
+struct Any evaluate_subtraction(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_minus_operator)) {
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_minus_operator);
         struct Any result = None();
-        for (size_t index = 0; index < split_elements->size; ++split_elements) {
+        for (size_t index = 0; index < split_elements->size; ++index) {
             struct Elements *group = &split_elements->data[index];
-            struct ElementQueue *group_queue = ElementQueue_create(group);
-            struct Any group_result = evaluate_multiplication_expression(context, group_queue);
+            struct Any group_result = with_queue(context, group, evaluate_multiplication);
             if (index == 0) {
                 result = group_result;
             } else {
@@ -231,7 +236,7 @@ struct Any evaluate_subtraction_expression(struct Variables *context, struct Ele
         SplitElements_delete(split_elements);
         return result;
     } else {
-        return evaluate_multiplication_expression(context, queue);
+        return evaluate_multiplication(context, queue);
     }
 }
 
@@ -239,14 +244,13 @@ bool is_plus_operator(const struct Element *element) {
     return is_operator_with_text(element, "+");
 }
 
-struct Any evaluate_additive_expression(struct Variables *context, struct ElementQueue *queue) {
+struct Any evaluate_addition(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_plus_operator)) {
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_plus_operator);
         struct Any result = None();
-        for (size_t index = 0; index < split_elements->size; ++split_elements) {
+        for (size_t index = 0; index < split_elements->size; ++index) {
             struct Elements *group = &split_elements->data[index];
-            struct ElementQueue *group_queue = ElementQueue_create(group);
-            struct Any group_result = evaluate_subtraction_expression(context, group_queue);
+            struct Any group_result = with_queue(context, group, evaluate_subtraction);
             if (index == 0) {
                 result = group_result;
             } else {
@@ -256,7 +260,28 @@ struct Any evaluate_additive_expression(struct Variables *context, struct Elemen
         SplitElements_delete(split_elements);
         return result;
     } else {
-        return evaluate_subtraction_expression(context, queue);
+        return evaluate_subtraction(context, queue);
+    }
+}
+
+bool is_equality_level_operator(const struct Element *element) {
+    return is_operator(element) &&
+            (equal(element->token->text, "==") || equal(element->token->text, "!="));
+}
+
+struct Any evaluate_equality(struct Variables *context, struct ElementQueue *queue) {
+    if (ElementQueue_contains(queue, is_equality_level_operator)) {
+        struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_equality_level_operator);
+        if (split_elements->size != 2) {
+            fail_at_position(split_elements->data[0].data[0].position, "Unsupported chained equality check");
+        }
+        bool equality_check = is_symbol_of_name(&split_elements->separators[0], "==");
+        struct Any lhs_result = with_queue(context, &split_elements->data[0], evaluate_addition);
+        struct Any rhs_result = with_queue(context, &split_elements->data[1], evaluate_addition);
+        SplitElements_delete(split_elements);
+        return equality_check ? Any_equal(lhs_result, rhs_result) : Any_unequal(lhs_result, rhs_result);
+    } else {
+        return evaluate_addition(context, queue);
     }
 }
 
@@ -275,7 +300,7 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
         // TODO list literal
         fail_at_position(first_element->position, "TODO map / set literal {a: 1, \"b\": 2, 3: 3} / {1, 2, 3}");
     } else if (ElementQueue_contains(queue, is_operator)) {
-        return evaluate_additive_expression(context, queue);
+        return evaluate_equality(context, queue);
     } else {
         return evaluate_simple_expression(context, queue);
     }
@@ -290,7 +315,15 @@ void print(struct Variables *context, struct SplitElements *arguments) {
     fflush(stdout);
 }
 
-static struct FunctionCallResult call_function(struct Variables *context, struct Function *function, struct ElementQueue *arguments) {
+struct StatementResult {
+    bool is_return;
+    struct Any value;
+};
+
+struct StatementResult run_block(struct Variables *context, struct ElementQueue *queue);
+
+static struct FunctionCallResult
+call_function(struct Variables *context, struct Function *function, struct ElementQueue *arguments) {
     struct SplitElements *split_elements = SplitElements_by_comma(arguments);
     if (split_elements->size != StringList_size(function->parameter_names)) {
         struct FunctionCallResult result;
@@ -320,7 +353,7 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
     }
     SplitElements_delete(split_elements);
     struct ElementQueue *body_queue = ElementQueue_create(function->body);
-    struct Any function_result = run_block(locals, body_queue);
+    struct Any function_result = run_block(locals, body_queue).value;
     ElementQueue_delete(body_queue);
     Variables_release(locals);
     struct FunctionCallResult result;
@@ -329,10 +362,14 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
     return result;
 }
 
-static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct Position position, struct ElementQueue *arguments) {
-    if (equal(name, "print")) {
+static struct FunctionCallResult
+call(struct Variables *context, const struct String *name, struct Position position, struct ElementQueue *arguments) {
+    if (equal(name, "print") || equal(name, "println")) {
         struct SplitElements *split_arguments = SplitElements_by_comma(arguments);
         print(context, split_arguments);
+        if (equal(name, "println")) {
+            putchar('\n');
+        }
         struct FunctionCallResult result;
         result.type = Success;
         result.value = None();
@@ -385,10 +422,13 @@ void print_statement(struct Elements *statement) {
     fflush(stdout);
 }
 
-struct StatementResult {
-    bool is_return;
-    struct Any value;
-};
+struct StatementResult run_with_queue(struct Variables *context, const struct Elements *elements,
+                      struct StatementResult (*function)(struct Variables *context, struct ElementQueue *queue)) {
+    struct ElementQueue *queue = ElementQueue_create(elements);
+    struct StatementResult result = function(context, queue);
+    ElementQueue_delete(queue);
+    return result;
+}
 
 struct StatementResult execute_statement(struct Variables *context, struct Elements *statement) {
     struct ElementQueue *queue = ElementQueue_create(statement);
@@ -407,25 +447,41 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
         if (!set_variable(context, symbol, evaluate_expression(context, queue))) {
             fail_at_position(symbol_token->position, "Undefined variable [%s]", symbol->value);
         }
+    } else if (equal(symbol, "if")) {
+        const struct Elements *condition = read_paren_block(queue);
+        const struct Elements *positive_case = read_curly_block(queue);
+        const struct Elements *negative_case = 0;
+        if (is_symbol_of_name(ElementQueue_peek(queue), "else")) {
+            read_symbol(queue);
+            negative_case = read_curly_block(queue);
+        }
+        struct Any condition_result = with_queue(context, condition, evaluate_expression);
+        if (Any_true(condition_result).boolean) {
+            return run_with_queue(context, positive_case, run_block);
+        } else if (negative_case) {
+            return run_with_queue(context, negative_case, run_block);
+        }
     } else {
         const struct Element *opening_bracket = ElementQueue_peek(queue);
         struct ElementQueue *arguments = ElementQueue_create(read_paren_block(queue));
         call(context, symbol, opening_bracket->position, arguments);
     }
-    return (struct StatementResult) { false, None() };
+    return (struct StatementResult) {false, None()};
 }
 
-struct Any run_block(struct Variables *context, struct ElementQueue *queue) {
-    struct Any result = None();
+struct StatementResult run_block(struct Variables *context, struct ElementQueue *queue) {
+    struct StatementResult result = {false, None()};
     struct SplitElements *statements = SplitElements_by_line(queue);
     for (size_t index = 0; index < statements->size; ++index) {
         struct Elements *statement = &statements->data[index];
+        size_t line = statement->data[0].position.line;
         if (DEBUG_ENABLED) {
+            printf("line %zu: ", line);
             print_statement(statement);
         }
         struct StatementResult statement_result = execute_statement(context, statement);
         if (statement_result.is_return) {
-            result = statement_result.value;
+            result = statement_result;
             break;
         }
     }

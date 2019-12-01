@@ -71,7 +71,7 @@ static size_t level_index(Hash hash, uint8_t level) {
 
 bool replace_value(struct ValueList *values, Key key, Value value) {
     while (values) {
-        if (Any_equal(values->key, key)) {
+        if (Any_equal(values->key, key).boolean) {
             Any_release(values->value);
             values->value = value;
             return true;
@@ -150,7 +150,7 @@ bool Node_set(struct Node *node, uint8_t level, Key key, Hash hash, Value value)
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         while (values) {
-            if (Any_equal(values->key, key)) {
+            if (Any_equal(values->key, key).boolean) {
                 values->value = value;
                 return true;
             }
@@ -179,7 +179,7 @@ struct HashMapResult Node_get(struct Node *node, uint8_t level, Key key, Hash ha
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         while (values) {
-            if (Any_equal(values->key, key)) {
+            if (Any_equal(values->key, key).boolean) {
                 return (struct HashMapResult) { true, values->value };
             }
             values = values->next;
@@ -208,7 +208,7 @@ struct Node *Node_remove(struct Node *node, uint8_t level, Key key, Hash hash, b
         struct ValueList *values = node->values;
         struct ValueList **source = &node->values;
         while (values) {
-            if (Any_equal(values->key, key)) {
+            if (Any_equal(values->key, key).boolean) {
                 if (*found) {
                     fail("Found multiple entries for key %zu", key);
                 }

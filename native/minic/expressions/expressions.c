@@ -73,6 +73,17 @@ const struct Token *read_symbol(struct ElementQueue *elements) {
     return element->token;
 }
 
+bool is_symbol(const struct Element *element) {
+    return element &&
+           element->type == TokenElement &&
+           element->token->type == Symbol;
+}
+
+bool is_symbol_of_name(const struct Element *element, const char *name) {
+    return is_symbol(element) &&
+           equal(element->token->text, name);
+}
+
 static const struct Elements *read_block(struct ElementQueue *elements, enum BracketType type) {
     const struct Element *next = ElementQueue_next(elements);
     if (!next) {

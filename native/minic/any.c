@@ -15,17 +15,42 @@ struct Any None() {
     return *result;
 }
 
-struct Any String(const struct String *value) {
+struct Any Boolean(bool value) {
     struct Any result = None();
-    result.type = StringType;
-    result.string = value;
+    result.type = BooleanType;
+    result.boolean = value;
     return result;
+}
+
+struct Any True() {
+    struct Any result = None();
+    result.type = BooleanType;
+    result.boolean = true;
+    return result;
+}
+
+struct Any False() {
+    struct Any result = None();
+    result.type = BooleanType;
+    result.boolean = false;
+    return result;
+}
+
+struct Any Not(struct Any value) {
+    return Boolean(!Any_true(value).boolean);
 }
 
 struct Any Integer(int64_t value) {
     struct Any result = None();
     result.type = IntegerType;
     result.integer = value;
+    return result;
+}
+
+struct Any String(const struct String *value) {
+    struct Any result = None();
+    result.type = StringType;
+    result.string = value;
     return result;
 }
 
@@ -87,40 +112,101 @@ Hash Any_hash(struct Any value) {
     }
 }
 
-bool Any_equal(struct Any lhs, struct Any rhs) {
+struct Any Any_equal(struct Any lhs, struct Any rhs) {
     enum AnyType type = lhs.type;
     if (rhs.type != type) {
-        return false;
+        return False();
     }
     switch (type) {
         case NoneType:
-            return 0;
+            return True();
         case IntegerType:
-            return lhs.integer == rhs.integer;
+            return Boolean(lhs.integer == rhs.integer);
         case StringType:
-            return String_equal(lhs.string, rhs.string);
+            return Boolean(String_equal(lhs.string, rhs.string));
         case ComplexType:
             // TODO relay
-            return lhs.complex_value == rhs.complex_value;
+            return Boolean(lhs.complex_value == rhs.complex_value);
         case FlatType:
-            return lhs.flat_value == rhs.flat_value;
+            return Boolean(lhs.flat_value == rhs.flat_value);
         default:
             fail("Any_equal: value has unknown type %d", type);
     }
 }
 
+struct Any Any_unequal(struct Any lhs, struct Any rhs) {
+    return Not(Any_equal(lhs, rhs));
+}
+
+struct Any Any_true(struct Any value) {
+    switch (value.type) {
+        case NoneType:
+            return False();
+        case BooleanType:
+            return value;
+        case StringType:
+            // true because equivalent to a ComplexString
+            return True();
+        case ComplexType:
+            // Complex types are never null
+            return True();
+        default:
+            fail("Cannot convert type %s to boolean", Any_typename(value));
+    }
+}
+
 struct Any Any_add(const struct Any lhs, const struct Any rhs) {
-    fail("TODO implement addition");
+    if (lhs.type == IntegerType && rhs.type == IntegerType) {
+        struct Any result = Integer(lhs.integer + rhs.integer);
+        return result;
+    } else {
+        fail("Addition unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+    }
 }
 
 struct Any Any_subtract(const struct Any lhs, const struct Any rhs) {
-    fail("TODO implement subtraction");
+    if (lhs.type == IntegerType && rhs.type == IntegerType) {
+        struct Any result = Integer(lhs.integer - rhs.integer);
+        return result;
+    } else {
+        fail("Subtraction unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+    }
 }
 
 struct Any Any_multiply(const struct Any lhs, const struct Any rhs) {
-    fail("TODO implement multiplication");
+    if (lhs.type == IntegerType && rhs.type == IntegerType) {
+        struct Any result = Integer(lhs.integer * rhs.integer);
+        return result;
+    } else {
+        fail("Multiplication unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+    }
 }
 
 struct Any Any_divide(const struct Any lhs, const struct Any rhs) {
-    fail("TODO implement division");
+    if (lhs.type == IntegerType && rhs.type == IntegerType) {
+        if (rhs.integer == 0) {
+            fail("Division by zero", Any_typename(lhs), Any_typename(rhs));
+        }
+        struct Any result = Integer(lhs.integer / rhs.integer);
+        return result;
+    } else {
+        fail("Division unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+    }
+}
+
+const char *Any_typename(struct Any value) {
+    switch (value.type) {
+        case NoneType:
+            return "None";
+        case IntegerType:
+            return "None";
+        case StringType:
+            return "None";
+        case ComplexType:
+            return "None";
+        case FlatType:
+            return "None";
+        default:
+            fail("<Unknown type %d>", value.type);
+    }
 }

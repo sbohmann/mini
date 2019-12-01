@@ -7,7 +7,8 @@
 
 enum AnyType {
     NoneType = 0x00,
-    IntegerType = 0x01,
+    BooleanType = 0x01,
+    IntegerType = 0x02,
     StringType = 0x11,
     ComplexType = 0x21,
     FlatType = 0x22
@@ -17,6 +18,7 @@ struct Any {
     enum AnyType type;
     union {
         char flat_value[8];
+        bool boolean;
         int64_t integer;
         const struct String *string;
         struct ComplexValue * complex_value;
@@ -25,9 +27,17 @@ struct Any {
 
 struct Any None();
 
-struct Any String(const struct String *value);
+struct Any Boolean(bool value);
+
+struct Any True();
+
+struct Any False();
+
+struct Any Not(struct Any value);
 
 struct Any Integer(int64_t value);
+
+struct Any String(const struct String *value);
 
 struct Any Complex(struct ComplexValue *instance);
 
@@ -43,7 +53,11 @@ Hash string_hash(const char *data, size_t length);
 
 Hash Any_hash(struct Any value);
 
-bool Any_equal(struct Any lhs, struct Any rhs);
+struct Any Any_equal(struct Any lhs, struct Any rhs);
+
+struct Any Any_unequal(struct Any lhs, struct Any rhs);
+
+struct Any Any_true(struct Any value);
 
 struct Any Any_add(const struct Any lhs, const struct Any rhs);
 
@@ -52,3 +66,5 @@ struct Any Any_subtract(const struct Any lhs, const struct Any rhs);
 struct Any Any_multiply(const struct Any lhs, const struct Any rhs);
 
 struct Any Any_divide(const struct Any lhs, const struct Any rhs);
+
+const char *Any_typename(struct Any value);

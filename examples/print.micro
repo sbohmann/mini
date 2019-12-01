@@ -1,34 +1,13 @@
-let x = 5
-let y = 6
-print(1, ", ", 2, ", ", 3, ", and a string\n")
-print("variables would be neat. Oh, there is one: ", x, "\n")
-
-fn f(x) {
-    print("Hello from function f!!! :D - x: ", x, ", y: ", y, "\n")
-    return 8
-}
-
-let z = f(7)
-print("result: ", z, "\n")
-print("mining output, call: ", f(9), " <- result... and more output ^^\n")
-
-fn outer() {
-    let local = 123
-    fn inner[local]() {
-        print(local, "\n")
+fn fibonacci(n) {
+    if (n != 0) {
+        let result = fibonacci(n - 1) + n
+        println(n, ": ", result)
+        return result
+    } else {
+        return 1
     }
-    return inner
 }
 
-let inner = outer()
-inner()
+let result = fibonacci(5)
 
-f = fn() {
-    print("Yes\n")
-}
-
-f()
-
-let huhu = 11
-huhu = 12
-print(huhu)
+print("result: ", result)
