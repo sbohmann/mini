@@ -496,6 +496,20 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
         } else if (negative_case) {
             return run_with_queue(context, negative_case, run_block);
         }
+    } else if (equal(symbol, "while")) {
+        const struct Elements *condition = read_paren_block(queue);
+        const struct Elements *positive_case = read_curly_block(queue);
+        while (true) {
+            struct Any condition_result = with_queue(context, condition, evaluate_expression);
+            if (Any_true(condition_result).boolean) {
+                struct StatementResult whileblock_result = run_with_queue(context, positive_case, run_block);
+                if (whileblock_result.is_return) {
+                    return whileblock_result;
+                }
+            } else {
+                break;
+            }
+        }
     } else {
         const struct Element *opening_bracket = ElementQueue_peek(queue);
         struct ElementQueue *arguments = ElementQueue_create(read_paren_block(queue));

@@ -1,3 +1,40 @@
+let x = 5
+let y = 6
+println(1, ", ", 2, ", ", 3, ", and a string")
+println("variables would be neat. Oh, there is one: ", x)
+
+fn f(x) {
+    println("Hello from function f!!! :D - x: ", x, ", y: ", y)
+    return 8
+}
+
+let z = f(7)
+println("result: ", z)
+println("mining output, call: ", f(9), " <- result... and more output ^^")
+
+fn outer() {
+    let local = 123
+    fn inner[local]() {
+        println(local)
+    }
+    return inner
+}
+
+let inner = outer()
+inner()
+
+f = fn() {
+    println("Yes")
+}
+
+f()
+
+let huhu = 11
+huhu = 12
+println(huhu)
+
+println(3*2)
+
 fn fibonacci(n) {
     if (n > 1) {
         let result = fibonacci(n - 1) + fibonacci(n - 2)
@@ -10,4 +47,11 @@ fn fibonacci(n) {
 
 let result = fibonacci(5)
 
-print("result: ", result)
+println("result: ", result)
+
+let x = 0
+while (x < 5) {
+    print(x)
+    x = x + 1
+}
+println("\n^ this should say 01234 :D")

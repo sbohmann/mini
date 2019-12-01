@@ -13,10 +13,10 @@
 static uint8_t tab_width = 4;
 
 static void check_character_legality(const char *path, size_t line, size_t column, char c) {
-    if (c == 0x9 || (c >= 0x20 && c < 0x7f)) {
+    if (c == 0x9 || (c >= 0x20 && c < 0x7f) || (c < 0)) {
         return;
     }
-    fail("Illegal character [0x%02x] at [%s], line %zu, column %zu", (int)c, path, line, column);
+    fail("Illegal character [0x%02x] at [%s], line %zu, column %zu", (uint8_t)c, path, line, column);
 }
 
 static size_t advance_column(size_t column, char c) {
