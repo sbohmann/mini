@@ -14,7 +14,7 @@ static void List_destructor(struct List *instance) {
 struct List *List_create()
 {
     struct List *result = allocate(sizeof(struct List));
-    result->base.destructor = (void (struct ComplexValue *))List_destructor;
+    result->base.destructor = (void (*) (struct ComplexValue *))List_destructor;
     result->data = allocate(32 * sizeof(struct Any));
     return result;
 }
@@ -22,7 +22,7 @@ struct List *List_create()
 struct List *List_copy(struct List *other)
 {
     struct List *result = allocate(sizeof(struct List));
-    result->base.destructor = (void (struct ComplexValue *))List_destructor;
+    result->base.destructor = (void (*) (struct ComplexValue *))List_destructor;
     result->data = allocate(other->capacity * sizeof(struct Any));
     result->capacity = other->capacity;
     for (size_t index = 0; index < other->size; ++index) {
@@ -36,7 +36,7 @@ struct List *List_copy(struct List *other)
 struct List *List_concatenate(struct List *lhs, struct List *rhs)
 {
     struct List *result = allocate(sizeof(struct List));
-    result->base.destructor = (void (struct ComplexValue *))List_destructor;
+    result->base.destructor = (void (*) (struct ComplexValue *))List_destructor;
     result->capacity = lhs->capacity + rhs->capacity;
     result->data = allocate(result->capacity * sizeof(struct Any));
     for (size_t index = 0; index < lhs->size; ++index) {
