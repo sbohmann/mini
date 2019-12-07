@@ -67,3 +67,12 @@ struct Any List_get(struct List *self, size_t index) {
         fail("Index out of bounds: %zu, size: %zu", index, self->size);
     }
 }
+
+void List_set(struct List *self, size_t index, struct Any value) {
+    if (index < self->size) {
+        Any_retain(value);
+        self->data[index] = value;
+    } else {
+        fail("Index out of bounds: %zu, size: %zu", index, self->size);
+    }
+}

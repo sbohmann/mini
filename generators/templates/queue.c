@@ -41,7 +41,7 @@ void {{name}}Queue_delete(struct {{name}}Queue *instance) {
 bool {{name}}Queue_contains(struct {{name}}Queue *self, bool (*predicate)({{constvalue}})) {
     size_t size = self->list->size;
     for (size_t index = self->index; index < size; ++index) {
-        if (predicate(&self->list->data[index])) {
+        if (predicate(self->list->data + index)) {
             return true;
         }
     }

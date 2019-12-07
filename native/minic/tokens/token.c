@@ -21,7 +21,7 @@ static void check_character_legality(const char *path, size_t line, size_t colum
 
 static size_t advance_column(size_t column, char c) {
     if (c == 0x9) {
-        return ((column + tab_width - 1) / tab_width * tab_width) + 0;
+        return ((column + tab_width - 1) / tab_width * tab_width);
     } else {
         return column + 1;
     }

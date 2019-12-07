@@ -12,20 +12,20 @@ enum AnyType {
     StringType = 0x11,
     ComplexType = 0x21,
     FlatType = 0x22,
-    ComplexStringType = 31,
-    ListType = 41,
-    SetType = 42,
-    MapType = 43
+    FunctionType = 0x23
 };
+
+struct List;
 
 struct Any {
     enum AnyType type;
     union {
-        char flat_value[8];
         bool boolean;
         int64_t integer;
         const struct String *string;
         struct ComplexValue * complex_value;
+        char flat_value[8];
+        struct Any (*function)(const struct List *);
     };
 };
 

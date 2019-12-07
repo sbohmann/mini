@@ -9,54 +9,29 @@
 #include <core/complex.h>
 #include <core/allocate.h>
 #include <stdlib.h>
+#include <minic/list.h>
 
 #include "debug.h"
 #include "print.h"
 #include "variables.h"
 #include "split_elements.h"
-
-const uint32_t FunctionType = 0xd6dce275;
+#include "function.h"
+#include "complex_types.h"
 
 struct Variables *global_context;
-
-struct Function {
-    struct ComplexValue base;
-    uint32_t type;
-    struct Variables *bindings;
-    const struct StringList *parameter_names;
-    const struct Elements *body;
-};
-
-static void Function_destructor(struct Function *instance) {
-    if (instance->bindings) {
-        Variables_release(instance->bindings);
-    }
-}
-
-static struct Function *Function_create(struct Variables *bindings, const struct StringList *parameter_names,
-                                        const struct Elements *body) {
-    struct Function *result = allocate(sizeof(struct Function));
-    Complex_init(&result->base);
-    result->base.destructor = (void (*)(struct ComplexValue *)) Function_destructor;
-    result->type = FunctionType;
-    result->bindings = bindings;
-    result->parameter_names = parameter_names;
-    result->body = body;
-    return result;
-}
 
 static struct Variables *create_bindings(const struct Variables *context, const struct Elements *names) {
     struct ElementQueue *queue = ElementQueue_create(names);
     struct SplitElements *split_names = SplitElements_by_comma(queue);
     struct Variables *result = Variables_create(global_context);
     for (size_t index = 0; index < names->size; ++index) {
-        struct Elements *part = &split_names->data[index];
+        struct Elements *part = split_names->data + index;
         if (part->size == 0) {
             fail("logical_error");
         } else if (part->size > 1) {
             fail_at_position(part->data[1].position, "Unexpected token");
         }
-        const struct Element *name_element = &part->data[0];
+        const struct Element *name_element = part->data;
         if (name_element->type != TokenElement || name_element->token->type != Symbol) {
             fail_at_position(name_element->position, "Unexpected token");
         }
@@ -117,8 +92,8 @@ struct FunctionCallResult {
     };
 };
 
-static struct FunctionCallResult call(struct Variables *context, const struct String *name, struct Position position,
-                                      struct ElementQueue *arguments);
+static struct FunctionCallResult call(struct Variables *context, struct Any function, struct String *name,
+                                      struct Position position, struct ElementQueue *arguments);
 
 struct Any with_queue(struct Variables *context, const struct Elements *elements,
                       struct Any (*function)(struct Variables *context, struct ElementQueue *queue)) {
@@ -162,7 +137,10 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
         fail_at_position(first_token->position, "Unexpected expression: [%s]", first_token->text->value);
     }
     const struct Element *first_remaining_element = ElementQueue_peek(queue);
-    if (first_remaining_element) {
+    while (first_remaining_element) {
+        if (is_bracket_element_of_type(first_remaining_element, Paren)) {
+        
+        }
         fail_at_position(first_remaining_element->position, "Unexpected token");
     }
     return result;
@@ -177,7 +155,7 @@ struct Any evaluate_division(struct Variables *context, struct ElementQueue *que
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_division_operator);
         struct Any result = None();
         for (size_t index = 0; index < split_elements->size; ++index) {
-            struct Elements *group = &split_elements->data[index];
+            struct Elements *group = split_elements->data + index;
             struct Any group_result = with_queue(context, group, evaluate_simple_expression);
             if (index == 0) {
                 result = group_result;
@@ -201,7 +179,7 @@ struct Any evaluate_multiplication(struct Variables *context, struct ElementQueu
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_multiplication_operator);
         struct Any result = None();
         for (size_t index = 0; index < split_elements->size; ++index) {
-            struct Elements *group = &split_elements->data[index];
+            struct Elements *group = split_elements->data + index;
             struct Any group_result = with_queue(context, group, evaluate_division);
             if (index == 0) {
                 result = group_result;
@@ -225,7 +203,7 @@ struct Any evaluate_subtraction(struct Variables *context, struct ElementQueue *
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_minus_operator);
         struct Any result = None();
         for (size_t index = 0; index < split_elements->size; ++index) {
-            struct Elements *group = &split_elements->data[index];
+            struct Elements *group = split_elements->data + index;
             struct Any group_result = with_queue(context, group, evaluate_multiplication);
             if (index == 0) {
                 result = group_result;
@@ -249,7 +227,7 @@ struct Any evaluate_addition(struct Variables *context, struct ElementQueue *que
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_plus_operator);
         struct Any result = None();
         for (size_t index = 0; index < split_elements->size; ++index) {
-            struct Elements *group = &split_elements->data[index];
+            struct Elements *group = split_elements->data + index;
             struct Any group_result = with_queue(context, group, evaluate_subtraction);
             if (index == 0) {
                 result = group_result;
@@ -279,8 +257,8 @@ struct Any evaluate_comparison(struct Variables *context, struct ElementQueue *q
             fail_at_position(split_elements->data[0].data[0].position, "Unsupported chained equality check");
         }
         const struct String *operator_name = split_elements->separators[0].token->text;
-        struct Any lhs_result = with_queue(context, &split_elements->data[0], evaluate_addition);
-        struct Any rhs_result = with_queue(context, &split_elements->data[1], evaluate_addition);
+        struct Any lhs_result = with_queue(context, split_elements->data, evaluate_addition);
+        struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_addition);
         SplitElements_delete(split_elements);
         if (equal(operator_name, "<")) {
             return Any_less_than(lhs_result, rhs_result);
@@ -309,9 +287,9 @@ struct Any evaluate_equality(struct Variables *context, struct ElementQueue *que
         if (split_elements->size != 2) {
             fail_at_position(split_elements->data[0].data[0].position, "Unsupported chained equality check");
         }
-        bool equality_check = is_symbol_of_name(&split_elements->separators[0], "==");
-        struct Any lhs_result = with_queue(context, &split_elements->data[0], evaluate_comparison);
-        struct Any rhs_result = with_queue(context, &split_elements->data[1], evaluate_comparison);
+        bool equality_check = is_symbol_of_name(split_elements->separators, "==");
+        struct Any lhs_result = with_queue(context, split_elements->data, evaluate_comparison);
+        struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_comparison);
         SplitElements_delete(split_elements);
         return equality_check ? Any_equal(lhs_result, rhs_result) : Any_unequal(lhs_result, rhs_result);
     } else {
@@ -340,12 +318,20 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
     }
 }
 
-void print(struct Variables *context, struct SplitElements *arguments) {
+static void print_raw(struct List *arguments) {
     for (size_t index = 0; index < arguments->size; ++index) {
-        struct ElementQueue *argument_queue = ElementQueue_create(&arguments->data[index]);
-        struct Any value = evaluate_expression(context, argument_queue);
-        print_value(value);
+        print_value(List_get(arguments, index));
     }
+}
+
+void print(struct List *arguments) {
+    print_raw(arguments);
+    fflush(stdout);
+}
+
+void println(struct List *arguments) {
+    print_raw(arguments);
+    putchar('\n');
     fflush(stdout);
 }
 
@@ -374,7 +360,7 @@ call_function(struct Variables *context, struct Function *function, struct Eleme
         if (index >= split_elements->size) {
             fail("Logical error");
         }
-        struct Elements *expression = &split_elements->data[index];
+        struct Elements *expression = split_elements->data + index;
         struct ElementQueue *expression_queue = ElementQueue_create(expression);
         struct Any value = evaluate_expression(context, expression_queue);
         ElementQueue_delete(expression_queue);
@@ -396,40 +382,44 @@ call_function(struct Variables *context, struct Function *function, struct Eleme
     return result;
 }
 
-static struct FunctionCallResult
-call(struct Variables *context, const struct String *name, struct Position position, struct ElementQueue *arguments) {
-    if (equal(name, "print") || equal(name, "println")) {
-        struct SplitElements *split_arguments = SplitElements_by_comma(arguments);
-        print(context, split_arguments);
-        if (equal(name, "println")) {
-            putchar('\n');
-        }
+struct List *create_list(struct Variables *context, struct SplitElements *split_arguments) {
+    struct List *result = List_create();
+    for (size_t index = 0; index < split_arguments->size; ++index) {
+        struct Elements *group = split_arguments->data + index;
+        struct ElementQueue *group_queue = ElementQueue_create(group);
+        struct Any value = evaluate_expression(context, group_queue);
+        List_add(result, value);
+        Any_release(value);
+        ElementQueue_delete(group_queue);
+    }
+    return result;
+}
+
+static struct FunctionCallResult call(struct Variables *context, struct Any function, struct String *name,
+                                      struct Position position, struct ElementQueue *arguments) {
+    struct SplitElements *split_arguments = SplitElements_by_comma(arguments);
+    struct List *argument_list = create_list(context, split_arguments);
+    if (function.type == FunctionType) {
         struct FunctionCallResult result;
         result.type = Success;
-        result.value = None();
+        result.value = function.function(argument_list);;
         return result;
-    } else {
-        struct HashMapResult result = get_variable(context, name);
-        if (!result.found) {
-            fail_at_position(position, "Call to undefined value [%s]", name->value);
-        }
-        if (result.value.type == ComplexType) {
-            struct Function *function = (struct Function *) result.value.complex_value;
-            if (function->type == FunctionType) {
-                struct FunctionCallResult call_result = call_function(context, function, arguments);
-                if (call_result.type == ArgumentNumberMismatch) {
-                    printf("Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.",
-                           name->value, call_result.arguments_passed, call_result.arguments_expected);
-                }
-                return call_result;
-            } else {
-                printf("Error: failed to call non-function complex value %s\n", name->value);
+    } else if (function.type == ComplexType) {
+        if (function.complex_value.type == FunctionComplexType) {
+            struct Function *complex_function = (struct Function *) function.complex_value;
+            struct FunctionCallResult call_result = call_function(context, function, arguments);
+            if (call_result.type == ArgumentNumberMismatch) {
+                printf("Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.",
+                       complex_function->, call_result.arguments_passed, call_result.arguments_expected);
             }
+            return call_result;
         } else {
-            printf("Error: failed to call non-function value %s [", name->value);
-            print_value(result.value);
-            puts("]\n");
+            printf("Error: failed to call non-function complex value %s\n", name->value);
         }
+    } else {
+        printf("Error: failed to call non-function value %s [", name->value);
+        print_value(function);
+        puts("]\n");
     }
     ElementQueue_delete(arguments);
     struct FunctionCallResult result;
@@ -511,9 +501,7 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
             }
         }
     } else {
-        const struct Element *opening_bracket = ElementQueue_peek(queue);
-        struct ElementQueue *arguments = ElementQueue_create(read_paren_block(queue));
-        call(context, symbol, opening_bracket->position, arguments);
+        evaluate_expression(context, queue);
     }
     return (struct StatementResult) {false, None()};
 }
@@ -522,7 +510,7 @@ struct StatementResult run_block(struct Variables *context, struct ElementQueue 
     struct StatementResult result = {false, None()};
     struct SplitElements *statements = SplitElements_by_line(queue);
     for (size_t index = 0; index < statements->size; ++index) {
-        struct Elements *statement = &statements->data[index];
+        struct Elements *statement = statements->data + index;
         size_t line = statement->data[0].position.line;
         if (DEBUG_ENABLED) {
             printf("line %zu: ", line);
