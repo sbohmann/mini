@@ -11,7 +11,11 @@ enum AnyType {
     IntegerType = 0x02,
     StringType = 0x11,
     ComplexType = 0x21,
-    FlatType = 0x22
+    FlatType = 0x22,
+    ComplexStringType = 31,
+    ListType = 41,
+    SetType = 42,
+    MapType = 43
 };
 
 struct Any {
