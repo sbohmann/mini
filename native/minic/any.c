@@ -54,6 +54,13 @@ struct Any String(const struct String *value) {
     return result;
 }
 
+struct Any Function(struct Any (*value) (const struct List *)) {
+    struct Any result = None();
+    result.type = FunctionType;
+    result.function = value;
+    return result;
+}
+
 struct Any Complex(struct ComplexValue *instance) {
     struct Any result = None();
     result.type = ComplexType;
@@ -187,7 +194,7 @@ struct Any Any_true(struct Any value) {
     }
 }
 
-struct Any Any_add(const struct Any lhs, const struct Any rhs) {
+struct Any Any_add(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
         struct Any result = Integer(lhs.integer + rhs.integer);
         return result;
@@ -196,7 +203,7 @@ struct Any Any_add(const struct Any lhs, const struct Any rhs) {
     }
 }
 
-struct Any Any_subtract(const struct Any lhs, const struct Any rhs) {
+struct Any Any_subtract(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
         struct Any result = Integer(lhs.integer - rhs.integer);
         return result;
@@ -205,7 +212,7 @@ struct Any Any_subtract(const struct Any lhs, const struct Any rhs) {
     }
 }
 
-struct Any Any_multiply(const struct Any lhs, const struct Any rhs) {
+struct Any Any_multiply(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
         struct Any result = Integer(lhs.integer * rhs.integer);
         return result;
@@ -214,7 +221,7 @@ struct Any Any_multiply(const struct Any lhs, const struct Any rhs) {
     }
 }
 
-struct Any Any_divide(const struct Any lhs, const struct Any rhs) {
+struct Any Any_divide(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
         if (rhs.integer == 0) {
             fail("Division by zero", Any_typename(lhs), Any_typename(rhs));

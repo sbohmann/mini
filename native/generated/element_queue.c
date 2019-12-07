@@ -47,3 +47,7 @@ bool ElementQueue_contains(struct ElementQueue *self, bool (*predicate)(const st
     }
     return false;
 }
+
+void ElementQueue_reset(struct ElementQueue *self) {
+    self->index = 0;
+}

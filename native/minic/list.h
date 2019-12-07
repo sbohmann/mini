@@ -19,6 +19,6 @@ struct List *List_concatenate(struct List *lhs, struct List *rhs);
 
 void List_add(struct List *self, struct Any value);
 
-struct Any List_get(struct List *self, size_t index);
+struct Any List_get(const struct List *self, size_t index);
 
 void List_set(struct List *self, size_t index, struct Any value);

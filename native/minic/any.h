@@ -43,6 +43,8 @@ struct Any Integer(int64_t value);
 
 struct Any String(const struct String *value);
 
+struct Any Function(struct Any (*value) (const struct List *));
+
 struct Any Complex(struct ComplexValue *instance);
 
 void Any_retain(struct Any instance);
@@ -71,12 +73,12 @@ struct Any Any_greater_than_or_equal(struct Any lhs, struct Any rhs);
 
 struct Any Any_true(struct Any value);
 
-struct Any Any_add(const struct Any lhs, const struct Any rhs);
+struct Any Any_add(struct Any lhs, struct Any rhs);
 
-struct Any Any_subtract(const struct Any lhs, const struct Any rhs);
+struct Any Any_subtract(struct Any lhs, struct Any rhs);
 
-struct Any Any_multiply(const struct Any lhs, const struct Any rhs);
+struct Any Any_multiply(struct Any lhs, struct Any rhs);
 
-struct Any Any_divide(const struct Any lhs, const struct Any rhs);
+struct Any Any_divide(struct Any lhs, struct Any rhs);
 
 const char *Any_typename(struct Any value);

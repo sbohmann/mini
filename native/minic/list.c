@@ -33,8 +33,7 @@ struct List *List_copy(struct List *other)
     return result;
 }
 
-struct List *List_concatenate(struct List *lhs, struct List *rhs)
-{
+struct List *List_concatenate(struct List *lhs, struct List *rhs) {
     struct List *result = allocate(sizeof(struct List));
     result->base.destructor = (void (*) (struct ComplexValue *))List_destructor;
     result->capacity = lhs->capacity + rhs->capacity;
@@ -58,9 +57,10 @@ void List_add(struct List *self, struct Any value) {
     }
     Any_retain(value);
     self->data[self->size] = value;
+    ++self->size;
 }
 
-struct Any List_get(struct List *self, size_t index) {
+struct Any List_get(const struct List *self, size_t index) {
     if (index < self->size) {
         return self->data[index];
     } else {

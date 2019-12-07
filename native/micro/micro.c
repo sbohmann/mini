@@ -92,7 +92,7 @@ struct FunctionCallResult {
     };
 };
 
-static struct FunctionCallResult call(struct Variables *context, struct Any function, struct String *name,
+static struct FunctionCallResult call(struct Variables *context, struct Any function, struct Any name,
                                       struct Position position, struct ElementQueue *arguments);
 
 struct Any with_queue(struct Variables *context, const struct Elements *elements,
@@ -103,26 +103,16 @@ struct Any with_queue(struct Variables *context, const struct Elements *elements
     return result;
 }
 
+struct Any evaluate_expression(struct Variables *context, struct ElementQueue *queue);
+
 struct Any evaluate_simple_expression(struct Variables *context, struct ElementQueue *queue) {
     const struct Token *first_token = read_token(queue);
     struct Any result;
-    const struct Element *next_element = ElementQueue_peek(queue);
+    struct Any name = None();
     if (first_token->type == Symbol) {
         if (equal(first_token->text, "fn")) {
             struct Function *function = read_function(context, queue);
             return Complex(&function->base);
-        } else if (is_bracket_element_of_type(next_element, Paren)) {
-            const struct Element *opening_bracket = next_element;
-            const struct Elements *arguments = read_paren_block(queue);
-            struct ElementQueue *arguments_queue = ElementQueue_create(arguments);
-            struct FunctionCallResult call_result = call(context, first_token->text, opening_bracket->position,
-                                                         arguments_queue);
-            ElementQueue_delete(arguments_queue);
-            if (call_result.type == Success) {
-                result = call_result.value;
-            } else {
-                fail_at_position(first_token->position, "Call to function %s failed.", first_token->text->value);
-            }
         } else {
             struct HashMapResult variable = get_variable(context, first_token->text);
             if (variable.found) {
@@ -131,17 +121,52 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
                 fail_at_position(first_token->position, "Undefined variable [%s]", first_token->text->value);
             }
         }
+        name = String(first_token->text);
     } else if (first_token->type == NumberLiteral || first_token->type == StringLiteral) {
         result = first_token->value;
     } else {
         fail_at_position(first_token->position, "Unexpected expression: [%s]", first_token->text->value);
     }
-    const struct Element *first_remaining_element = ElementQueue_peek(queue);
-    while (first_remaining_element) {
-        if (is_bracket_element_of_type(first_remaining_element, Paren)) {
-        
+    while (true) {
+        const struct Element *next_element = ElementQueue_peek(queue);
+        if (next_element) {
+            if (is_bracket_element_of_type(next_element, Paren)) {
+                const struct Elements *arguments = read_paren_block(queue);
+                struct ElementQueue *arguments_queue = ElementQueue_create(arguments);
+                struct FunctionCallResult call_result =
+                        call(context, result, name, next_element->position, arguments_queue);
+                ElementQueue_delete(arguments_queue);
+                if (call_result.type == Success) {
+                    result = call_result.value;
+                } else {
+                    if (name.type == StringType) {
+                        fail_at_position(next_element->position, "Call to %s failed.", name.string->value);
+                    } else {
+                        fail_at_position(next_element->position, "Call failed.");
+                    }
+                }
+            } else if (is_bracket_element_of_type(next_element, Square)) {
+                const struct Elements *arguments = read_square_block(queue);
+                if (result.type != ComplexType || result.complex_value->type != ListComplexType) {
+                    fail_at_position(next_element->position, "Index access not supported for type %s",
+                                     Any_typename(result));
+                }
+                struct ElementQueue *index_queue = ElementQueue_create(arguments);
+                struct Any index_value = evaluate_expression(context, index_queue);
+                ElementQueue_delete(index_queue);
+                if (index_value.type == IntegerType) {
+                    struct List *list = (struct List *) result.complex_value;
+                    List_get(list, index_value.integer);
+                } else {
+                    fail_at_position(next_element->position, "Illegal index value type %s",
+                                     Any_typename(index_value));
+                }
+            } else {
+                fail_at_position(next_element->position, "Unexpected token");
+            }
+        } else {
+            break;
         }
-        fail_at_position(first_remaining_element->position, "Unexpected token");
     }
     return result;
 }
@@ -318,21 +343,23 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
     }
 }
 
-static void print_raw(struct List *arguments) {
+static void print_raw(const struct List *arguments) {
     for (size_t index = 0; index < arguments->size; ++index) {
         print_value(List_get(arguments, index));
     }
 }
 
-void print(struct List *arguments) {
+struct Any print(const struct List *arguments) {
     print_raw(arguments);
     fflush(stdout);
+    return None();
 }
 
-void println(struct List *arguments) {
+struct Any println(const struct List *arguments) {
     print_raw(arguments);
     putchar('\n');
     fflush(stdout);
+    return None();
 }
 
 struct StatementResult {
@@ -342,13 +369,12 @@ struct StatementResult {
 
 struct StatementResult run_block(struct Variables *context, struct ElementQueue *queue);
 
-static struct FunctionCallResult
-call_function(struct Variables *context, struct Function *function, struct ElementQueue *arguments) {
-    struct SplitElements *split_elements = SplitElements_by_comma(arguments);
-    if (split_elements->size != StringList_size(function->parameter_names)) {
+static struct FunctionCallResult call_function(struct Variables *context, struct Function *function,
+                                               struct List *arguments) {
+    if (arguments->size != StringList_size(function->parameter_names)) {
         struct FunctionCallResult result;
         result.type = ArgumentNumberMismatch;
-        result.arguments_passed = split_elements->size;
+        result.arguments_passed = arguments->size;
         result.arguments_expected = StringList_size(function->parameter_names);
         return result;
     }
@@ -357,21 +383,17 @@ call_function(struct Variables *context, struct Function *function, struct Eleme
     size_t index = 0;
     while (name_iterator) {
         const struct String *name = StringListIterator_get(name_iterator);
-        if (index >= split_elements->size) {
+        if (index >= arguments->size) {
             fail("Logical error");
         }
-        struct Elements *expression = split_elements->data + index;
-        struct ElementQueue *expression_queue = ElementQueue_create(expression);
-        struct Any value = evaluate_expression(context, expression_queue);
-        ElementQueue_delete(expression_queue);
+        struct Any value = List_get(arguments, index);
         create_variable(locals, name, value);
         name_iterator = StringListIterator_next(name_iterator);
         ++index;
     }
-    if (index != split_elements->size) {
+    if (index != arguments->size) {
         fail("Logical error");
     }
-    SplitElements_delete(split_elements);
     struct ElementQueue *body_queue = ElementQueue_create(function->body);
     struct Any function_result = run_block(locals, body_queue).value;
     ElementQueue_delete(body_queue);
@@ -395,35 +417,34 @@ struct List *create_list(struct Variables *context, struct SplitElements *split_
     return result;
 }
 
-static struct FunctionCallResult call(struct Variables *context, struct Any function, struct String *name,
+static struct FunctionCallResult call(struct Variables *context, struct Any function, struct Any name,
                                       struct Position position, struct ElementQueue *arguments) {
     struct SplitElements *split_arguments = SplitElements_by_comma(arguments);
     struct List *argument_list = create_list(context, split_arguments);
+    struct FunctionCallResult result = {Error};
     if (function.type == FunctionType) {
-        struct FunctionCallResult result;
         result.type = Success;
         result.value = function.function(argument_list);;
-        return result;
     } else if (function.type == ComplexType) {
-        if (function.complex_value.type == FunctionComplexType) {
+        if (function.complex_value->type == FunctionComplexType) {
             struct Function *complex_function = (struct Function *) function.complex_value;
-            struct FunctionCallResult call_result = call_function(context, function, arguments);
-            if (call_result.type == ArgumentNumberMismatch) {
-                printf("Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.",
-                       complex_function->, call_result.arguments_passed, call_result.arguments_expected);
+            result = call_function(context, complex_function, argument_list);
+            if (result.type == ArgumentNumberMismatch) {
+                if (name.type == StringType) {
+                    printf("Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.\n",
+                           name.string->value, result.arguments_passed, result.arguments_expected);
+                } else {
+                    printf("Argument number mismatch in call to function - %zu arguments passed, %zu expected.\n",
+                           result.arguments_passed, result.arguments_expected);
+                }
             }
-            return call_result;
         } else {
-            printf("Error: failed to call non-function complex value %s\n", name->value);
+            printf("Error: failed to call non-function complex value of type %s\n", Any_typename(function));
         }
     } else {
-        printf("Error: failed to call non-function value %s [", name->value);
-        print_value(function);
-        puts("]\n");
+        printf("Error: failed to call non-function value of type %s\n", Any_typename(function));
     }
     ElementQueue_delete(arguments);
-    struct FunctionCallResult result;
-    result.type = Error;
     return result;
 }
 
@@ -501,6 +522,7 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
             }
         }
     } else {
+        ElementQueue_reset(queue);
         evaluate_expression(context, queue);
     }
     return (struct StatementResult) {false, None()};
@@ -529,6 +551,8 @@ struct StatementResult run_block(struct Variables *context, struct ElementQueue 
 void micro_run(struct ParsedModule *module) {
     struct Variables *globals = Variables_create(0);
     global_context = globals;
+    create_variable(globals, String_from_literal("print"), Function(print));
+    create_variable(globals, String_from_literal("println"), Function(println));
     struct ElementQueue *queue = ElementQueue_create(module->elements);
     run_block(globals, queue);
     ElementQueue_delete(queue);
