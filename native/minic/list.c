@@ -16,7 +16,9 @@ struct List *List_create() {
     Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *))List_destructor;
     result->base.type = ListComplexType;
-    result->data = allocate(32 * sizeof(struct Any));
+    const size_t start_capacity = 32;
+    result->data = allocate(start_capacity * sizeof(struct Any));
+    result->capacity = start_capacity;
     return result;
 }
 
@@ -62,7 +64,12 @@ struct List *List_concatenate(const struct List *lhs, const struct List *rhs) {
 
 void List_add(struct List *self, struct Any value) {
     if (self->size == self->capacity) {
-        struct Any *new_data = allocate(2 * self->capacity * sizeof(struct Any));
+        size_t new_capacity = 2 * self->capacity;
+        if (new_capacity <= self->capacity) {
+            fail("Exceeded maximum list capacity");
+        }
+        struct Any *new_data = allocate(new_capacity * sizeof(struct Any));
+        self->capacity = new_capacity;
         memcpy(new_data, self->data, self->size * sizeof(struct Any));
     }
     Any_retain(value);

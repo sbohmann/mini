@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <collections/hashmap.h>
+#include <core/complex.h>
+#include <minic/list.h>
 #include "debug.h"
 
 void print_value(struct Any value) {
@@ -18,7 +20,19 @@ void print_value(struct Any value) {
             break;
         case ComplexType:
             // TODO
-            printf("<complex>");
+            if (value.complex_value->type == ListComplexType) {
+                struct List *list = (struct List *)value.complex_value;
+                putchar('[');
+                for (size_t index = 0; index < list->size; ++index) {
+                    if (index > 0) {
+                        printf(", ");
+                    }
+                    print_value(List_get(list, index));
+                }
+                putchar(']');
+            } else {
+                printf("<complex>");
+            }
             break;
         case FlatType:
             printf("[");
@@ -26,6 +40,9 @@ void print_value(struct Any value) {
                 printf("%s%02x", (index > 0 ? " " : ""), (uint8_t) value.flat_value[index]);
             }
             printf("]");
+            break;
+        case FunctionType:
+            printf("<function>");
             break;
         default:
             printf("<unknown>");
