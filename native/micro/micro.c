@@ -421,6 +421,7 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
                                       struct Position position, struct ElementQueue *arguments) {
     struct SplitElements *split_arguments = SplitElements_by_comma(arguments);
     struct List *argument_list = create_list(context, split_arguments);
+    SplitElements_delete(split_arguments);
     struct FunctionCallResult result = {Error};
     if (function.type == FunctionType) {
         result.type = Success;
@@ -444,7 +445,6 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
     } else {
         printf("Error: failed to call non-function value of type %s\n", Any_typename(function));
     }
-    ElementQueue_delete(arguments);
     return result;
 }
 
