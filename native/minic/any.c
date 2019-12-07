@@ -238,13 +238,15 @@ const char *Any_typename(struct Any value) {
         case NoneType:
             return "None";
         case IntegerType:
-            return "None";
+            return "Integer";
         case StringType:
-            return "None";
+            return "String";
         case ComplexType:
-            return "None";
+            return "Complex";
         case FlatType:
-            return "None";
+            return "Flat";
+        case FunctionType:
+            return "Function";
         default:
             fail("<Unknown type %d>", value.type);
     }

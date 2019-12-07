@@ -11,32 +11,42 @@ static void List_destructor(struct List *instance) {
     free(instance->data);
 }
 
-struct List *List_create()
-{
+struct List *List_create() {
     struct List *result = allocate(sizeof(struct List));
+    Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *))List_destructor;
+    result->base.type = ListComplexType;
     result->data = allocate(32 * sizeof(struct Any));
     return result;
 }
 
-struct List *List_copy(struct List *other)
-{
+struct List *List_copy(const struct List *other) {
     struct List *result = allocate(sizeof(struct List));
+    Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *))List_destructor;
+    result->base.type = ListComplexType;
     result->data = allocate(other->capacity * sizeof(struct Any));
     result->capacity = other->capacity;
     for (size_t index = 0; index < other->size; ++index) {
         Any_retain(other->data[index]);
     }
-    memcpy(result->data, other->data, other->size);
+    memcpy(result->data, other->data, other->size * sizeof(struct Any));
     result->size = other->size;
     return result;
 }
 
-struct List *List_concatenate(struct List *lhs, struct List *rhs) {
+struct List *List_concatenate(const struct List *lhs, const struct List *rhs) {
     struct List *result = allocate(sizeof(struct List));
+    Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *))List_destructor;
-    result->capacity = lhs->capacity + rhs->capacity;
+    result->base.type = ListComplexType;
+    result->capacity = (lhs->capacity > rhs->capacity ? lhs->capacity : rhs->capacity);
+    if (result->capacity < lhs->size + rhs->size) {
+        result->capacity *= 2;
+    }
+    if (result->capacity < lhs->size + rhs->size) {
+        fail("Logical error");
+    }
     result->data = allocate(result->capacity * sizeof(struct Any));
     for (size_t index = 0; index < lhs->size; ++index) {
         Any_retain(lhs->data[index]);
@@ -44,8 +54,8 @@ struct List *List_concatenate(struct List *lhs, struct List *rhs) {
     for (size_t index = 0; index < rhs->size; ++index) {
         Any_retain(rhs->data[index]);
     }
-    memcpy(result->data, lhs->data, lhs->size);
-    memcpy(result->data + lhs->size, rhs->data, rhs->size);
+    memcpy(result->data, lhs->data, lhs->size * sizeof(struct Any));
+    memcpy(result->data + lhs->size, rhs->data, rhs->size * sizeof(struct Any));
     result->size = lhs->size + rhs->size;
     return result;
 }
@@ -53,7 +63,7 @@ struct List *List_concatenate(struct List *lhs, struct List *rhs) {
 void List_add(struct List *self, struct Any value) {
     if (self->size == self->capacity) {
         struct Any *new_data = allocate(2 * self->capacity * sizeof(struct Any));
-        memcpy(new_data, self->data, self->size);
+        memcpy(new_data, self->data, self->size * sizeof(struct Any));
     }
     Any_retain(value);
     self->data[self->size] = value;

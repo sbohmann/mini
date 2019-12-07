@@ -13,9 +13,9 @@ struct List {
 
 struct List *List_create();
 
-struct List *List_copy(struct List *other);
+struct List *List_copy(const struct List *other);
 
-struct List *List_concatenate(struct List *lhs, struct List *rhs);
+struct List *List_concatenate(const struct List *lhs, const struct List *rhs);
 
 void List_add(struct List *self, struct Any value);
 

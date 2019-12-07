@@ -156,7 +156,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
                 ElementQueue_delete(index_queue);
                 if (index_value.type == IntegerType) {
                     struct List *list = (struct List *) result.complex_value;
-                    List_get(list, index_value.integer);
+                    result = List_get(list, index_value.integer);
                 } else {
                     fail_at_position(next_element->position, "Illegal index value type %s",
                                      Any_typename(index_value));
@@ -362,6 +362,11 @@ struct Any println(const struct List *arguments) {
     return None();
 }
 
+struct Any list(const struct List *value) {
+    struct List *result = List_copy(value);
+    return Complex(&result->base);
+}
+
 struct StatementResult {
     bool is_return;
     struct Any value;
@@ -425,7 +430,7 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
     struct FunctionCallResult result = {Error};
     if (function.type == FunctionType) {
         result.type = Success;
-        result.value = function.function(argument_list);;
+        result.value = function.function(argument_list);
     } else if (function.type == ComplexType) {
         if (function.complex_value->type == FunctionComplexType) {
             struct Function *complex_function = (struct Function *) function.complex_value;
@@ -440,7 +445,7 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
                 }
             }
         } else {
-            printf("Error: failed to call non-function complex value of type %s\n", Any_typename(function));
+            printf("Error: failed to call non-function complex value\n");
         }
     } else {
         printf("Error: failed to call non-function value of type %s\n", Any_typename(function));
@@ -553,6 +558,7 @@ void micro_run(struct ParsedModule *module) {
     global_context = globals;
     create_variable(globals, String_from_literal("print"), Function(print));
     create_variable(globals, String_from_literal("println"), Function(println));
+    create_variable(globals, String_from_literal("list"), Function(list));
     struct ElementQueue *queue = ElementQueue_create(module->elements);
     run_block(globals, queue);
     ElementQueue_delete(queue);

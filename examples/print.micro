@@ -55,3 +55,15 @@ while (x < 5) {
     x = x + 1
 }
 println("\n^ this should say 01234 :D")
+
+fn ff() {
+    return fn() {
+        println("inner function printing")
+    }
+}
+
+ff()()
+
+let l = list(list)
+let l2 = l[0](1, 2, 3)
+println(l)
