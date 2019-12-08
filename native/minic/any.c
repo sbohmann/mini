@@ -37,7 +37,7 @@ struct Any False() {
 }
 
 struct Any Not(struct Any value) {
-    return Boolean(!Any_true(value).boolean);
+    return Boolean(!Any_true(value));
 }
 
 struct Any Integer(int64_t value) {
@@ -119,76 +119,76 @@ Hash Any_hash(struct Any value) {
     }
 }
 
-struct Any Any_equal(struct Any lhs, struct Any rhs) {
+bool Any_equal(struct Any lhs, struct Any rhs) {
     enum AnyType type = lhs.type;
     if (rhs.type != type) {
-        return False();
+        return false;
     }
     switch (type) {
         case NoneType:
-            return True();
+            return true;
         case IntegerType:
-            return Boolean(lhs.integer == rhs.integer);
+            return lhs.integer == rhs.integer;
         case StringType:
-            return Boolean(String_equal(lhs.string, rhs.string));
+            return String_equal(lhs.string, rhs.string);
         case ComplexType:
             // TODO relay
-            return Boolean(lhs.complex_value == rhs.complex_value);
+            return lhs.complex_value == rhs.complex_value;
         case FlatType:
-            return Boolean(lhs.flat_value == rhs.flat_value);
+            return lhs.flat_value == rhs.flat_value;
         default:
             fail("Any_equal: value has unknown type %d", type);
     }
 }
 
-struct Any Any_unequal(struct Any lhs, struct Any rhs) {
-    return Not(Any_equal(lhs, rhs));
+bool Any_unequal(struct Any lhs, struct Any rhs) {
+    return !Any_equal(lhs, rhs);
 }
 
-struct Any Any_less_than(struct Any lhs, struct Any rhs) {
+bool Any_less_than(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
-        return Boolean(lhs.integer < rhs.integer);
+        return lhs.integer < rhs.integer;
     } else {
         fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
-struct Any Any_greater_than(struct Any lhs, struct Any rhs) {
+bool Any_greater_than(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
-        return Boolean(lhs.integer > rhs.integer);
+        return lhs.integer > rhs.integer;
     } else {
         fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
-struct Any Any_less_than_or_equal(struct Any lhs, struct Any rhs) {
+bool Any_less_than_or_equal(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
-        return Boolean(lhs.integer <= rhs.integer);
+        return lhs.integer <= rhs.integer;
     } else {
         fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
-struct Any Any_greater_than_or_equal(struct Any lhs, struct Any rhs) {
+bool Any_greater_than_or_equal(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
-        return Boolean(lhs.integer >= rhs.integer);
+        return lhs.integer >= rhs.integer;
     } else {
         fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
-struct Any Any_true(struct Any value) {
+bool Any_true(struct Any value) {
     switch (value.type) {
         case NoneType:
-            return False();
+            return false;
         case BooleanType:
-            return value;
+            return value.boolean;
         case StringType:
             // true because equivalent to a ComplexString
-            return True();
+            return true;
         case ComplexType:
             // Complex types are never null
-            return True();
+            return true;
         default:
             fail("Cannot convert type %s to boolean", Any_typename(value));
     }

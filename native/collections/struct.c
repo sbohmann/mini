@@ -1,4 +1,4 @@
-#include "hashmap.h"
+#include "struct.h"
 
 #include <stdbool.h>
 #include <core/allocate.h>
@@ -11,7 +11,7 @@
 static const uint8_t MaximumLevel = 6;
 
 struct ValueList {
-    Key key;
+    Name name;
     Value value;
     struct ValueList *next;
 };
@@ -27,18 +27,18 @@ struct Node {
     };
 };
 
-struct HashMap {
+struct Struct {
     struct ComplexValue base;
     size_t size;
     struct Node *root;
 };
 
-void HashMap_destructor(struct HashMap *instance);
+void Struct_destructor(struct Struct *instance);
 
-struct HashMap *HashMap_create() {
-    struct HashMap *result = allocate(sizeof(struct HashMap));
+struct Struct *Struct_create() {
+    struct Struct *result = allocate(sizeof(struct Struct));
     Complex_init(&result->base);
-    result->base.destructor = (void (*) (struct ComplexValue *))HashMap_destructor;
+    result->base.destructor = (void (*) (struct ComplexValue *))Struct_destructor;
     return result;
 }
 
@@ -61,27 +61,27 @@ static void delete_node(struct Node *node) {
     }
 }
 
-void HashMap_destructor(struct HashMap *instance) {
+void Struct_destructor(struct Struct *instance) {
     if (instance->root) {
         delete_node(instance->root);
     }
     free(instance);
 }
 
-void HashMap_release(struct HashMap *instance) {
+void Struct_release(struct Struct *instance) {
     release(&instance->base);
 }
 
 static size_t level_index(Hash hash, uint8_t level) {
     if (5 * level >= 32) {
-        fail("HashMap: illegal level: %d", (int) level);
+        fail("Struct: illegal level: %d", (int) level);
     }
     return (hash >> (5 * level)) % 0x20;
 }
 
-static bool replace_value(struct ValueList *values, Key key, Value value) {
+static bool replace_value(struct ValueList *values, Name name, Value value) {
     while (values) {
-        if (Any_equal(values->key, key)) {
+        if (String_equal(values->name, name)) {
             Any_release(values->value);
             values->value = value;
             return true;
@@ -91,34 +91,34 @@ static bool replace_value(struct ValueList *values, Key key, Value value) {
     return false;
 }
 
-static struct ValueList *insert_value(struct ValueList *existing_values, Key key, Value *value) {
+static struct ValueList *insert_value(struct ValueList *existing_values, Name name, Value *value) {
     struct ValueList *new_values = allocate(sizeof(struct ValueList));
-    new_values->key = key;
+    new_values->name = name;
     new_values->value = (*value);
     new_values->next = existing_values;
     return new_values;
 }
 
-static struct Node *create_value_node(Key key, Hash hash, Value value) {
+static struct Node *create_value_node(Name name, Hash hash, Value value) {
     struct Node *new_node = allocate(sizeof(struct Node));
     new_node->is_value_node = true;
     new_node->hash = hash;
     struct ValueList *values = allocate(sizeof(struct ValueList));
-    values->key = key;
+    values->name = name;
     values->value = value;
     new_node->values = values;
     return new_node;
 }
 
-static struct Node *Node_put(struct Node *node, uint8_t level, Key key, Hash hash, Value value, size_t *size) {
+static struct Node *Node_put(struct Node *node, uint8_t level, Name name, Hash hash, Value value, size_t *size) {
     size_t index = level_index(hash, level);
     if (node->is_value_node) {
         struct ValueList *existing_values = node->values;
-        if (replace_value(existing_values, key, value)) {
+        if (replace_value(existing_values, name, value)) {
             return node;
         } else if (level == MaximumLevel || node->hash == hash) {
 //            printf("Collision!!!");
-            node->values = insert_value(existing_values, key, &value);
+            node->values = insert_value(existing_values, name, &value);
             ++(*size);
             return node;
         } else {
@@ -126,20 +126,20 @@ static struct Node *Node_put(struct Node *node, uint8_t level, Key key, Hash has
             size_t existing_node_index = level_index(node->hash, level);
             if (existing_node_index != index) {
                 new_node->sub_nodes[existing_node_index] = node;
-                new_node->sub_nodes[index] = create_value_node(key, hash, value);
+                new_node->sub_nodes[index] = create_value_node(name, hash, value);
                 ++(*size);
                 return new_node;
             } else {
-                new_node->sub_nodes[existing_node_index] = Node_put(node, level + 1, key, hash, value, size);
+                new_node->sub_nodes[existing_node_index] = Node_put(node, level + 1, name, hash, value, size);
                 return new_node;
             }
         }
     } else {
         struct Node *existing_node = node->sub_nodes[index];
         if (existing_node) {
-            node->sub_nodes[index] = Node_put(existing_node, level + 1, key, hash, value, size);
+            node->sub_nodes[index] = Node_put(existing_node, level + 1, name, hash, value, size);
         } else {
-            node->sub_nodes[index] = create_value_node(key, hash, value);
+            node->sub_nodes[index] = create_value_node(name, hash, value);
             ++(*size);
             return node;
         }
@@ -147,20 +147,20 @@ static struct Node *Node_put(struct Node *node, uint8_t level, Key key, Hash has
     }
 }
 
-void HashMap_put(struct HashMap *self, Key key, Value value) {
+void Struct_put(struct Struct *self, Name name, Value value) {
     if (self->root) {
-        self->root = Node_put(self->root, 0, key, Any_hash(key), value, &self->size);
+        self->root = Node_put(self->root, 0, name, name->hash, value, &self->size);
     } else {
-        self->root = create_value_node(key, Any_hash(key), value);
+        self->root = create_value_node(name, name->hash, value);
         self->size = 1;
     }
 }
 
-static bool Node_set(struct Node *node, uint8_t level, Key key, Hash hash, Value value) {
+static bool Node_set(struct Node *node, uint8_t level, Name name, Hash hash, Value value) {
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         while (values) {
-            if (Any_equal(values->key, key)) {
+            if (String_equal(values->name, name)) {
                 values->value = value;
                 return true;
             }
@@ -170,26 +170,26 @@ static bool Node_set(struct Node *node, uint8_t level, Key key, Hash hash, Value
     } else {
         size_t index = level_index(hash, level);
         if (node->sub_nodes[index]) {
-            return Node_set(node->sub_nodes[index], level + 1, key, hash, value);
+            return Node_set(node->sub_nodes[index], level + 1, name, hash, value);
         } else {
             return false;
         }
     }
 }
 
-bool HashMap_set(struct HashMap *self, Key key, Value value) {
+bool Struct_set(struct Struct *self, Name name, Value value) {
     if (self->root) {
-        return Node_set(self->root, 0, key, Any_hash(key), value);
+        return Node_set(self->root, 0, name, name->hash, value);
     } else {
         return false;
     }
 }
 
-static struct MapResult Node_get(struct Node *node, uint8_t level, Key key, Hash hash) {
+static struct MapResult Node_get(struct Node *node, uint8_t level, Name name, Hash hash) {
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         while (values) {
-            if (Any_equal(values->key, key)) {
+            if (String_equal(values->name, name)) {
                 return (struct MapResult) { true, values->value };
             }
             values = values->next;
@@ -198,29 +198,29 @@ static struct MapResult Node_get(struct Node *node, uint8_t level, Key key, Hash
     } else {
         size_t index = level_index(hash, level);
         if (node->sub_nodes[index]) {
-            return Node_get(node->sub_nodes[index], level + 1, key, hash);
+            return Node_get(node->sub_nodes[index], level + 1, name, hash);
         } else {
             return (struct MapResult) { false, None() };
         }
     }
 }
 
-struct MapResult HashMap_get(struct HashMap *self, Key key) {
+struct MapResult Struct_get(struct Struct *self, Name name) {
     if (self->root) {
-        return Node_get(self->root, 0, key, Any_hash(key));
+        return Node_get(self->root, 0, name, name->hash);
     } else {
         return (struct MapResult) { false, None() };
     }
 }
 
-static struct Node *Node_remove(struct Node *node, uint8_t level, Key key, Hash hash, bool *found) {
+static struct Node *Node_remove(struct Node *node, uint8_t level, Name name, Hash hash, bool *found) {
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         struct ValueList **source = &node->values;
         while (values) {
-            if (Any_equal(values->key, key)) {
+            if (String_equal(values->name, name)) {
                 if (*found) {
-                    fail("Found multiple entries for key %zu", key);
+                    fail("Found multiple entries for name %zu", name);
                 }
                 struct ValueList *next = values->next;
                 free(values);
@@ -241,7 +241,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Key key, Hash 
     } else {
         size_t index = level_index(hash, level);
         if (node->sub_nodes[index]) {
-            node->sub_nodes[index] = Node_remove(node->sub_nodes[index], level + 1, key, hash, found);
+            node->sub_nodes[index] = Node_remove(node->sub_nodes[index], level + 1, name, hash, found);
             for (size_t search_index = 0; search_index < 32; ++search_index) {
                 if (node->sub_nodes[search_index]) {
                     return node;
@@ -255,10 +255,10 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Key key, Hash 
     }
 }
 
-bool HashMap_remove(struct HashMap *self, Key key) {
+bool Struct_remove(struct Struct *self, Name name) {
     if (self->root) {
         bool found = false;
-        self->root = Node_remove(self->root, 0, key, Any_hash(key), &found);
+        self->root = Node_remove(self->root, 0, name, name->hash, &found);
         if (found) {
             --self->size;
         }

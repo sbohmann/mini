@@ -1,6 +1,6 @@
 #include "variables.h"
 
-#include <collections/hashmap.h>
+#include <collections/struct.h>
 
 #include <minic/any.h>
 #include <core/allocate.h>
@@ -9,12 +9,12 @@
 
 struct Variables {
     struct ComplexValue base;
-    struct HashMap *scope;
+    struct Struct *scope;
     struct Variables *context;
 };
 
 static void Variables_destructor(struct Variables *instance) {
-    HashMap_delete(instance->scope);
+    Struct_release(instance->scope);
     if (instance->context) {
         Variables_release(instance->context);
     }
@@ -24,7 +24,7 @@ struct Variables *Variables_create(struct Variables *context) {
     struct Variables *result = allocate(sizeof(struct Variables));
     Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *)) Variables_destructor;
-    result->scope = HashMap_create();
+    result->scope = Struct_create();
     result->context = context;
     if (context) {
         Variables_retain(context);
@@ -41,7 +41,7 @@ void Variables_release(struct Variables *instance) {
 }
 
 bool set_variable(struct Variables *self, const struct String *name, struct Any value) {
-    bool result = HashMap_set(self->scope, String(name), value);
+    bool result = Struct_set(self->scope, name, value);
     if (!result && self->context) {
         return set_variable(self->context, name, value);
     }
@@ -50,11 +50,11 @@ bool set_variable(struct Variables *self, const struct String *name, struct Any 
 
 void create_variable(struct Variables *self, const struct String *name, struct Any value) {
     // TODO implement and use put if absent and return a bool
-    HashMap_put(self->scope, String(name), value);
+    Struct_put(self->scope, name, value);
 }
 
-struct HashMapResult get_variable(const struct Variables *self, const struct String *name) {
-    struct HashMapResult result = HashMap_get(self->scope, String(name));
+struct MapResult get_variable(const struct Variables *self, const struct String *name) {
+    struct MapResult result = Struct_get(self->scope, name);
     if (!result.found && self->context) {
         return get_variable(self->context, name);
     }

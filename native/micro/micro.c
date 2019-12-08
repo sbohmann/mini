@@ -2,6 +2,7 @@
 
 #include <core/errors.h>
 #include <collections/hashmap.h>
+#include <collections/struct.h>
 #include <generated/element_queue.h>
 
 #include <minic/expressions/expressions.h>
@@ -36,7 +37,7 @@ static struct Variables *create_bindings(const struct Variables *context, const 
             fail_at_position(name_element->position, "Unexpected token");
         }
         const struct String *name = name_element->token->text;
-        struct HashMapResult get_result = get_variable(context, name);
+        struct MapResult get_result = get_variable(context, name);
         if (!get_result.found) {
             fail_at_position(name_element->position, "Binding undefined variable %s", name->value);
         }
@@ -114,7 +115,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
             struct Function *function = read_function(context, queue);
             return Complex(&function->base);
         } else {
-            struct HashMapResult variable = get_variable(context, first_token->text);
+            struct MapResult variable = get_variable(context, first_token->text);
             if (variable.found) {
                 result = variable.value;
             } else {
@@ -275,6 +276,20 @@ bool is_comparison_operator(const struct Element *element) {
             equal(element->token->text, ">="));
 }
 
+bool compare_values(const struct String *operator_name, struct Any lhs, struct Any rhs) {
+    if (equal(operator_name, "<")) {
+        return Any_less_than(lhs, rhs);
+    } else if (equal(operator_name, ">")) {
+        return Any_greater_than(lhs, rhs);
+    } else if (equal(operator_name, "<=>")) {
+        return Any_less_than_or_equal(lhs, rhs);
+    } else if (equal(operator_name, ">=")) {
+        return Any_greater_than_or_equal(lhs, rhs);
+    } else {
+        fail("Logical error");
+    }
+}
+
 struct Any evaluate_comparison(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_comparison_operator)) {
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_comparison_operator);
@@ -285,17 +300,7 @@ struct Any evaluate_comparison(struct Variables *context, struct ElementQueue *q
         struct Any lhs_result = with_queue(context, split_elements->data, evaluate_addition);
         struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_addition);
         SplitElements_delete(split_elements);
-        if (equal(operator_name, "<")) {
-            return Any_less_than(lhs_result, rhs_result);
-        } else if (equal(operator_name, ">")) {
-            return Any_greater_than(lhs_result, rhs_result);
-        } else if (equal(operator_name, "<=>")) {
-            return Any_less_than_or_equal(lhs_result, rhs_result);
-        } else if (equal(operator_name, ">=")) {
-            return Any_greater_than_or_equal(lhs_result, rhs_result);
-        } else {
-            fail("Logical error");
-        }
+        return Boolean(compare_values(operator_name, lhs_result, rhs_result));
     } else {
         return evaluate_addition(context, queue);
     }
@@ -316,7 +321,9 @@ struct Any evaluate_equality(struct Variables *context, struct ElementQueue *que
         struct Any lhs_result = with_queue(context, split_elements->data, evaluate_comparison);
         struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_comparison);
         SplitElements_delete(split_elements);
-        return equality_check ? Any_equal(lhs_result, rhs_result) : Any_unequal(lhs_result, rhs_result);
+        return Boolean(equality_check ?
+                       Any_equal(lhs_result, rhs_result) :
+                       Any_unequal(lhs_result, rhs_result));
     } else {
         return evaluate_comparison(context, queue);
     }
@@ -507,7 +514,7 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
             negative_case = read_curly_block(queue);
         }
         struct Any condition_result = with_queue(context, condition, evaluate_expression);
-        if (Any_true(condition_result).boolean) {
+        if (Any_true(condition_result)) {
             return run_with_queue(context, positive_case, run_block);
         } else if (negative_case) {
             return run_with_queue(context, negative_case, run_block);
@@ -517,7 +524,7 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
         const struct Elements *positive_case = read_curly_block(queue);
         while (true) {
             struct Any condition_result = with_queue(context, condition, evaluate_expression);
-            if (Any_true(condition_result).boolean) {
+            if (Any_true(condition_result)) {
                 struct StatementResult whileblock_result = run_with_queue(context, positive_case, run_block);
                 if (whileblock_result.is_return) {
                     return whileblock_result;

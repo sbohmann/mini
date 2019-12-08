@@ -59,19 +59,19 @@ Hash string_hash(const char *data, size_t length);
 
 Hash Any_hash(struct Any value);
 
-struct Any Any_equal(struct Any lhs, struct Any rhs);
+bool Any_equal(struct Any lhs, struct Any rhs);
 
-struct Any Any_unequal(struct Any lhs, struct Any rhs);
+bool Any_unequal(struct Any lhs, struct Any rhs);
 
-struct Any Any_less_than(struct Any lhs, struct Any rhs);
+bool Any_less_than(struct Any lhs, struct Any rhs);
 
-struct Any Any_greater_than(struct Any lhs, struct Any rhs);
+bool Any_greater_than(struct Any lhs, struct Any rhs);
 
-struct Any Any_less_than_or_equal(struct Any lhs, struct Any rhs);
+bool Any_less_than_or_equal(struct Any lhs, struct Any rhs);
 
-struct Any Any_greater_than_or_equal(struct Any lhs, struct Any rhs);
+bool Any_greater_than_or_equal(struct Any lhs, struct Any rhs);
 
-struct Any Any_true(struct Any value);
+bool Any_true(struct Any value);
 
 struct Any Any_add(struct Any lhs, struct Any rhs);
 
