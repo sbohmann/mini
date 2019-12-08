@@ -130,6 +130,8 @@ bool is_operator_part(char c) {
         case '^':
         case '=':
         case '!':
+        case '?':
+        case ':':
         case '~':
         case '<':
         case '>':

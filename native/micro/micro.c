@@ -131,6 +131,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
             struct Function *function = read_function(context, queue);
             return Complex(&function->base);
         } if (equal(first_token->text, "struct") && is_bracket_element_of_type(second_element, Curly)) {
+            ElementQueue_next(queue);
             result = read_struct_literal(context, second_element->bracket.elements);
         } else {
             struct MapResult variable = get_variable(context, first_token->text);
@@ -150,7 +151,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
         const struct Element *next_element = ElementQueue_peek(queue);
         if (next_element) {
             if (is_operator_with_text(next_element, ".")) {
-                read_operator(queue);
+                ElementQueue_next(queue);
                 const struct String *element_name = read_symbol(queue)->text;
                 if (result.type != ComplexType || result.complex_value->type != StructComplexType) {
                     fail_at_position(next_element->position, "Dot operator only valid on struct values");

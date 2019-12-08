@@ -69,9 +69,24 @@ let l2 = l[0](1, 2, 3)
 println(l)
 println(l2)
 
-s = struct {
+let s = struct {
     x: 1
     y: 2
 }
 
-print;n(s.x, ", ", s.y)
+println(s.x, ", ", s.y)
+
+fn oop() {
+    let self = struct {
+        x: 1
+        y: 2
+        helper: fn(n) { return (x + y) * n }
+    }
+    return struct {
+        f: fn [self] (n) {
+            return self.helper(n) + self.x
+        }
+    }
+}
+
+print(oop().f(5))
