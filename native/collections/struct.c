@@ -39,6 +39,7 @@ struct Struct *Struct_create() {
     struct Struct *result = allocate(sizeof(struct Struct));
     Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *))Struct_destructor;
+    result->base.type = StructComplexType;
     return result;
 }
 

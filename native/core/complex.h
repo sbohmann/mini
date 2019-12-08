@@ -9,7 +9,8 @@ enum ComplexType {
     StringComplexType = 0x11,
     ListComplexType = 0x21,
     SetComplexType = 0x22,
-    MapComplexType = 0x23
+    MapComplexType = 0x23,
+    StructComplexType = 0x24
 };
 
 struct ComplexValue {

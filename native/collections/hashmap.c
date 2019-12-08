@@ -39,6 +39,7 @@ struct HashMap *HashMap_create() {
     struct HashMap *result = allocate(sizeof(struct HashMap));
     Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *))HashMap_destructor;
+    result->base.type = MapComplexType;
     return result;
 }
 

@@ -106,14 +106,32 @@ struct Any with_queue(struct Variables *context, const struct Elements *elements
 
 struct Any evaluate_expression(struct Variables *context, struct ElementQueue *queue);
 
+struct Any read_struct_literal(struct Variables *context, const struct Elements *elements) {
+    struct Struct *result = Struct_create();
+    struct ElementQueue *queue = ElementQueue_create(elements);
+    struct SplitElements *lines = SplitElements_by_line(queue);
+    for (size_t index = 0; index < lines->size; ++index) {
+        struct ElementQueue *line_queue = ElementQueue_create(lines->data + index);
+        const struct String *name = read_symbol(line_queue)->text;
+        read_operator_with_text(line_queue, ":");
+        struct Any value = evaluate_expression(context, line_queue);
+        Struct_put(result, name, value);
+    }
+    ElementQueue_delete(queue);
+    return Complex((struct ComplexValue *)result);
+}
+
 struct Any evaluate_simple_expression(struct Variables *context, struct ElementQueue *queue) {
     const struct Token *first_token = read_token(queue);
     struct Any result;
     struct Any name = None();
+    const struct Element *second_element = ElementQueue_peek(queue);
     if (first_token->type == Symbol) {
         if (equal(first_token->text, "fn")) {
             struct Function *function = read_function(context, queue);
             return Complex(&function->base);
+        } if (equal(first_token->text, "struct") && is_bracket_element_of_type(second_element, Curly)) {
+            result = read_struct_literal(context, second_element->bracket.elements);
         } else {
             struct MapResult variable = get_variable(context, first_token->text);
             if (variable.found) {
@@ -131,7 +149,19 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
     while (true) {
         const struct Element *next_element = ElementQueue_peek(queue);
         if (next_element) {
-            if (is_bracket_element_of_type(next_element, Paren)) {
+            if (is_operator_with_text(next_element, ".")) {
+                read_operator(queue);
+                const struct String *element_name = read_symbol(queue)->text;
+                if (result.type != ComplexType || result.complex_value->type != StructComplexType) {
+                    fail_at_position(next_element->position, "Dot operator only valid on struct values");
+                }
+                struct Struct *container = (struct Struct *)result.complex_value;
+                struct MapResult get_result = Struct_get(container, element_name);
+                if (!get_result.found) {
+                    fail_at_position(next_element->position, "Undefined symbol: %s", element_name->value);
+                }
+                result = get_result.value;
+            } else if (is_bracket_element_of_type(next_element, Paren)) {
                 const struct Elements *arguments = read_paren_block(queue);
                 struct ElementQueue *arguments_queue = ElementQueue_create(arguments);
                 struct FunctionCallResult call_result =
@@ -494,7 +524,7 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
     const struct String *symbol = symbol_token->text;
     if (equal(symbol, "let")) {
         const struct String *name = read_symbol(queue)->text;
-        read_operator(queue, "=");
+        read_operator_with_text(queue, "=");
         create_variable(context, name, evaluate_expression(context, queue));
     } else if (equal(symbol, "fn")) {
         fn(context, queue);

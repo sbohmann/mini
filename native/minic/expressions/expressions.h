@@ -14,7 +14,9 @@ const char *element_text(const struct Element *element);
 
 void read_comma(struct ElementQueue *elements);
 
-void read_operator(struct ElementQueue *elements, const char *text);
+void read_operator(struct ElementQueue *elements);
+
+void read_operator_with_text(struct ElementQueue *elements, const char *text);
 
 bool is_operator(const struct Element *candidate);
 

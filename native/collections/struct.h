@@ -8,7 +8,7 @@
 
 struct Struct;
 
-typedef struct String *Name;
+typedef const struct String *Name;
 typedef struct Any Value;
 
 struct Struct * Struct_create();

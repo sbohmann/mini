@@ -30,13 +30,23 @@ void read_comma(struct ElementQueue *elements) {
     }
 }
 
-void read_operator(struct ElementQueue *elements, const char *text) {
-    const struct Element *comma = ElementQueue_next(elements);
-    if (!comma) {
+void read_operator(struct ElementQueue *elements) {
+    const struct Element *operator = ElementQueue_next(elements);
+    if (!operator) {
         fail("Unexpected end of input");
     }
-    if (comma->type != TokenElement || comma->token->type != Operator || !equal(comma->token->text, text)) {
-        fail_at_position(comma->position, "Expected %s, found [%s]", text, element_text(comma));
+    if (operator->type != TokenElement || operator->token->type != Operator) {
+        fail_at_position(operator->position, "Expected an operator, found [%s]", element_text(operator));
+    }
+}
+
+void read_operator_with_text(struct ElementQueue *elements, const char *text) {
+    const struct Element *operator = ElementQueue_next(elements);
+    if (!operator) {
+        fail("Unexpected end of input");
+    }
+    if (operator->type != TokenElement || operator->token->type != Operator || !equal(operator->token->text, text)) {
+        fail_at_position(operator->position, "Expected %s, found [%s]", text, element_text(operator));
     }
 }
 

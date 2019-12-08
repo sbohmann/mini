@@ -68,3 +68,10 @@ let l = list(list)
 let l2 = l[0](1, 2, 3)
 println(l)
 println(l2)
+
+s = struct {
+    x: 1
+    y: 2
+}
+
+print;n(s.x, ", ", s.y)
