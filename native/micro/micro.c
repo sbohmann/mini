@@ -525,9 +525,9 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
         while (true) {
             struct Any condition_result = with_queue(context, condition, evaluate_expression);
             if (Any_true(condition_result)) {
-                struct StatementResult whileblock_result = run_with_queue(context, positive_case, run_block);
-                if (whileblock_result.is_return) {
-                    return whileblock_result;
+                struct StatementResult while_block_result = run_with_queue(context, positive_case, run_block);
+                if (while_block_result.is_return) {
+                    return while_block_result;
                 }
             } else {
                 break;
