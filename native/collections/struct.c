@@ -66,7 +66,6 @@ void Struct_destructor(struct Struct *instance) {
     if (instance->root) {
         delete_node(instance->root);
     }
-    free(instance);
 }
 
 void Struct_release(struct Struct *instance) {

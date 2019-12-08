@@ -66,7 +66,6 @@ void HashMap_destructor(struct HashMap *instance) {
     if (instance->root) {
         delete_node(instance->root);
     }
-    free(instance);
 }
 
 void HashMap_release(struct HashMap *instance) {
