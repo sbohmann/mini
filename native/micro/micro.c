@@ -673,6 +673,7 @@ struct SplitAssignment {
     struct Element *assignment_operator;
     struct Elements *lhs;
     struct Elements *rhs;
+    struct SplitElements *split_elements;
 };
 
 struct SplitAssignment split_assignment(struct Elements *statement) {
@@ -687,8 +688,7 @@ struct SplitAssignment split_assignment(struct Elements *statement) {
         fail_at_position(split_elements->separators[1].position, "Multiple assignments are not supported");
     }
     struct SplitAssignment result = (struct SplitAssignment) {
-        split_elements->separators, split_elements->data, split_elements->data + 1};
-    SplitElements_delete(split_elements);
+        split_elements->separators, split_elements->data, split_elements->data + 1, split_elements};
     return result;
 }
 
@@ -725,6 +725,7 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
         struct ElementQueue *rhs_queue = ElementQueue_create(sides.rhs);
         struct Any value = evaluate_expression(context, rhs_queue);
         ElementQueue_delete(rhs_queue);
+        SplitElements_delete(sides.split_elements);
         assignment.function(assignment, value);
     } else if (equal(symbol, "if")) {
         const struct Elements *condition = read_paren_block(queue);
