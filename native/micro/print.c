@@ -19,7 +19,6 @@ void print_value(struct Any value) {
             printf("%s", value.string->value);
             break;
         case ComplexType:
-            // TODO
             if (value.complex_value->type == ListComplexType) {
                 struct List *list = (struct List *)value.complex_value;
                 putchar('[');
@@ -30,6 +29,8 @@ void print_value(struct Any value) {
                     print_value(List_get(list, index));
                 }
                 putchar(']');
+            } else if (value.complex_value->type == StructComplexType) {
+                printf("<struct>");
             } else {
                 printf("<complex>");
             }

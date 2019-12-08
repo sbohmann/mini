@@ -84,12 +84,15 @@ fn oop() {
     }
     return struct {
         f: fn [self] (n) {
-            return self.helper(n) + self.x
+            let result = self.helper(n) + self.x
+            self.x = 2
+            return result
         }
     }
 }
 
-println(oop().f(5))
+let o = oop()
+println(o.f(5), ", ", o.f(5), ", ", o.f(5))
 
 let somevar = 5
 println(somevar)
@@ -100,3 +103,11 @@ s.z = 3
 println(s.z)
 s.x = 55
 println(s)
+
+let sl = list(struct {
+    x: 1
+})
+
+println(sl[0].x)
+sl[0].x = 2
+println(sl[0].x)
