@@ -1,5 +1,8 @@
 #include "micro.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 #include <core/errors.h>
 #include <collections/hashmap.h>
 #include <collections/struct.h>
@@ -9,7 +12,6 @@
 #include <generated/string_list.h>
 #include <core/complex.h>
 #include <core/allocate.h>
-#include <stdlib.h>
 #include <minic/list.h>
 
 #include "debug.h"
@@ -118,7 +120,7 @@ struct Any read_struct_literal(struct Variables *context, const struct Elements 
         Struct_put(result, name, value);
     }
     ElementQueue_delete(queue);
-    return Complex((struct ComplexValue *)result);
+    return Complex((struct ComplexValue *) result);
 }
 
 struct Any evaluate_simple_expression(struct Variables *context, struct ElementQueue *queue) {
@@ -130,7 +132,8 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
         if (equal(first_token->text, "fn")) {
             struct Function *function = read_function(context, queue);
             return Complex(&function->base);
-        } if (equal(first_token->text, "struct") && is_bracket_element_of_type(second_element, Curly)) {
+        }
+        if (equal(first_token->text, "struct") && is_bracket_element_of_type(second_element, Curly)) {
             ElementQueue_next(queue);
             result = read_struct_literal(context, second_element->bracket.elements);
         } else {
@@ -156,7 +159,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
                 if (result.type != ComplexType || result.complex_value->type != StructComplexType) {
                     fail_at_position(next_element->position, "Dot operator only valid on struct values");
                 }
-                struct Struct *container = (struct Struct *)result.complex_value;
+                struct Struct *container = (struct Struct *) result.complex_value;
                 struct MapResult get_result = Struct_get(container, element_name);
                 if (!get_result.found) {
                     fail_at_position(next_element->position, "Undefined symbol: %s", element_name->value);
@@ -381,6 +384,149 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
     }
 }
 
+struct Assignment {
+    struct Variables *context;
+    union {
+        struct {
+            const struct String *variable_name;
+        };
+        struct {
+            struct Struct *struct_instance;
+            const struct String *struct_key;
+        };
+        struct {
+            struct List *list_instance;
+            int64_t list_index;
+        };
+        const char *error_message;
+    };
+    void (*function)(struct Assignment, struct Any value);
+};
+
+void assign_to_variable(struct Assignment assignment, struct Any value) {
+    set_variable(assignment.context, assignment.variable_name, value);
+}
+
+void assign_to_struct(struct Assignment assignment, struct Any value) {
+    Struct_put(assignment.struct_instance, assignment.struct_key, value);
+}
+
+void assign_to_list(struct Assignment assignment, struct Any value) {
+    List_set(assignment.list_instance, assignment.list_index, value);
+}
+
+struct Assignment evaluate_lhs_expression(struct Variables *context, struct ElementQueue *queue) {
+    struct Assignment assignment;
+    memset(&assignment, 0, sizeof(struct Assignment));
+    const struct Token *first_token = read_token(queue);
+    struct Any result = None();
+    struct Any name = None();
+    const struct Element *second_element = ElementQueue_peek(queue);
+    if (first_token->type == Symbol) {
+        if (equal(first_token->text, "fn")) {
+            assignment.error_message = "Assignment to function";
+            return assignment;
+        }
+        if (equal(first_token->text, "struct") && is_bracket_element_of_type(second_element, Curly)) {
+            assignment.error_message = "Assignment to struct";
+            return assignment;
+        } else {
+            struct MapResult variable = get_variable(context, first_token->text);
+            if (variable.found) {
+                if (variable.found) {
+                    result = variable.value;
+                    if (!ElementQueue_peek(queue)) {
+                        assignment.variable_name = first_token->text;
+                        assignment.function = assign_to_variable;
+                        return assignment;
+                    }
+                } else {
+                    fail_at_position(first_token->position, "Undefined variable [%s]", first_token->text->value);
+                }
+            } else {
+                fail_at_position(first_token->position, "Undefined variable [%s]", first_token->text->value);
+            }
+        }
+        name = String(first_token->text);
+    } else if (first_token->type == NumberLiteral || first_token->type == StringLiteral) {
+        assignment.error_message = "Assignment to literal value";
+        return assignment;
+    } else {
+        fail_at_position(first_token->position, "Unexpected expression: [%s]", first_token->text->value);
+    }
+    while (true) {
+        const struct Element *next_element = ElementQueue_peek(queue);
+        if (next_element) {
+            if (is_operator_with_text(next_element, ".")) {
+                ElementQueue_next(queue);
+                const struct String *element_name = read_symbol(queue)->text;
+                if (result.type != ComplexType || result.complex_value->type != StructComplexType) {
+                    fail_at_position(next_element->position, "Dot operator only valid on struct values");
+                }
+                struct Struct *container = (struct Struct *) result.complex_value;
+                if (ElementQueue_peek(queue)) {
+                    struct MapResult get_result = Struct_get(container, element_name);
+                    if (!get_result.found) {
+                        fail_at_position(next_element->position, "Undefined symbol: %s", element_name->value);
+                    }
+                    result = get_result.value;
+                } else {
+                    assignment.struct_instance = container;
+                    assignment.struct_key = element_name;
+                    assignment.function = assign_to_struct;
+                    return assignment;
+                }
+            } else if (is_bracket_element_of_type(next_element, Paren)) {
+                const struct Elements *arguments = read_paren_block(queue);
+                if (ElementQueue_peek(queue)) {
+                    struct ElementQueue *arguments_queue = ElementQueue_create(arguments);
+                    struct FunctionCallResult call_result =
+                            call(context, result, name, next_element->position, arguments_queue);
+                    ElementQueue_delete(arguments_queue);
+                    if (call_result.type == Success) {
+                        result = call_result.value;
+                    } else {
+                        if (name.type == StringType) {
+                            fail_at_position(next_element->position, "Call to %s failed.", name.string->value);
+                        } else {
+                            fail_at_position(next_element->position, "Call failed.");
+                        }
+                    }
+                } else {
+                    assignment.error_message = "Assignment to function call result";
+                    return assignment;
+                }
+            } else if (is_bracket_element_of_type(next_element, Square)) {
+                const struct Elements *arguments = read_square_block(queue);
+                if (result.type != ComplexType || result.complex_value->type != ListComplexType) {
+                    fail_at_position(next_element->position, "Index access not supported for type %s",
+                                     Any_typename(result));
+                }
+                struct ElementQueue *index_queue = ElementQueue_create(arguments);
+                struct Any index_value = evaluate_expression(context, index_queue);
+                ElementQueue_delete(index_queue);
+                if (index_value.type != IntegerType) {
+                    fail_at_position(next_element->position, "Illegal index value type %s",
+                                     Any_typename(index_value));
+                }
+                struct List *list = (struct List *) result.complex_value;
+                if (ElementQueue_peek(queue)) {
+                    result = List_get(list, index_value.integer);
+                } else {
+                    assignment.list_instance = list;
+                    assignment.list_index = index_value.integer;
+                    assignment.function = assign_to_list;
+                    return assignment;
+                }
+            } else {
+                fail_at_position(next_element->position, "Unexpected token");
+            }
+        } else {
+            fail("Logical error");
+        }
+    }
+}
+
 static void print_raw(const struct List *arguments) {
     for (size_t index = 0; index < arguments->size; ++index) {
         print_value(List_get(arguments, index));
@@ -519,6 +665,33 @@ struct StatementResult run_with_queue(struct Variables *context, const struct El
     return result;
 }
 
+bool is_assignment_operator(const struct Element *element) {
+    return is_operator_with_text(element, "=");
+}
+
+struct SplitAssignment {
+    struct Element *assignment_operator;
+    struct Elements *lhs;
+    struct Elements *rhs;
+};
+
+struct SplitAssignment split_assignment(struct Elements *statement) {
+    struct ElementQueue *queue = ElementQueue_create(statement);
+    struct SplitElements *split_elements = SplitElements_by_operator(queue, "=");
+    if (split_elements->size < 2) {
+        if (statement->size < 1) {
+            fail("logical error");
+        }
+        fail_at_position(statement->data[statement->size - 1].position, "Unexpected end of line");
+    } else if (split_elements->size > 2) {
+        fail_at_position(split_elements->separators[1].position, "Multiple assignments are not supported");
+    }
+    struct SplitAssignment result = (struct SplitAssignment) {
+        split_elements->separators, split_elements->data, split_elements->data + 1};
+    SplitElements_delete(split_elements);
+    return result;
+}
+
 struct StatementResult execute_statement(struct Variables *context, struct Elements *statement) {
     struct ElementQueue *queue = ElementQueue_create(statement);
     const struct Token *symbol_token = read_symbol(queue);
@@ -530,12 +703,29 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
     } else if (equal(symbol, "fn")) {
         fn(context, queue);
     } else if (equal(symbol, "return")) {
+        // TODO implement tail call
         return (struct StatementResult) {true, evaluate_expression(context, queue)};
     } else if (is_operator_with_text(ElementQueue_peek(queue), "=")) {
         ElementQueue_next(queue);
         if (!set_variable(context, symbol, evaluate_expression(context, queue))) {
             fail_at_position(symbol_token->position, "Undefined variable [%s]", symbol->value);
         }
+    } else if (ElementQueue_contains(queue, is_assignment_operator)) {
+        struct SplitAssignment sides = split_assignment(statement);
+        struct ElementQueue *lhs_queue = ElementQueue_create(sides.lhs);
+        struct Assignment assignment = evaluate_lhs_expression(context, lhs_queue);
+        ElementQueue_delete(lhs_queue);
+        if (!assignment.function) {
+            if (assignment.error_message) {
+                fail_at_position(sides.assignment_operator->position, "%s", assignment.error_message);
+            } else {
+                fail("Logical error");
+            }
+        }
+        struct ElementQueue *rhs_queue = ElementQueue_create(sides.rhs);
+        struct Any value = evaluate_expression(context, rhs_queue);
+        ElementQueue_delete(rhs_queue);
+        assignment.function(assignment, value);
     } else if (equal(symbol, "if")) {
         const struct Elements *condition = read_paren_block(queue);
         const struct Elements *positive_case = read_curly_block(queue);

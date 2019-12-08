@@ -89,4 +89,14 @@ fn oop() {
     }
 }
 
-print(oop().f(5))
+println(oop().f(5))
+
+let somevar = 5
+println(somevar)
+somevar = 7
+println(somevar)
+
+s.z = 3
+println(s.z)
+s.x = 55
+println(s)
