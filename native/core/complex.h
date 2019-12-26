@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
-#include <stdint-gcc.h>
+#include <stdint.h>
 
 struct ReferenceCount;
 
