@@ -6,7 +6,6 @@
 #include <core/errors.h>
 
 #include "core/typedefs.h"
-#include "core/complex.h"
 
 static const uint8_t MaximumLevel = 6;
 
@@ -24,12 +23,6 @@ struct Node {
             struct ValueList *values;
         };
     };
-};
-
-struct HashSet {
-    struct ComplexValue base;
-    size_t size;
-    struct Node *root;
 };
 
 void HashSet_destructor(struct HashSet *instance);

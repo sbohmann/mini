@@ -24,3 +24,5 @@ void Complex_init(struct ComplexValue *instance);
 
 void retain(struct ComplexValue *instance);
 bool release(struct ComplexValue *instance);
+
+const char *Complex_typename(struct ComplexValue *value);

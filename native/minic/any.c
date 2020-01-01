@@ -56,7 +56,7 @@ struct Any String(const struct String *value) {
 
 struct Any Function(struct Any (*value) (const struct List *)) {
     struct Any result = None();
-    result.type = FunctionType;
+    result.type = FunctionPointerType;
     result.function = value;
     return result;
 }
@@ -115,6 +115,8 @@ Hash Any_hash(struct Any value) {
             return (size_t) value.complex_value;
         case FlatType:
             return string_hash(value.flat_value, sizeof(value.flat_value));
+        case FunctionPointerType:
+            return (size_t) value.function;
         default:
             fail("Any_hash: value has unknown type %d", value.type);
     }
@@ -137,6 +139,8 @@ bool Any_equal(struct Any lhs, struct Any rhs) {
             return lhs.complex_value == rhs.complex_value;
         case FlatType:
             return lhs.flat_value == rhs.flat_value;
+        case FunctionPointerType:
+            return lhs.function == rhs.function;
         default:
             fail("Any_equal: value has unknown type %d", type);
     }
@@ -243,11 +247,11 @@ const char *Any_typename(struct Any value) {
         case StringType:
             return "String";
         case ComplexType:
-            return "Complex";
+            return Complex_typename(value.complex_value);
         case FlatType:
             return "Flat";
-        case FunctionType:
-            return "Function";
+        case FunctionPointerType:
+            return "FunctionPointer";
         default:
             fail("<Unknown type %d>", value.type);
     }

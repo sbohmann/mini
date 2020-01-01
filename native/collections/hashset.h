@@ -1,7 +1,15 @@
 #pragma once
 
 #include <stddef.h>
+
+#include <core/complex.h>
 #include <minic/any.h>
+
+struct HashSet {
+    struct ComplexValue base;
+    size_t size;
+    struct Node *root;
+};
 
 struct HashSet;
 

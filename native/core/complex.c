@@ -57,3 +57,22 @@ bool release(struct ComplexValue *instance) {
     }
     return false;
 }
+
+const char *Complex_typename(struct ComplexValue *value) {
+    switch (value->type) {
+        case StringComplexType:
+            return "String";
+        case ListComplexType:
+            return "List";
+        case SetComplexType:
+            return "HashSet";
+        case MapComplexType:
+            return "HashMap";
+        case StructComplexType:
+            return "Struct";
+        case FunctionComplexType:
+            return "Function";
+        default:
+            fail("<unknown complex type %d>", value->type);
+    }
+}

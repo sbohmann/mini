@@ -42,7 +42,7 @@ void print_value(struct Any value) {
             }
             printf("]");
             break;
-        case FunctionType:
+        case FunctionPointerType:
             printf("<function>");
             break;
         default:

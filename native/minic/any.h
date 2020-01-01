@@ -12,7 +12,7 @@ enum AnyType {
     StringType = 0x11,
     ComplexType = 0x21,
     FlatType = 0x22,
-    FunctionType = 0x23
+    FunctionPointerType = 0x23
 };
 
 struct List;
