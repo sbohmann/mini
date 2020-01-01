@@ -2,7 +2,6 @@
 
 #include <core/allocate.h>
 #include "variables.h"
-#include "complex_types.h"
 
 void Function_destructor(struct Function *instance) {
     if (instance->bindings) {

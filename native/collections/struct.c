@@ -60,6 +60,7 @@ static void delete_node(struct Node *node) {
             }
         }
     }
+    free(node);
 }
 
 void Struct_destructor(struct Struct *instance) {

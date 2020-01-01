@@ -19,7 +19,6 @@
 #include "variables.h"
 #include "split_elements.h"
 #include "function.h"
-#include "complex_types.h"
 
 struct Variables *global_context;
 

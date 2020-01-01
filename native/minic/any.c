@@ -111,6 +111,7 @@ Hash Any_hash(struct Any value) {
         case StringType:
             return value.string->hash;
         case ComplexType:
+            // TODO relay
             return (size_t) value.complex_value;
         case FlatType:
             return string_hash(value.flat_value, sizeof(value.flat_value));
