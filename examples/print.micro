@@ -114,3 +114,5 @@ println(sl[0].x)
 
 let set = hashset(1, 2, 5)
 println(set.contains(1))
+println(set.contains(2))
+println(set.contains(3))

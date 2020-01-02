@@ -188,12 +188,16 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
                     }
                     result = get_result.value;
                 } else if (result.complex_value->type == SetComplexType && equal(element_name, "contains")) {
-                    if (!is_bracket_element_of_type(next_element, Paren)) {
-                        fail_at_position(next_element->position,
-                                         "Missing argument list for call to built-in method");
-                    }
                     struct ElementQueue *arguments_queue = ElementQueue_create(read_paren_block(queue));
                     struct List *arguments = read_arguments(context, arguments_queue);
+                    if (arguments->size != 1) {
+                        fail_at_position(next_element->position,
+                                         "Argument number mismatch in call to built-in method [contains] - "
+                                         "%zu arguments passed, 1 expected.\n",
+                                         name.string->value, arguments->size);
+                    }
+                    result = Boolean(HashSet_contains((struct HashSet *) result.complex_value,
+                                                      arguments->data[0]));
                     release(&arguments->base);
                 } else {
                     fail_at_position(next_element->position, "Undefined symbol: %s", element_name->value);
@@ -433,6 +437,7 @@ struct Assignment {
         };
         const char *error_message;
     };
+    
     void (*function)(struct Assignment, struct Any value);
 };
 
@@ -647,18 +652,20 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
             result = call_function(context, complex_function, argument_list);
             if (result.type == ArgumentNumberMismatch) {
                 if (name.type == StringType) {
-                    printf("Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.\n",
-                           name.string->value, result.arguments_passed, result.arguments_expected);
+                    fail_at_position(position,
+                                     "Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.\n",
+                                     name.string->value, result.arguments_passed, result.arguments_expected);
                 } else {
-                    printf("Argument number mismatch in call to function - %zu arguments passed, %zu expected.\n",
-                           result.arguments_passed, result.arguments_expected);
+                    fail_at_position(position,
+                                     "Argument number mismatch in call to function - %zu arguments passed, %zu expected.\n",
+                                     result.arguments_passed, result.arguments_expected);
                 }
             }
         } else {
-            printf("Error: failed to call non-function complex value\n");
+            fail_at_position(position, "Error: failed to call non-function complex value\n");
         }
     } else {
-        printf("Error: failed to call non-function value of type %s\n", Any_typename(function));
+        fail_at_position(position, "Error: failed to call non-function value of type %s\n", Any_typename(function));
     }
     free(argument_list);
     return result;
@@ -715,7 +722,7 @@ struct SplitAssignment split_assignment(struct Elements *statement) {
         fail_at_position(split_elements->separators[1].position, "Multiple assignments are not supported");
     }
     struct SplitAssignment result = (struct SplitAssignment) {
-        split_elements->separators, split_elements->data, split_elements->data + 1, split_elements};
+            split_elements->separators, split_elements->data, split_elements->data + 1, split_elements};
     return result;
 }
 

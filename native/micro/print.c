@@ -12,6 +12,9 @@ void print_value(struct Any value) {
         case NoneType:
             printf("None");
             break;
+        case BooleanType:
+            printf(value.boolean ? "true" : "false");
+            break;
         case IntegerType:
             printf("%d", (int) value.integer);
             break;
