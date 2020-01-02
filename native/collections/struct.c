@@ -27,12 +27,6 @@ struct Node {
     };
 };
 
-struct Struct {
-    struct ComplexValue base;
-    size_t size;
-    struct Node *root;
-};
-
 void Struct_destructor(struct Struct *instance);
 
 struct Struct *Struct_create() {

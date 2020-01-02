@@ -33,6 +33,7 @@ void print_value(struct Any value) {
                 }
                 putchar(']');
             } else if (value.complex_value->type == StructComplexType) {
+                // TODO create and use struct iterator
                 printf("<struct>");
             } else {
                 printf("<complex>");

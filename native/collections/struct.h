@@ -6,7 +6,11 @@
 
 #include "map_result.h"
 
-struct Struct;
+struct Struct {
+    struct ComplexValue base;
+    size_t size;
+    struct Node *root;
+};
 
 typedef const struct String *Name;
 typedef struct Any Value;

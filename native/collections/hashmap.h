@@ -2,10 +2,15 @@
 
 #include <stddef.h>
 #include <minic/any.h>
+#include <core/complex.h>
 
 #include "map_result.h"
 
-struct HashMap;
+struct HashMap {
+    struct ComplexValue base;
+    size_t size;
+    struct Node *root;
+};
 
 typedef struct Any Key;
 typedef struct Any Value;

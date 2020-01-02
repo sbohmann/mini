@@ -144,6 +144,74 @@ struct List *read_arguments(struct Variables *context, struct ElementQueue *queu
     return argument_list;
 }
 
+bool is_complex(struct Any value, enum ComplexType type) {
+    return value.type == ComplexType &&
+           value.complex_value->type == type;
+}
+
+struct Any call_method(struct Variables *context, struct Any instance, const struct String *name,
+                       struct Position position, struct ElementQueue *queue) {
+    struct Any result = instance;
+    struct ElementQueue *arguments_queue = ElementQueue_create(read_paren_block(queue));
+    struct List *arguments = read_arguments(context, arguments_queue);
+    if (is_complex(instance, SetComplexType) && equal(name, "contains")) {
+        if (arguments->size != 1) {
+            fail_at_position(position,
+                             "Argument number mismatch in call to HashSet.contains - "
+                             "%zu arguments passed, 1 expected.\n",
+                             arguments->size);
+        }
+        result = Boolean(HashSet_contains((struct HashSet *) instance.complex_value,
+                                          List_get(arguments, 0)));
+    } else if (is_complex(instance, SetComplexType) && equal(name, "add")) {
+        for (size_t index = 0; index < arguments->size; ++index) {
+            HashSet_add((struct HashSet *) instance.complex_value,
+                        List_get(arguments, index));
+        }
+    } else if (is_complex(instance, MapComplexType) && equal(name, "put")) {
+        if (arguments->size % 2 != 0) {
+            fail_at_position(position,
+                             "Odd number of arguments passed to HashMap.put: %zu", arguments->size);
+        }
+        for (size_t index = 0; index < arguments->size; index += 2) {
+            HashMap_put((struct HashMap *) instance.complex_value,
+                        List_get(arguments, index), List_get(arguments, index + 1));
+        }
+    } else if (is_complex(instance, MapComplexType) && equal(name, "get")) {
+        if (arguments->size != 1) {
+            fail_at_position(position,
+                             "Argument number mismatch in call to HashSet.contains - %zu arguments passed, 1 expected",
+                             arguments->size);
+        }
+        struct MapResult map_result = HashMap_get((struct HashMap *) instance.complex_value,
+                                                  List_get(arguments, 0));
+        if (map_result.found) {
+            result = map_result.value;
+        } else {
+            result = None();
+        }
+    } else if (is_complex(instance, MapComplexType) && equal(name, "at")) {
+        if (arguments->size != 1) {
+            fail_at_position(position,
+                             "Argument number mismatch in call to HashSet.contains - %zu arguments passed, 1 expected",
+                             arguments->size);
+        }
+        struct MapResult map_result = HashMap_get((struct HashMap *) instance.complex_value,
+                                                  List_get(arguments, 0));
+        struct Struct *map_result_struct = Struct_create();
+        Struct_put(map_result_struct, String_from_literal("found"), Boolean(map_result.found));
+        Struct_put(map_result_struct, String_from_literal("value"), map_result.value);
+        result = Complex(&map_result_struct->base);
+    } else {
+        fail_at_position(position, "Call to undefined method %s.%s", Any_typename(instance), name->value);
+    }
+    release(&arguments->base);
+    if (Any_equal(result, instance)) {
+        Any_retain(result);
+    }
+    return result;
+}
+
 struct Any evaluate_simple_expression(struct Variables *context, struct ElementQueue *queue) {
     const struct Token *first_token = read_token(queue);
     struct Any result;
@@ -177,30 +245,15 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
             if (is_operator_with_text(next_element, ".")) {
                 ElementQueue_next(queue);
                 const struct String *element_name = read_symbol(queue)->text;
-                if (result.type != ComplexType) {
-                    fail_at_position(next_element->position,
-                                     "Dot operator used on primitive type %s", Any_typename(result));
-                } else if (result.complex_value->type == StructComplexType) {
+                if (result.type == ComplexType && result.complex_value->type == StructComplexType) {
                     struct Struct *container = (struct Struct *) result.complex_value;
                     struct MapResult get_result = Struct_get(container, element_name);
                     if (!get_result.found) {
                         fail_at_position(next_element->position, "Undefined symbol: %s", element_name->value);
                     }
                     result = get_result.value;
-                } else if (result.complex_value->type == SetComplexType && equal(element_name, "contains")) {
-                    struct ElementQueue *arguments_queue = ElementQueue_create(read_paren_block(queue));
-                    struct List *arguments = read_arguments(context, arguments_queue);
-                    if (arguments->size != 1) {
-                        fail_at_position(next_element->position,
-                                         "Argument number mismatch in call to built-in method [contains] - "
-                                         "%zu arguments passed, 1 expected.\n",
-                                         name.string->value, arguments->size);
-                    }
-                    result = Boolean(HashSet_contains((struct HashSet *) result.complex_value,
-                                                      List_get(arguments, 0)));
-                    release(&arguments->base);
                 } else {
-                    fail_at_position(next_element->position, "Undefined symbol: %s", element_name->value);
+                    result = call_method(context, result, element_name, next_element->position, queue);
                 }
             } else if (is_bracket_element_of_type(next_element, Paren)) {
                 const struct Elements *arguments = read_paren_block(queue);
@@ -597,6 +650,17 @@ struct Any hashset(const struct List *elements) {
     return Complex(&result->base);
 }
 
+struct Any hashmap(const struct List *pairs) {
+    struct HashMap *result = HashMap_create();
+    if (pairs->size % 2 != 0) {
+        fail("Odd number of arguments passed to HashMap constructor: %d", pairs->size);
+    }
+    for (size_t index = 0; index < pairs->size; index += 2) {
+        HashMap_put(result, List_get(pairs, index), List_get(pairs, index + 1));
+    }
+    return Complex(&result->base);
+}
+
 struct StatementResult {
     bool is_return;
     struct Any value;
@@ -823,6 +887,7 @@ void micro_run(struct ParsedModule *module) {
     create_variable(globals, String_from_literal("println"), Function(println));
     create_variable(globals, String_from_literal("List"), Function(list));
     create_variable(globals, String_from_literal("HashSet"), Function(hashset));
+    create_variable(globals, String_from_literal("HashMap"), Function(hashmap));
     struct ElementQueue *queue = ElementQueue_create(module->elements);
     run_block(globals, queue);
     ElementQueue_delete(queue);

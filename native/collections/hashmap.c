@@ -1,12 +1,11 @@
 #include "hashmap.h"
 
 #include <stdbool.h>
-#include <core/allocate.h>
 #include <stdlib.h>
-#include <core/errors.h>
 
-#include "core/typedefs.h"
-#include "core/complex.h"
+#include <core/allocate.h>
+#include <core/errors.h>
+#include <core/typedefs.h>
 
 static const uint8_t MaximumLevel = 6;
 
@@ -25,12 +24,6 @@ struct Node {
             struct ValueList *values;
         };
     };
-};
-
-struct HashMap {
-    struct ComplexValue base;
-    size_t size;
-    struct Node *root;
 };
 
 void HashMap_destructor(struct HashMap *instance);
