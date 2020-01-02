@@ -13,6 +13,7 @@ static const uint8_t MaximumLevel = 6;
 struct ValueList {
     Name name;
     Value value;
+    bool constant;
     struct ValueList *next;
 };
 
@@ -74,9 +75,14 @@ static size_t level_index(Hash hash, uint8_t level) {
     return (hash >> (5 * level)) % 0x20;
 }
 
-static bool replace_value(struct ValueList *values, Name name, Value value) {
+static bool replace_value(struct ValueList *values, Name name, Value value, bool constant) {
     while (values) {
         if (String_equal(values->name, name)) {
+            if (values->constant) {
+                fail("Attempt to overwrite constant [%s]", name);
+            } else if (constant) {
+                fail("Attempt to overwrite variable [%s] with a constant", name);
+            }
             Any_release(values->value);
             values->value = value;
             return true;
@@ -86,34 +92,36 @@ static bool replace_value(struct ValueList *values, Name name, Value value) {
     return false;
 }
 
-static struct ValueList *insert_value(struct ValueList *existing_values, Name name, Value *value) {
+static struct ValueList *insert_value(struct ValueList *existing_values, Name name, Value *value, bool constant) {
     struct ValueList *new_values = allocate(sizeof(struct ValueList));
     new_values->name = name;
     new_values->value = (*value);
+    new_values->constant = constant;
     new_values->next = existing_values;
     return new_values;
 }
 
-static struct Node *create_value_node(Name name, Hash hash, Value value) {
+static struct Node *create_value_node(Name name, Hash hash, Value value, bool constant) {
     struct Node *new_node = allocate(sizeof(struct Node));
     new_node->is_value_node = true;
     new_node->hash = hash;
     struct ValueList *values = allocate(sizeof(struct ValueList));
     values->name = name;
     values->value = value;
+    values->constant = constant;
     new_node->values = values;
     return new_node;
 }
 
-static struct Node *Node_put(struct Node *node, uint8_t level, Name name, Hash hash, Value value, size_t *size) {
+static struct Node *Node_put(struct Node *node, uint8_t level, Name name, Hash hash, Value value, size_t *size, bool constant) {
     size_t index = level_index(hash, level);
     if (node->is_value_node) {
         struct ValueList *existing_values = node->values;
-        if (replace_value(existing_values, name, value)) {
+        if (replace_value(existing_values, name, value, constant)) {
             return node;
         } else if (level == MaximumLevel || node->hash == hash) {
 //            printf("Collision!!!");
-            node->values = insert_value(existing_values, name, &value);
+            node->values = insert_value(existing_values, name, &value, constant);
             ++(*size);
             return node;
         } else {
@@ -121,20 +129,20 @@ static struct Node *Node_put(struct Node *node, uint8_t level, Name name, Hash h
             size_t existing_node_index = level_index(node->hash, level);
             if (existing_node_index != index) {
                 new_node->sub_nodes[existing_node_index] = node;
-                new_node->sub_nodes[index] = create_value_node(name, hash, value);
+                new_node->sub_nodes[index] = create_value_node(name, hash, value, constant);
                 ++(*size);
                 return new_node;
             } else {
-                new_node->sub_nodes[existing_node_index] = Node_put(node, level + 1, name, hash, value, size);
+                new_node->sub_nodes[existing_node_index] = Node_put(node, level + 1, name, hash, value, size, constant);
                 return new_node;
             }
         }
     } else {
         struct Node *existing_node = node->sub_nodes[index];
         if (existing_node) {
-            node->sub_nodes[index] = Node_put(existing_node, level + 1, name, hash, value, size);
+            node->sub_nodes[index] = Node_put(existing_node, level + 1, name, hash, value, size, constant);
         } else {
-            node->sub_nodes[index] = create_value_node(name, hash, value);
+            node->sub_nodes[index] = create_value_node(name, hash, value, constant);
             ++(*size);
             return node;
         }
@@ -144,9 +152,18 @@ static struct Node *Node_put(struct Node *node, uint8_t level, Name name, Hash h
 
 void Struct_put(struct Struct *self, Name name, Value value) {
     if (self->root) {
-        self->root = Node_put(self->root, 0, name, name->hash, value, &self->size);
+        self->root = Node_put(self->root, 0, name, name->hash, value, &self->size, false);
     } else {
-        self->root = create_value_node(name, name->hash, value);
+        self->root = create_value_node(name, name->hash, value, false);
+        self->size = 1;
+    }
+}
+
+void Struct_put_constant(struct Struct *self, Name name, Value value) {
+    if (self->root) {
+        self->root = Node_put(self->root, 0, name, name->hash, value, &self->size, true);
+    } else {
+        self->root = create_value_node(name, name->hash, value, true);
         self->size = 1;
     }
 }
@@ -156,6 +173,9 @@ static bool Node_set(struct Node *node, uint8_t level, Name name, Hash hash, Val
         struct ValueList *values = node->values;
         while (values) {
             if (String_equal(values->name, name)) {
+                if (values->constant) {
+                    fail("Attempt to overwrite constant [%s]", name);
+                }
                 values->value = value;
                 return true;
             }
@@ -216,6 +236,9 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Name name, Has
             if (String_equal(values->name, name)) {
                 if (*found) {
                     fail("Found multiple entries for name %zu", name);
+                }
+                if (values->constant) {
+                    fail("Attempt to remove constant [%s]", name);
                 }
                 struct ValueList *next = values->next;
                 free(values);

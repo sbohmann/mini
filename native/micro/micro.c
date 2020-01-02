@@ -888,6 +888,8 @@ void micro_run(struct ParsedModule *module) {
     create_variable(globals, String_from_literal("List"), Function(list));
     create_variable(globals, String_from_literal("HashSet"), Function(hashset));
     create_variable(globals, String_from_literal("HashMap"), Function(hashmap));
+    create_constant(globals, String_from_literal("true"), True());
+    create_constant(globals, String_from_literal("false"), False());
     struct ElementQueue *queue = ElementQueue_create(module->elements);
     run_block(globals, queue);
     ElementQueue_delete(queue);
@@ -895,7 +897,10 @@ void micro_run(struct ParsedModule *module) {
     Variables_release(globals);
 }
 
-int main() {
-    struct ParsedModule *module = read_file("examples/print.micro");
+int main(int argc, const char **argv) {
+    if (argc != 2) {
+        fail("Expecting single argument <path to source file>");
+    }
+    struct ParsedModule *module = read_file(argv[1]);
     micro_run(module);
 }

@@ -21,6 +21,8 @@ void Struct_release(struct Struct *instance);
 
 void Struct_put(struct Struct *self, Name name, Value value);
 
+void Struct_put_constant(struct Struct *self, Name name, Value value);
+
 bool Struct_set(struct Struct *self, Name name, Value value);
 
 struct MapResult Struct_get(struct Struct *self, Name name);

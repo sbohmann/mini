@@ -53,6 +53,11 @@ void create_variable(struct Variables *self, const struct String *name, struct A
     Struct_put(self->scope, name, value);
 }
 
+void create_constant(struct Variables *self, const struct String *name, struct Any value) {
+    // TODO implement and use put if absent and return a bool
+    Struct_put_constant(self->scope, name, value);
+}
+
 struct MapResult get_variable(const struct Variables *self, const struct String *name) {
     struct MapResult result = Struct_get(self->scope, name);
     if (!result.found && self->context) {
