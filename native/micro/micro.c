@@ -224,7 +224,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
         }
         if (equal(first_token->text, "struct") && is_bracket_element_of_type(second_element, Curly)) {
             ElementQueue_next(queue);
-            result = read_struct_literal(context, second_element->bracket.elements);
+            result = read_struct_literal(context, second_element->bracket->elements);
         } else {
             struct MapResult variable = get_variable(context, first_token->text);
             if (variable.found) {
@@ -745,7 +745,7 @@ void print_statement(struct Elements *statement) {
         if (element.type == TokenElement) {
             printf("%s", element.token->text->value);
         } else if (element.type == BracketElement) {
-            printf("%s", bracket_type_name(element.bracket.type));
+            printf("%s", bracket_type_name(element.bracket->type));
         } else {
             printf("???");
         }

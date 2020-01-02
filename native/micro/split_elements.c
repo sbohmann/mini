@@ -151,7 +151,7 @@ struct SplitElements *SplitElements_by_line(struct ElementQueue *queue) {
             line = element->position.line;
         }
         if (element->type == BracketElement) {
-            line = element->bracket.closing_bracket->position.line;
+            line = element->bracket->closing_bracket->position.line;
         }
         ElementList_append(group, element);
     }

@@ -36,7 +36,7 @@ struct Element {
     enum ElementType type;
     union {
         const struct Token *token;
-        struct BracketElement bracket;
+        struct BracketElement *bracket;
     };
 };
 

@@ -71,11 +71,12 @@ void add_bracket(struct ElementList *elements, struct TokenQueue *tokens, const 
     struct Element *result = allocate(sizeof(struct Element));
     result->position = opening_bracket->position;
     result->type = BracketElement;
-    result->bracket.type = type;
-    result->bracket.elements = Elements_from_list(bracket_elements);
+    result->bracket = allocate(sizeof(struct BracketElement));
+    result->bracket->type = type;
+    result->bracket->elements = Elements_from_list(bracket_elements);
     ElementList_delete(bracket_elements);
-    result->bracket.opening_bracket = opening_bracket;
-    result->bracket.closing_bracket = closing_bracket;
+    result->bracket->opening_bracket = opening_bracket;
+    result->bracket->closing_bracket = closing_bracket;
     ElementList_append(elements, result);
 }
 

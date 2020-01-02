@@ -14,7 +14,7 @@ const char *element_text(const struct Element *element) {
     if (element->type == TokenElement) {
         return element->token->text->value;
     } else if (element->type == BracketElement) {
-        return element->bracket.opening_bracket->text->value;
+        return element->bracket->opening_bracket->text->value;
     } else {
         return "<unknown element>";
     }
@@ -102,11 +102,11 @@ static const struct Elements *read_block(struct ElementQueue *elements, enum Bra
     if (next->type != BracketElement) {
         fail_at_position(next->position, "Expected bracket expression, found [%s]", element_text(next));
     }
-    if (next->bracket.type != type) {
+    if (next->bracket->type != type) {
         fail_at_position(next->position, "Unexpected bracket type [%s], expected, [%s]",
-                         bracket_type_name(next->bracket.type), bracket_type_name(type));
+                         bracket_type_name(next->bracket->type), bracket_type_name(type));
     }
-    return next->bracket.elements;
+    return next->bracket->elements;
 }
 
 const struct Elements *read_paren_block(struct ElementQueue *elements) {
@@ -126,5 +126,5 @@ bool is_bracket_element(const struct Element *element) {
 }
 
 bool is_bracket_element_of_type(const struct Element *element, enum BracketType type) {
-    return is_bracket_element(element) && element->bracket.type == type;
+    return is_bracket_element(element) && element->bracket->type == type;
 }
