@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <core/complex.h>
+#include "variables.h"
 
 struct Function {
     struct ComplexValue base;
