@@ -15,4 +15,6 @@ bool set_variable(struct Variables *, const struct String *name, struct Any valu
 
 void create_variable(struct Variables *self, const struct String *name, struct Any value);
 
+void create_constant(struct Variables *self, const struct String *name, struct Any value);
+
 struct MapResult get_variable(const struct Variables *, const struct String *name);

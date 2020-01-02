@@ -15,12 +15,12 @@
 #include <core/allocate.h>
 #include <minic/list.h>
 
-
 #include "debug.h"
 #include "print.h"
 #include "variables.h"
 #include "split_elements.h"
 #include "function.h"
+#include "fs.h"
 
 struct Variables *global_context;
 
@@ -202,6 +202,8 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         Struct_put(map_result_struct, String_from_literal("found"), Boolean(map_result.found));
         Struct_put(map_result_struct, String_from_literal("value"), map_result.value);
         result = Complex(&map_result_struct->base);
+    } else if (instance.type == StringType && equal(name, "split")) {
+        // TODO implement split
     } else {
         fail_at_position(position, "Call to undefined method %s.%s", Any_typename(instance), name->value);
     }
@@ -883,13 +885,15 @@ struct StatementResult run_block(struct Variables *context, struct ElementQueue 
 void micro_run(struct ParsedModule *module) {
     struct Variables *globals = Variables_create(0);
     global_context = globals;
-    create_variable(globals, String_from_literal("print"), Function(print));
-    create_variable(globals, String_from_literal("println"), Function(println));
-    create_variable(globals, String_from_literal("List"), Function(list));
-    create_variable(globals, String_from_literal("HashSet"), Function(hashset));
-    create_variable(globals, String_from_literal("HashMap"), Function(hashmap));
+    create_constant(globals, String_from_literal("print"), Function(print));
+    create_constant(globals, String_from_literal("println"), Function(println));
+    create_constant(globals, String_from_literal("List"), Function(list));
+    create_constant(globals, String_from_literal("HashSet"), Function(hashset));
+    create_constant(globals, String_from_literal("HashMap"), Function(hashmap));
     create_constant(globals, String_from_literal("true"), True());
     create_constant(globals, String_from_literal("false"), False());
+    // TODO move to a module
+    create_constant(globals, String_from_literal("read_text_file"), Function(micro_read_text_file));
     struct ElementQueue *queue = ElementQueue_create(module->elements);
     run_block(globals, queue);
     ElementQueue_delete(queue);

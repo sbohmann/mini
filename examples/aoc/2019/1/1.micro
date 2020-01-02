@@ -19,11 +19,8 @@ fn solve(fuel_for_fuel) {
         }
     }
 
-    let input = fs.readFileSync('input.txt', 'utf8')
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .forEach(process_line)
+    # TODO fix splitting by line by including a following line staring with a dot ^^
+    let input = read_text_file('input.txt').split('\n').map(fn () {line.trim()}).filter(line => line.length > 0).forEach(process_line)
 
     console.log(sum)
 }
