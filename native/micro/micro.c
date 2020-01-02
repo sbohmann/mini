@@ -197,7 +197,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
                                          name.string->value, arguments->size);
                     }
                     result = Boolean(HashSet_contains((struct HashSet *) result.complex_value,
-                                                      arguments->data[0]));
+                                                      List_get(arguments, 0)));
                     release(&arguments->base);
                 } else {
                     fail_at_position(next_element->position, "Undefined symbol: %s", element_name->value);
