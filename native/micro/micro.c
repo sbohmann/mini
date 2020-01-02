@@ -821,8 +821,8 @@ void micro_run(struct ParsedModule *module) {
     global_context = globals;
     create_variable(globals, String_from_literal("print"), Function(print));
     create_variable(globals, String_from_literal("println"), Function(println));
-    create_variable(globals, String_from_literal("list"), Function(list));
-    create_variable(globals, String_from_literal("hashset"), Function(hashset));
+    create_variable(globals, String_from_literal("List"), Function(list));
+    create_variable(globals, String_from_literal("HashSet"), Function(hashset));
     struct ElementQueue *queue = ElementQueue_create(module->elements);
     run_block(globals, queue);
     ElementQueue_delete(queue);

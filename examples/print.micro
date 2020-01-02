@@ -64,7 +64,7 @@ fn ff() {
 
 ff()()
 
-let l = list(list)
+let l = List(List)
 let l2 = l[0](1, 2, 3)
 println(l)
 println(l2)
@@ -104,7 +104,7 @@ println(s.z)
 s.x = 55
 println(s)
 
-let sl = list(struct {
+let sl = List(struct {
     x: 1
 })
 
@@ -112,7 +112,7 @@ println(sl[0].x)
 sl[0].x = 2
 println(sl[0].x)
 
-let set = hashset(1, 2, 5)
+let set = HashSet(1, 2, 5)
 println(set.contains(1))
 println(set.contains(2))
 println(set.contains(3))
