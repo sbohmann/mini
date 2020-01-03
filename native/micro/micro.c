@@ -246,6 +246,24 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
     return result;
 }
 
+struct Any read_property(struct Variables *context, struct Any instance, const struct String *name,
+                       struct Position position) {
+    struct Any result = instance;
+    if (is_complex(instance, ListComplexType) && equal(name, "size")) {
+        result = Integer(((struct List *) instance.complex_value)->size);
+    } else if (is_complex(instance, SetComplexType) && equal(name, "size")) {
+        result = Integer(((struct HashSet *) instance.complex_value)->size);
+    } else if (is_complex(instance, MapComplexType) && equal(name, "size")) {
+        result = Integer(((struct HashMap *) instance.complex_value)->size);
+    } else {
+        fail_at_position(position, "Undefined property %s.%s", Any_typename(instance), name->value);
+    }
+    if (Any_equal(result, instance)) {
+        Any_retain(result);
+    }
+    return result;
+}
+
 struct Any evaluate_simple_expression(struct Variables *context, struct ElementQueue *queue) {
     const struct Token *first_token = read_token(queue);
     struct Any result;
@@ -287,7 +305,11 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
                     }
                     result = get_result.value;
                 } else {
-                    result = call_method(context, result, element_name, next_element->position, queue);
+                    if (is_bracket_element_of_type(ElementQueue_peek(queue), Paren)) {
+                        result = call_method(context, result, element_name, next_element->position, queue);
+                    } else {
+                        result = read_property(context, result, element_name, next_element->position);
+                    }
                 }
             } else if (is_bracket_element_of_type(next_element, Paren)) {
                 const struct Elements *arguments = read_paren_block(queue);
