@@ -1,6 +1,7 @@
 #include "string_split.h"
 
 #include <memory.h>
+#include <stdlib.h>
 
 #include <minic/list.h>
 #include <core/errors.h>
