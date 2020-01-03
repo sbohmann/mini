@@ -73,10 +73,11 @@ struct Any String(const struct String *value) {
     return result;
 }
 
-struct Any Function(struct Any (*value) (const struct List *)) {
+struct Any Function(struct Any (*value) (const struct List *), const char *name) {
     struct Any result = None();
     result.type = FunctionPointerType;
     result.function = value;
+    result.function_name = String_from_literal(name);
     return result;
 }
 

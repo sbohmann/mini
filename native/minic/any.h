@@ -27,7 +27,10 @@ struct Any {
         const struct String *string;
         struct ComplexValue * complex_value;
         char flat_value[8];
-        struct Any (*function)(const struct List *);
+        struct {
+            struct Any (*function)(const struct List *);
+            const struct String *function_name;
+        };
     };
 };
 
@@ -45,7 +48,7 @@ struct Any Integer(int64_t value);
 
 struct Any String(const struct String *value);
 
-struct Any Function(struct Any (*value) (const struct List *));
+struct Any Function(struct Any (*value) (const struct List *), const char *name);
 
 struct Any Complex(struct ComplexValue *instance);
 

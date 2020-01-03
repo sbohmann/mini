@@ -9,9 +9,10 @@ struct Function {
     struct Variables *bindings;
     const struct StringList *parameter_names;
     const struct Elements *body;
+    const struct String *name;
 };
 
 void Function_destructor(struct Function *instance);
 
 struct Function *Function_create(struct Variables *bindings, const struct StringList *parameter_names,
-                                 const struct Elements *body);
+                                 const struct Elements *body, const struct String *name);

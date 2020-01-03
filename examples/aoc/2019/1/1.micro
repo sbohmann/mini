@@ -21,7 +21,9 @@ fn solve(fuel_for_fuel) {
 
     let input = read_text_file('input.txt')
         .split('\n')
-#        .map(fn (line) {line.trim()})
+        .map(fn (line) {
+            return line.trim()
+        })
 #        .filter(line => line.length > 0)
 #        .forEach(process_line)
     println(input.size)
