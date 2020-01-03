@@ -19,7 +19,6 @@ fn solve(fuel_for_fuel) {
         }
     }
 
-    # TODO fix splitting by line by including a following line staring with a dot ^^
     let input = read_text_file('input.txt')
         .split('\n')
         .map(fn (line) {line.trim()})
