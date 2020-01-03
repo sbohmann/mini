@@ -38,3 +38,5 @@ struct TokenQueue;
 struct Tokens *read_tokens(const char *path, const struct Source *source);
 
 _Noreturn void fail_at_position(struct Position position, const char *format, ...);
+
+_Noreturn void fail_after_position(struct Position position, const char *format, ...);

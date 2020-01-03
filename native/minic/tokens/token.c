@@ -107,6 +107,16 @@ _Noreturn void fail_at_position(struct Position position, const char *format, ..
     vfprintf(stderr, format, arguments);
     va_end(arguments);
     fprintf(stderr, "\n");
-    fail("Parsing error at line %zu, column %zu, file [%s]",
+    fail("Error at line %zu, column %zu, file [%s]",
             position.line, position.column, position.path);
+}
+
+_Noreturn void fail_after_position(struct Position position, const char *format, ...) {
+    va_list arguments;
+    va_start(arguments, format);
+    vfprintf(stderr, format, arguments);
+    va_end(arguments);
+    fprintf(stderr, "\n");
+    fail("Unexpected end of input after line %zu, column %zu, file [%s]",
+         position.line, position.column, position.path);
 }

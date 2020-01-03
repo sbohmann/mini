@@ -15,3 +15,5 @@ const struct Element *ElementQueue_next(struct ElementQueue *self);
 bool ElementQueue_contains(struct ElementQueue *self, bool (*predicate)(const struct Element *));
 
 void ElementQueue_reset(struct ElementQueue *self);
+
+struct Position ElementQueue_last_position(struct ElementQueue *self);

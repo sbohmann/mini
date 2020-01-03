@@ -51,3 +51,11 @@ bool ElementQueue_contains(struct ElementQueue *self, bool (*predicate)(const st
 void ElementQueue_reset(struct ElementQueue *self) {
     self->index = 0;
 }
+
+struct Position ElementQueue_last_position(struct ElementQueue *self) {
+    if (self->list->size > 0) {
+        return self->list->data[self->list->size - 1].position;
+    } else {
+        return (struct Position) { "", 0, 0 };
+    }
+}

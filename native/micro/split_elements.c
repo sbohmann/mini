@@ -133,25 +133,31 @@ SplitElements_by_predicate(struct ElementQueue *queue, bool (*predicate)(const s
     return result;
 }
 
+static bool is_possible_line_start(const struct Element *element) {
+    return element->type == TokenElement && element->token->type == Symbol;
+}
+
 struct SplitElements *SplitElements_by_line(struct ElementQueue *queue) {
     struct ElementsList *raw_result = ElementsList_create();
     struct ElementList *group = ElementList_create();
-    size_t line = 0;
+    size_t current_line = 0;
     while (true) {
         const struct Element *element = ElementQueue_next(queue);
         if (!element) {
             break;
         }
-        if (element->position.line != line) {
-            if (ElementList_size(group) > 0) {
-                ElementsList_append(raw_result, Elements_from_list(group));
-                ElementList_delete(group);
-                group = ElementList_create();
+        if (element->position.line != current_line) {
+            if (is_possible_line_start(element)) {
+                if (ElementList_size(group) > 0) {
+                    ElementsList_append(raw_result, Elements_from_list(group));
+                    ElementList_delete(group);
+                    group = ElementList_create();
+                }
             }
-            line = element->position.line;
+            current_line = element->position.line;
         }
         if (element->type == BracketElement) {
-            line = element->bracket->closing_bracket->position.line;
+            current_line = element->bracket->closing_bracket->position.line;
         }
         ElementList_append(group, element);
     }
