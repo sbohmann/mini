@@ -21,9 +21,14 @@ fn solve(fuel_for_fuel) {
 
     let input = read_text_file('input.txt')
         .split('\n')
-        .map(fn (line) {line.trim()})
-        .filter(line => line.length > 0)
-        .forEach(process_line)
+#        .map(fn (line) {line.trim()})
+#        .filter(line => line.length > 0)
+#        .forEach(process_line)
+    println(input[0])
+    println(input[1])
+    println(input[2])
+    println(input[99])
+    println(input[100])
 
     console.log(sum)
 }
