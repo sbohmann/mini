@@ -14,10 +14,12 @@ enum ComplexType {
     FunctionComplexType = 0x81
 };
 
+const char *ComplexType_to_string(enum ComplexType type);
+
 struct ComplexValue {
     struct ReferenceCount *reference_count;
     void (*destructor)(struct ComplexValue *);
-    uint8_t type;
+    enum ComplexType type;
 };
 
 void Complex_init(struct ComplexValue *instance);

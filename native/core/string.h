@@ -14,7 +14,7 @@ struct String {
 
 const struct String *String_from_literal(const char *literal);
 
-const struct String *String_preallocated(const char *literal, size_t length);
+const struct String *String_preallocated(const char *value, size_t length);
 
 const struct String *String_from_buffer(char *literal, size_t length);
 

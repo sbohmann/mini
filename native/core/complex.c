@@ -7,6 +7,25 @@
 #include <stdbool.h>
 #include <micro/debug.h>
 
+const char *ComplexType_to_string(enum ComplexType type) {
+    switch (type) {
+        case StringComplexType:
+            return "String";
+        case ListComplexType:
+            return "List";
+        case SetComplexType:
+            return "HashSet";
+        case MapComplexType:
+            return "HashMap";
+        case StructComplexType:
+            return "Struct";
+        case FunctionComplexType:
+            return "Function";
+        default:
+            fail("<unknown complex type %d>", type);
+    }
+}
+
 struct ReferenceCount {
     atomic_size_t strong_count;
     atomic_size_t weak_count;
@@ -59,20 +78,5 @@ bool release(struct ComplexValue *instance) {
 }
 
 const char *Complex_typename(struct ComplexValue *value) {
-    switch (value->type) {
-        case StringComplexType:
-            return "String";
-        case ListComplexType:
-            return "List";
-        case SetComplexType:
-            return "HashSet";
-        case MapComplexType:
-            return "HashMap";
-        case StructComplexType:
-            return "Struct";
-        case FunctionComplexType:
-            return "Function";
-        default:
-            fail("<unknown complex type %d>", value->type);
-    }
+    return ComplexType_to_string(value->type);
 }

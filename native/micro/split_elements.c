@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include <generated/element_list.h>
-#include <generated/element_queue.h>
+#include <minic/elements/element_queue.h>
 #include <minic/expressions/expressions.h>
 #include <generated/elements_list.h>
 #include <core/allocate.h>

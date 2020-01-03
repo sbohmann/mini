@@ -7,6 +7,25 @@
 
 static const size_t reasonable_prime = 92821;
 
+const char *AnyType_to_string(enum AnyType type) {
+    switch (type) {
+        case NoneType:
+            return "None";
+        case IntegerType:
+            return "Integer";
+        case StringType:
+            return "String";
+        case ComplexType:
+            return "Complex";
+        case FlatType:
+            return "Flat";
+        case FunctionPointerType:
+            return "FunctionPointer";
+        default:
+            fail("<Unknown type %d>", type);
+    }
+}
+
 struct Any None() {
     static struct Any *result = 0;
     if (result == 0) {
@@ -239,20 +258,9 @@ struct Any Any_divide(struct Any lhs, struct Any rhs) {
 }
 
 const char *Any_typename(struct Any value) {
-    switch (value.type) {
-        case NoneType:
-            return "None";
-        case IntegerType:
-            return "Integer";
-        case StringType:
-            return "String";
-        case ComplexType:
-            return Complex_typename(value.complex_value);
-        case FlatType:
-            return "Flat";
-        case FunctionPointerType:
-            return "FunctionPointer";
-        default:
-            fail("<Unknown type %d>", value.type);
+    if (value.type == ComplexType) {
+        return Complex_typename(value.complex_value);
+    } else {
+        return AnyType_to_string(value.type);
     }
 }

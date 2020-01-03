@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #include <core/string.h>
-#include <generated/element_queue.h>
+#include <minic/elements/element_queue.h>
 #include <minic/elements/element.h>
 
 bool equal(const struct String *string, const char *literal);

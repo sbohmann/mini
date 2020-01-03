@@ -12,10 +12,10 @@ const struct String *String_from_literal(const char *literal) {
     return result;
 }
 
-const struct String *String_preallocated(const char *literal, size_t length) {
+const struct String *String_preallocated(const char *value, size_t length) {
     struct String *result = allocate(sizeof(struct String));
     result->length = length;
-    result->value = literal;
+    result->value = value;
     result->hash = string_hash(result->value, result->length);
     return result;
 }

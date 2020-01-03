@@ -47,3 +47,7 @@ bool TokenQueue_contains(struct TokenQueue *self, bool (*predicate)(const struct
     }
     return false;
 }
+
+void TokenQueue_reset(struct TokenQueue *self) {
+    self->index = 0;
+}

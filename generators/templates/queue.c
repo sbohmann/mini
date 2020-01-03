@@ -48,3 +48,6 @@ bool {{name}}Queue_contains(struct {{name}}Queue *self, bool (*predicate)({{cons
     return false;
 }
 
+void {{name}}Queue_reset(struct {{name}}Queue *self) {
+    self->index = 0;
+}

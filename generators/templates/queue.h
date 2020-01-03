@@ -15,3 +15,4 @@ void {{name}}Queue_delete(struct {{name}}Queue *instance);
 
 bool {{name}}Queue_contains(struct {{name}}Queue *self, bool (*predicate)({{constvalue}}));
 
+void {{name}}Queue_reset(struct {{name}}Queue *self);

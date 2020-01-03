@@ -15,6 +15,8 @@ enum AnyType {
     FunctionPointerType = 0x23
 };
 
+const char *AnyType_to_string(enum AnyType type);
+
 struct List;
 
 struct Any {

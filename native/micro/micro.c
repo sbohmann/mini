@@ -2,13 +2,14 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include <core/errors.h>
 #include <collections/hashmap.h>
 #include <collections/hashset.h>
 #include <collections/struct.h>
-#include <generated/element_queue.h>
 
+#include <minic/elements/element_queue.h>
 #include <minic/expressions/expressions.h>
 #include <generated/string_list.h>
 #include <core/complex.h>
@@ -21,6 +22,7 @@
 #include "split_elements.h"
 #include "function.h"
 #include "fs.h"
+#include "micro/methods/string_split.h"
 
 struct Variables *global_context;
 
@@ -149,6 +151,34 @@ bool is_complex(struct Any value, enum ComplexType type) {
            value.complex_value->type == type;
 }
 
+static void check_arguments(struct Position position, const char *name,
+                            const struct List *arguments, size_t number, ...) {
+    va_list argp;
+    va_start(argp, number);
+    if (arguments->size != number) {
+        fail_at_position(position,
+                         "Argument number mismatch in call to %s - %zu arguments passed, %zu expected",
+                         name, arguments->size, number);
+    }
+    for (size_t index = 0; index < number; ++index) {
+        struct Any argument = List_get(arguments, index);
+        enum AnyType type = va_arg(argp, enum AnyType);
+        if (type == ComplexType) {
+            enum ComplexType complex_type = va_arg(argp, enum ComplexType);
+            if (argument.type != ComplexType || argument.complex_value->type != complex_type) {
+                fail("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
+                     Any_typename(argument), ComplexType_to_string(complex_type));
+            }
+        } else {
+            if (argument.type != type) {
+                fail("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
+                     Any_typename(argument), AnyType_to_string(type));
+            }
+        }
+    }
+    va_end(argp);
+}
+
 struct Any call_method(struct Variables *context, struct Any instance, const struct String *name,
                        struct Position position, struct ElementQueue *queue) {
     struct Any result = instance;
@@ -203,7 +233,9 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         Struct_put(map_result_struct, String_from_literal("value"), map_result.value);
         result = Complex(&map_result_struct->base);
     } else if (instance.type == StringType && equal(name, "split")) {
-        // TODO implement split
+        check_arguments(position, "String.split", arguments, 1, StringType, StringType);
+        const struct String *separator = List_get(arguments, 0).string;
+        return String_split(instance.string, separator);
     } else {
         fail_at_position(position, "Call to undefined method %s.%s", Any_typename(instance), name->value);
     }
