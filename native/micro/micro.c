@@ -5,15 +5,15 @@
 #include <stdarg.h>
 
 #include <core/errors.h>
+#include <core/complex.h>
+#include <core/allocate.h>
+#include <core/numbers.h>
+#include <generated/string_list.h>
 #include <collections/hashmap.h>
 #include <collections/hashset.h>
 #include <collections/struct.h>
-
 #include <minic/elements/element_queue.h>
 #include <minic/expressions/expressions.h>
-#include <generated/string_list.h>
-#include <core/complex.h>
-#include <core/allocate.h>
 #include <minic/list.h>
 
 #include "debug.h"
@@ -98,14 +98,15 @@ struct FunctionCallResult {
     };
 };
 
-static struct FunctionCallResult parse_arguments_and_call(struct Variables *context, struct Any function, struct Any name,
-                                                          struct Position position, struct ElementQueue *arguments);
+static struct FunctionCallResult
+parse_arguments_and_call(struct Variables *context, struct Any function, struct Any name,
+                         struct Position position, struct ElementQueue *arguments);
 
 static struct FunctionCallResult call(struct Variables *context, struct Any function, struct Any name,
                                       struct Position position, struct List *arguments);
 
 static struct Any call_or_fail(struct Variables *context, struct Any function, struct Any name,
-                                      struct Position position, struct List *arguments);
+                               struct Position position, struct List *arguments);
 
 struct Any with_queue(struct Variables *context, const struct Elements *elements,
                       struct Any (*function)(struct Variables *context, struct ElementQueue *queue)) {
@@ -152,19 +153,17 @@ struct List *read_arguments(struct Variables *context, struct ElementQueue *queu
     return argument_list;
 }
 
-bool is_complex(struct Any value, enum ComplexType type) {
+bool has_complex_type(struct Any value, enum ComplexType type) {
     return value.type == ComplexType &&
            value.complex_value->type == type;
 }
 
-static void check_arguments(struct Position position, const char *name,
-                            const struct List *arguments, size_t number, ...) {
+static void check_arguments(const char *name, const struct List *arguments, size_t number, ...) {
     va_list argp;
     va_start(argp, number);
     if (arguments->size != number) {
-        fail_at_position(position,
-                         "Argument number mismatch in call to %s - %zu arguments passed, %zu expected",
-                         name, arguments->size, number);
+        fail("Argument number mismatch in call to %s - %zu arguments passed, %zu expected",
+             name, arguments->size, number);
     }
     for (size_t index = 0; index < number; ++index) {
         struct Any argument = List_get(arguments, index);
@@ -185,12 +184,45 @@ static void check_arguments(struct Position position, const char *name,
     va_end(argp);
 }
 
+static void check_arguments_with_position(struct Position position, const char *name,
+                                          const struct List *arguments, size_t number, ...) {
+    va_list argp;
+    va_start(argp, number);
+    if (arguments->size != number) {
+        fail_at_position(
+                position,
+                "Argument number mismatch in call to %s - %zu arguments passed, %zu expected",
+                name, arguments->size, number);
+    }
+    for (size_t index = 0; index < number; ++index) {
+        struct Any argument = List_get(arguments, index);
+        enum AnyType type = va_arg(argp, enum AnyType);
+        if (type == ComplexType) {
+            enum ComplexType complex_type = va_arg(argp, enum ComplexType);
+            if (argument.type != ComplexType || argument.complex_value->type != complex_type) {
+                fail_at_position(
+                        position,
+                        "Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
+                        Any_typename(argument), ComplexType_to_string(complex_type));
+            }
+        } else {
+            if (argument.type != type) {
+                fail_at_position(
+                        position,
+                        "Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
+                        Any_typename(argument), AnyType_to_string(type));
+            }
+        }
+    }
+    va_end(argp);
+}
+
 struct Any call_method(struct Variables *context, struct Any instance, const struct String *name,
                        struct Position position, struct ElementQueue *queue) {
     struct Any result = instance;
     struct ElementQueue *arguments_queue = ElementQueue_create(read_paren_block(queue));
     struct List *arguments = read_arguments(context, arguments_queue);
-    if (is_complex(instance, SetComplexType) && equal(name, "contains")) {
+    if (has_complex_type(instance, SetComplexType) && equal(name, "contains")) {
         if (arguments->size != 1) {
             fail_at_position(position,
                              "Argument number mismatch in call to HashSet.contains - "
@@ -199,12 +231,12 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         }
         result = Boolean(HashSet_contains((struct HashSet *) instance.complex_value,
                                           List_get(arguments, 0)));
-    } else if (is_complex(instance, SetComplexType) && equal(name, "add")) {
+    } else if (has_complex_type(instance, SetComplexType) && equal(name, "add")) {
         for (size_t index = 0; index < arguments->size; ++index) {
             HashSet_add((struct HashSet *) instance.complex_value,
                         List_get(arguments, index));
         }
-    } else if (is_complex(instance, MapComplexType) && equal(name, "put")) {
+    } else if (has_complex_type(instance, MapComplexType) && equal(name, "put")) {
         if (arguments->size % 2 != 0) {
             fail_at_position(position,
                              "Odd number of arguments passed to HashMap.put: %zu", arguments->size);
@@ -213,7 +245,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
             HashMap_put((struct HashMap *) instance.complex_value,
                         List_get(arguments, index), List_get(arguments, index + 1));
         }
-    } else if (is_complex(instance, MapComplexType) && equal(name, "get")) {
+    } else if (has_complex_type(instance, MapComplexType) && equal(name, "get")) {
         if (arguments->size != 1) {
             fail_at_position(position,
                              "Argument number mismatch in call to HashSet.contains - %zu arguments passed, 1 expected",
@@ -226,7 +258,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         } else {
             result = None();
         }
-    } else if (is_complex(instance, MapComplexType) && equal(name, "at")) {
+    } else if (has_complex_type(instance, MapComplexType) && equal(name, "at")) {
         if (arguments->size != 1) {
             fail_at_position(position,
                              "Argument number mismatch in call to HashSet.contains - %zu arguments passed, 1 expected",
@@ -238,7 +270,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         Struct_put(map_result_struct, String_from_literal("found"), Boolean(map_result.found));
         Struct_put(map_result_struct, String_from_literal("value"), map_result.value);
         result = Complex(&map_result_struct->base);
-    } else if (is_complex(instance, ListComplexType) && equal(name, "map")) {
+    } else if (has_complex_type(instance, ListComplexType) && equal(name, "map")) {
         if (arguments->size != 1) {
             fail_at_position(position,
                              "Argument number mismatch in call to List.map - %zu arguments passed, 1 expected",
@@ -263,12 +295,70 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
             release(&function_arguments->base);
         }
         return Complex(&map_result->base);
+    } else if (has_complex_type(instance, ListComplexType) && equal(name, "filter")) {
+        if (arguments->size != 1) {
+            fail_at_position(position,
+                             "Argument number mismatch in call to List.map - %zu arguments passed, 1 expected",
+                             arguments->size);
+        }
+        struct Any function = List_get(arguments, 0);
+        struct List *input = (struct List *) instance.complex_value;
+        struct List *filter_result = List_create();
+        struct Any function_name = None();
+        if (function.type == FunctionPointerType) {
+            function_name = String(function.function_name);
+        } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
+            const struct String *raw_name = ((struct Function *) function.complex_value)->name;
+            if (raw_name != 0) {
+                function_name = String(raw_name);
+            }
+        }
+        for (size_t index = 0; index < input->size; ++index) {
+            struct List *function_arguments = List_create();
+            struct Any value = List_get(input, index);
+            List_add(function_arguments, value);
+            struct Any function_result = call_or_fail(context, function, function_name, position, function_arguments);
+            if (function_result.type != BooleanType) {
+                fail("Function passed to filter returned a non-boolean value of type %s",
+                     Any_typename(function_result));
+            }
+            if (function_result.boolean) {
+                List_add(filter_result, value);
+            }
+            release(&function_arguments->base);
+        }
+        return Complex(&filter_result->base);
+    } else if (has_complex_type(instance, ListComplexType) && equal(name, "foreach")) {
+        if (arguments->size != 1) {
+            fail_at_position(position,
+                             "Argument number mismatch in call to List.map - %zu arguments passed, 1 expected",
+                             arguments->size);
+        }
+        struct Any function = List_get(arguments, 0);
+        struct List *input = (struct List *) instance.complex_value;
+        struct Any function_name = None();
+        if (function.type == FunctionPointerType) {
+            function_name = String(function.function_name);
+        } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
+            const struct String *raw_name = ((struct Function *) function.complex_value)->name;
+            if (raw_name != 0) {
+                function_name = String(raw_name);
+            }
+        }
+        for (size_t index = 0; index < input->size; ++index) {
+            struct List *function_arguments = List_create();
+            struct Any value = List_get(input, index);
+            List_add(function_arguments, value);
+            call_or_fail(context, function, function_name, position, function_arguments);
+            release(&function_arguments->base);
+        }
+        return None();
     } else if (instance.type == StringType && equal(name, "split")) {
-        check_arguments(position, "String.split", arguments, 1, StringType, StringType);
+        check_arguments_with_position(position, "String.split", arguments, 1, StringType, StringType);
         const struct String *separator = List_get(arguments, 0).string;
         return String_split(instance.string, separator);
     } else if (instance.type == StringType && equal(name, "trim")) {
-        check_arguments(position, "String.split", arguments, 0);
+        check_arguments_with_position(position, "String.split", arguments, 0);
         return String_trim(instance.string);
     } else {
         fail_at_position(position, "Call to undefined method %s.%s", Any_typename(instance), name->value);
@@ -283,12 +373,17 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
 struct Any read_property(struct Variables *context, struct Any instance, const struct String *name,
                          struct Position position) {
     struct Any result = instance;
-    if (is_complex(instance, ListComplexType) && equal(name, "size")) {
+    if (has_complex_type(instance, ListComplexType) && equal(name, "size")) {
         result = Integer(((struct List *) instance.complex_value)->size);
-    } else if (is_complex(instance, SetComplexType) && equal(name, "size")) {
+    } else if (has_complex_type(instance, SetComplexType) && equal(name, "size")) {
         result = Integer(((struct HashSet *) instance.complex_value)->size);
-    } else if (is_complex(instance, MapComplexType) && equal(name, "size")) {
+    } else if (has_complex_type(instance, MapComplexType) && equal(name, "size")) {
         result = Integer(((struct HashMap *) instance.complex_value)->size);
+    } else if (has_complex_type(instance, StringComplexType) && equal(name, "length")) {
+        // TODO
+        result = Integer(0);
+    } else if (instance.type == StringType && equal(name, "length")) {
+        result = Integer(((struct String *) instance.complex_value)->length);
     } else {
         fail_at_position(position, "Undefined property %s.%s", Any_typename(instance), name->value);
     }
@@ -495,7 +590,7 @@ bool compare_values(const struct String *operator_name, struct Any lhs, struct A
         return Any_less_than(lhs, rhs);
     } else if (equal(operator_name, ">")) {
         return Any_greater_than(lhs, rhs);
-    } else if (equal(operator_name, "<=>")) {
+    } else if (equal(operator_name, "<=")) {
         return Any_less_than_or_equal(lhs, rhs);
     } else if (equal(operator_name, ">=")) {
         return Any_greater_than_or_equal(lhs, rhs);
@@ -657,6 +752,7 @@ struct Assignment evaluate_lhs_expression(struct Variables *context, struct Elem
                     assignment.function = assign_to_struct;
                     return assignment;
                 }
+                name = String(element_name);
             } else if (is_bracket_element_of_type(next_element, Paren)) {
                 const struct Elements *arguments = read_paren_block(queue);
                 if (ElementQueue_peek(queue)) {
@@ -673,6 +769,7 @@ struct Assignment evaluate_lhs_expression(struct Variables *context, struct Elem
                             fail_at_position(next_element->position, "Call failed.");
                         }
                     }
+                    name = None();
                 } else {
                     assignment.error_message = "Assignment to function call result";
                     return assignment;
@@ -699,6 +796,7 @@ struct Assignment evaluate_lhs_expression(struct Variables *context, struct Elem
                     assignment.function = assign_to_list;
                     return assignment;
                 }
+                name = None();
             } else {
                 fail_at_position(next_element->position, "Unexpected token");
             }
@@ -751,6 +849,12 @@ struct Any hashmap(const struct List *pairs) {
     return Complex(&result->base);
 }
 
+struct Any parse_integer(const struct List *arguments) {
+    check_arguments("parse_integer", arguments, 1, StringType);
+    const struct String *input = List_get(arguments, 0).string;
+    return Integer(parse_int64(input->value, input->length, 10));
+}
+
 struct StatementResult {
     bool is_return;
     struct Any value;
@@ -793,8 +897,9 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
     return result;
 }
 
-static struct FunctionCallResult parse_arguments_and_call(struct Variables *context, struct Any function, struct Any name,
-                                      struct Position position, struct ElementQueue *arguments) {
+static struct FunctionCallResult
+parse_arguments_and_call(struct Variables *context, struct Any function, struct Any name,
+                         struct Position position, struct ElementQueue *arguments) {
     struct List *argument_list = read_arguments(context, arguments);
     struct FunctionCallResult result = call(context, function, name, position, argument_list);
     free(argument_list);
@@ -814,16 +919,17 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
             if (result.type == ArgumentNumberMismatch) {
                 if (name.type == StringType) {
                     fail_at_position(position,
-                                     "Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.\n",
+                                     "Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.",
                                      name.string->value, result.arguments_passed, result.arguments_expected);
                 } else {
                     fail_at_position(position,
-                                     "Argument number mismatch in call to function - %zu arguments passed, %zu expected.\n",
+                                     "Argument number mismatch in call to function - %zu arguments passed, %zu expected.",
                                      result.arguments_passed, result.arguments_expected);
                 }
             }
         } else {
-            fail_at_position(position, "Error: failed to call non-function complex value of type %s\n", Any_typename(function));
+            fail_at_position(position, "Error: failed to call non-function complex value of type %s\n",
+                             Any_typename(function));
         }
     } else {
         fail_at_position(position, "Error: failed to call non-function value of type %s\n", Any_typename(function));
@@ -1002,6 +1108,7 @@ void micro_run(struct ParsedModule *module) {
     create_builtin_function(globals, "List", list);
     create_builtin_function(globals, "HashSet", hashset);
     create_builtin_function(globals, "HashMap", hashmap);
+    create_builtin_function(globals, "parse_integer", parse_integer);
     create_constant(globals, String_from_literal("true"), True());
     create_constant(globals, String_from_literal("false"), False());
     // TODO move to a module
