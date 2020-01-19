@@ -73,7 +73,6 @@ fn build_data(raw_data) {
     let index = 0
     while (index < raw_data.size) {
         data.put(index, raw_data[index])
-        println(index, ' -> ', raw_data[index])
         index = index + 1
     }
     index = 0
@@ -103,7 +102,7 @@ fn b() {
             data.put(2, verb)
             # println("filled data.")
             run()
-            println(data.get(0))
+            println(data.get(4))
             if (data.get(0) == 19690720) {
                 console.log('noun: ' + noun + ', verb: ' + verb)
                 console.log('b: ' + (100 * noun + verb))
@@ -115,18 +114,20 @@ fn b() {
 }
 
 fn simple() {
-    let simple = [[1, 0, 0, 0, 99],
-        [2, 3, 0, 3, 99],
-        [2, 4, 4, 5, 99, 0],
-        [1, 1, 1, 4, 99, 5, 6, 0, 99]]
+    let simple = List(
+        List(1, 0, 0, 0, 99),
+        List(2, 3, 0, 3, 99),
+        List(2, 4, 4, 5, 99, 0),
+        List(1, 1, 1, 4, 99, 5, 6, 0, 99))
 
-    for (let input of simple) {
+    simple.foreach(fn (input) {
         build_data(input)
         run()
-        for (let entry of data.entries()) {
-            console.log(entry[0] + ': ' + entry[1])
-        }
-    }
+        data.foreach(fn (key, value) {
+            println(key, ': ', value)
+        })
+        println('\n')
+    })
 }
 
-a()
+simple()

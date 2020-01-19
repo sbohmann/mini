@@ -31,7 +31,7 @@ void HashMap_destructor(struct HashMap *instance);
 struct HashMap *HashMap_create() {
     struct HashMap *result = allocate(sizeof(struct HashMap));
     Complex_init(&result->base);
-    result->base.destructor = (void (*) (struct ComplexValue *))HashMap_destructor;
+    result->base.destructor = (void (*)(struct ComplexValue *)) HashMap_destructor;
     result->base.type = MapComplexType;
     return result;
 }
@@ -184,17 +184,17 @@ static struct MapResult Node_get(struct Node *node, uint8_t level, Key key, Hash
         struct ValueList *values = node->values;
         while (values) {
             if (Any_raw_equal(values->key, key)) {
-                return (struct MapResult) { true, values->value };
+                return (struct MapResult) {true, values->value};
             }
             values = values->next;
         }
-        return (struct MapResult) { false, None() };
+        return (struct MapResult) {false, None()};
     } else {
         size_t index = level_index(hash, level);
         if (node->sub_nodes[index]) {
             return Node_get(node->sub_nodes[index], level + 1, key, hash);
         } else {
-            return (struct MapResult) { false, None() };
+            return (struct MapResult) {false, None()};
         }
     }
 }
@@ -203,7 +203,7 @@ struct MapResult HashMap_get(struct HashMap *self, Key key) {
     if (self->root) {
         return Node_get(self->root, 0, key, Any_hash(key));
     } else {
-        return (struct MapResult) { false, None() };
+        return (struct MapResult) {false, None()};
     }
 }
 
@@ -259,5 +259,27 @@ bool HashMap_remove(struct HashMap *self, Key key) {
         return found;
     } else {
         return false;
+    }
+}
+
+void Node_foreach(struct Node *node, HashMapForeachFunction function, void *context) {
+    if (node->is_value_node) {
+        struct ValueList *list = node->values;
+        while (list) {
+            function(list->key, list->value, context);
+            list = list->next;
+        }
+    } else {
+        for (size_t index = 0; index < 32; ++index) {
+            if (node->sub_nodes[index]) {
+                Node_foreach(node->sub_nodes[index], function, context);
+            }
+        }
+    }
+}
+
+void HashMap_foreach(struct HashMap *self, HashMapForeachFunction function, void *context) {
+    if (self->root) {
+        Node_foreach(self->root, function, context);
     }
 }
