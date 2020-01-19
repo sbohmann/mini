@@ -643,7 +643,7 @@ struct Any evaluate_equality(struct Variables *context, struct ElementQueue *que
         if (split_elements->size != 2) {
             fail_at_position(split_elements->data[0].data[0].position, "Unsupported chained equality check");
         }
-        bool equality_check = is_symbol_of_name(split_elements->separators, "==");
+        bool equality_check = is_operator_with_text(split_elements->separators, "==");
         struct Any lhs_result = with_queue(context, split_elements->data, evaluate_comparison);
         struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_comparison);
         SplitElements_delete(split_elements);
@@ -655,6 +655,9 @@ struct Any evaluate_equality(struct Variables *context, struct ElementQueue *que
 
 struct Any evaluate_expression(struct Variables *context, struct ElementQueue *queue) {
     const struct Element *first_element = ElementQueue_peek(queue);
+    if (first_element->type == TokenElement && equal(first_element->token->text, "++")) {
+        printf("Here");
+    }
     if (is_bracket_element_of_type(first_element, Paren)) {
         const struct Elements *contained_expression = read_paren_block(queue);
         struct ElementQueue *contained_expression_queue = ElementQueue_create(contained_expression);
@@ -668,9 +671,9 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
         // TODO list literal
         fail_at_position(first_element->position, "TODO map / set literal {a: 1, \"b\": 2, 3: 3} / {1, 2, 3}");
     } else if (ElementQueue_contains(queue, is_operator)) {
-        return evaluate_equality(context, queue);
+        return handle_error(first_element->position, evaluate_equality(context, queue));
     } else {
-        return evaluate_simple_expression(context, queue);
+        return handle_error(first_element->position, evaluate_simple_expression(context, queue));
     }
 }
 
@@ -880,7 +883,7 @@ struct Any parse_integer(const struct List *arguments) {
 
 struct Any micro_fail(const struct List *arguments) {
     println(arguments);
-    fail();
+    fail_with_message("fail was called by program");
 }
 
 struct StatementResult {
@@ -1088,6 +1091,10 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
             read_symbol(queue);
             negative_case = read_curly_block(queue);
         }
+        const struct Element *next_element = ElementQueue_peek(queue);
+        if (next_element) {
+            fail_at_position(next_element->position, "Unexpected token after if statement");
+        }
         struct Any condition_result = with_queue(context, condition, evaluate_expression);
         struct Any condition_result_is_true = handle_error(condition->data[0].position, Any_true(condition_result));
         if (condition_result_is_true.boolean) {
@@ -1098,6 +1105,10 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
     } else if (equal(symbol, "while")) {
         const struct Elements *condition = read_paren_block(queue);
         const struct Elements *positive_case = read_curly_block(queue);
+        const struct Element *next_element = ElementQueue_peek(queue);
+        if (next_element) {
+            fail_at_position(next_element->position, "Unexpected token after while loop");
+        }
         while (true) {
             struct Any condition_result = with_queue(context, condition, evaluate_expression);
             if (Any_raw_true(condition_result)) {
@@ -1149,7 +1160,7 @@ void micro_run(struct ParsedModule *module) {
     create_builtin_function(globals, "HashSet", hashset);
     create_builtin_function(globals, "HashMap", hashmap);
     create_builtin_function(globals, "parse_integer", parse_integer);
-    create_builtin_function(globals, "fail", parse_integer);
+    create_builtin_function(globals, "fail", micro_fail);
     create_constant(globals, String_from_literal("true"), True());
     create_constant(globals, String_from_literal("false"), False());
     create_constant(globals, String_from_literal("None"), None());

@@ -4,36 +4,37 @@ let index = 0
 fn run() {
     while (true) {
         if (step()) {
-            println("step returned true")
-            break;
+            # println("step returned true")
+            return None
         }
-        println("step returned false: ")
+        # println("step returned false: ")
     }
 }
 
 fn step() {
     let opcode = read_opcode()
     if (opcode == 1) {
-        println("add...")
+        # println("add...")
         add()
         return false
     }
     if (opcode == 2) {
-        println("mul...")
+        # println("mul...")
         multiply()
         return false
     }
     if (opcode == 99) {
-        println("99!!!")
+        # println("99!!!")
         return true
     }
     fail("Unknown opcode: ", opcode)
 }
 
 fn read_opcode() {
-    println("reading opcode at index ", index)
+    # println("reading opcode at index ", index)
     let result = data.get(index)
-    if (!result) {
+    # println("result: ", result, result == 0, result == None)
+    if (result == None) {
         fail("Index out of range: ", index)
     }
     return result
@@ -72,6 +73,7 @@ fn build_data(raw_data) {
     let index = 0
     while (index < raw_data.size) {
         data.put(index, raw_data[index])
+        println(index, ' -> ', raw_data[index])
         index = index + 1
     }
     index = 0
@@ -80,12 +82,12 @@ fn build_data(raw_data) {
 fn a() {
     read_data()
 
-    data.set(1, 12)
-    data.set(2, 2)
+    data.put(1, 12)
+    data.put(2, 2)
 
     run()
 
-    console.log("a: " + data.get(0))
+    println("a: ", data.get(0))
 }
 
 fn b() {
@@ -95,21 +97,20 @@ fn b() {
         println("noun ", noun)
         let verb = 0
         while (verb <= 99) {
-            println("verb ", verb)
             build_data(raw_data)
-            println("built data.")
+            # println("built data.")
             data.put(1, noun)
             data.put(2, verb)
-            println("filled data.")
+            # println("filled data.")
             run()
-            println("ran.")
-            if (data.get(0) === 19690720) {
+            println(data.get(0))
+            if (data.get(0) == 19690720) {
                 console.log('noun: ' + noun + ', verb: ' + verb)
                 console.log('b: ' + (100 * noun + verb))
             }
-            ++verb
+            verb = verb + 1
         }
-        ++noun
+        noun = noun + 1
     }
 }
 
@@ -128,4 +129,4 @@ fn simple() {
     }
 }
 
-b()
+a()
