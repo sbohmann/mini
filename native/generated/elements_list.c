@@ -74,15 +74,15 @@ struct Elements * ElementsList_to_array(const struct ElementsList * self) {
     struct ElementsListElement *iterator = ElementsList_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail("Logical error in ElementsList_to_array - target overrun");
+            fail_with_message("Logical error in ElementsList_to_array - target overrun");
         }
         *result_iterator = *ElementsListIterator_get(iterator);
         iterator = ElementsListIterator_next(iterator);
         ++result_iterator;
     }
     if (result_iterator - result != size) {
-        fail("Logical error in result lines creation - offset: [%zu], size: [%zu]",
-             result_iterator - result, size);
+        fail_with_message("Logical error in result lines creation - offset: [%zu], size: [%zu]",
+                          result_iterator - result, size);
     }
     return result;
 }
@@ -99,7 +99,7 @@ struct ElementsListElement * ElementsListIterator_next(struct ElementsListElemen
     if (iterator) {
         return iterator->next;
     } else {
-        fail("Attempt to get next from null iterator");
+        fail_with_message("Attempt to get next from null iterator");
     }
 }
 
@@ -107,7 +107,7 @@ struct ElementsListElement * ElementsListIterator_previous(struct ElementsListEl
     if (iterator) {
         return iterator->previous;
     } else {
-        fail("Attempt to get previous from null iterator");
+        fail_with_message("Attempt to get previous from null iterator");
     }
 }
 
@@ -115,6 +115,6 @@ const struct Elements * ElementsListIterator_get(struct ElementsListElement * it
     if (iterator) {
         return iterator->value;
     } else {
-        fail("Attempt to get value from null iterator");
+        fail_with_message("Attempt to get value from null iterator");
     }
 }

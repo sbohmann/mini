@@ -30,8 +30,8 @@ static bool process_char(struct TokenReader *base, char c) {
         return false;
     } else if (StringBuilder_length(base->buffer) == 0) {
         if (c != self->quote_char) {
-            fail("Logical error: first character [%c] (0x%02x) != quote char [%c] (0x%02x)",
-                    c, (int)c, self->quote_char, (int)self->quote_char);
+            fail_with_message("Logical error: first character [%c] (0x%02x) != quote char [%c] (0x%02x)",
+                              c, (int) c, self->quote_char, (int) self->quote_char);
         }
     } else if (self->escaped) {
         self->escaped = false;

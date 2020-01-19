@@ -26,6 +26,14 @@
 
 struct Variables *global_context;
 
+struct Any handle_error(struct Position position, struct Any value) {
+    if (value.type == ErrorType) {
+        fail_at_position(position, "%s", value.string->value);
+    } else {
+        return value;
+    }
+}
+
 static struct Variables *create_bindings(const struct Variables *context, const struct Elements *names) {
     struct ElementQueue *queue = ElementQueue_create(names);
     struct SplitElements *split_names = SplitElements_by_comma(queue);
@@ -33,7 +41,7 @@ static struct Variables *create_bindings(const struct Variables *context, const 
     for (size_t index = 0; index < names->size; ++index) {
         struct Elements *part = split_names->data + index;
         if (part->size == 0) {
-            fail("logical_error");
+            fail_with_message("logical_error");
         } else if (part->size > 1) {
             fail_at_position(part->data[1].position, "Unexpected token");
         }
@@ -82,9 +90,9 @@ static void fn(struct Variables *context, struct ElementQueue *queue) {
 }
 
 enum FunctionCallResultType {
-    Success,
-    Error,
-    ArgumentNumberMismatch
+    SuccessFunctionResult,
+    ErrorFunctionResult,
+    ArgumentNumberMismatchFunctionResult
 };
 
 struct FunctionCallResult {
@@ -162,8 +170,8 @@ static void check_arguments(const char *name, const struct List *arguments, size
     va_list argp;
     va_start(argp, number);
     if (arguments->size != number) {
-        fail("Argument number mismatch in call to %s - %zu arguments passed, %zu expected",
-             name, arguments->size, number);
+        fail_with_message("Argument number mismatch in call to %s - %zu arguments passed, %zu expected",
+                          name, arguments->size, number);
     }
     for (size_t index = 0; index < number; ++index) {
         struct Any argument = List_get(arguments, index);
@@ -171,13 +179,13 @@ static void check_arguments(const char *name, const struct List *arguments, size
         if (type == ComplexType) {
             enum ComplexType complex_type = va_arg(argp, enum ComplexType);
             if (argument.type != ComplexType || argument.complex_value->type != complex_type) {
-                fail("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
-                     Any_typename(argument), ComplexType_to_string(complex_type));
+                fail_with_message("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
+                                  Any_typename(argument), ComplexType_to_string(complex_type));
             }
         } else {
             if (argument.type != type) {
-                fail("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
-                     Any_typename(argument), AnyType_to_string(type));
+                fail_with_message("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
+                                  Any_typename(argument), AnyType_to_string(type));
             }
         }
     }
@@ -319,8 +327,8 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
             List_add(function_arguments, value);
             struct Any function_result = call_or_fail(context, function, function_name, position, function_arguments);
             if (function_result.type != BooleanType) {
-                fail("Function passed to filter returned a non-boolean value of type %s",
-                     Any_typename(function_result));
+                fail_with_message("Function passed to filter returned a non-boolean value of type %s",
+                                  Any_typename(function_result));
             }
             if (function_result.boolean) {
                 List_add(filter_result, value);
@@ -364,7 +372,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         fail_at_position(position, "Call to undefined method %s.%s", Any_typename(instance), name->value);
     }
     release(&arguments->base);
-    if (Any_equal(result, instance)) {
+    if (Any_raw_equal(result, instance)) {
         Any_retain(result);
     }
     return result;
@@ -387,7 +395,7 @@ struct Any read_property(struct Variables *context, struct Any instance, const s
     } else {
         fail_at_position(position, "Undefined property %s.%s", Any_typename(instance), name->value);
     }
-    if (Any_equal(result, instance)) {
+    if (Any_raw_equal(result, instance)) {
         Any_retain(result);
     }
     return result;
@@ -417,6 +425,8 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
         name = String(first_token->text);
     } else if (first_token->type == NumberLiteral || first_token->type == StringLiteral) {
         result = first_token->value;
+    } else if (first_token->type == Operator && equal(first_token->text, "!")) {
+        result = Not(evaluate_simple_expression(context, queue));
     } else {
         fail_at_position(first_token->position, "Unexpected expression: [%s]", first_token->text->value);
     }
@@ -446,7 +456,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
                 struct FunctionCallResult call_result =
                         parse_arguments_and_call(context, result, name, next_element->position, arguments_queue);
                 ElementQueue_delete(arguments_queue);
-                if (call_result.type == Success) {
+                if (call_result.type == SuccessFunctionResult) {
                     result = call_result.value;
                 } else {
                     if (name.type == StringType) {
@@ -495,7 +505,7 @@ struct Any evaluate_division(struct Variables *context, struct ElementQueue *que
             if (index == 0) {
                 result = group_result;
             } else {
-                result = Any_divide(result, group_result);
+                result = handle_error(group->data[index].position, Any_divide(result, group_result));
             }
         }
         SplitElements_delete(split_elements);
@@ -519,7 +529,7 @@ struct Any evaluate_multiplication(struct Variables *context, struct ElementQueu
             if (index == 0) {
                 result = group_result;
             } else {
-                result = Any_multiply(result, group_result);
+                result = handle_error(group->data[index].position, Any_multiply(result, group_result));
             }
         }
         SplitElements_delete(split_elements);
@@ -543,7 +553,7 @@ struct Any evaluate_subtraction(struct Variables *context, struct ElementQueue *
             if (index == 0) {
                 result = group_result;
             } else {
-                result = Any_subtract(result, group_result);
+                result = handle_error(group->data[index].position, Any_subtract(result, group_result));
             }
         }
         SplitElements_delete(split_elements);
@@ -567,7 +577,7 @@ struct Any evaluate_addition(struct Variables *context, struct ElementQueue *que
             if (index == 0) {
                 result = group_result;
             } else {
-                result = Any_add(result, group_result);
+                result = handle_error(group->data[index].position, Any_add(result, group_result));
             }
         }
         SplitElements_delete(split_elements);
@@ -585,7 +595,7 @@ bool is_comparison_operator(const struct Element *element) {
             equal(element->token->text, ">="));
 }
 
-bool compare_values(const struct String *operator_name, struct Any lhs, struct Any rhs) {
+struct Any compare_values(const struct String *operator_name, struct Any lhs, struct Any rhs) {
     if (equal(operator_name, "<")) {
         return Any_less_than(lhs, rhs);
     } else if (equal(operator_name, ">")) {
@@ -595,7 +605,7 @@ bool compare_values(const struct String *operator_name, struct Any lhs, struct A
     } else if (equal(operator_name, ">=")) {
         return Any_greater_than_or_equal(lhs, rhs);
     } else {
-        fail("Logical error");
+        fail_with_message("Logical error");
     }
 }
 
@@ -608,8 +618,9 @@ struct Any evaluate_comparison(struct Variables *context, struct ElementQueue *q
         const struct String *operator_name = split_elements->separators[0].token->text;
         struct Any lhs_result = with_queue(context, split_elements->data, evaluate_addition);
         struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_addition);
+        struct Any result = handle_error(split_elements->data[0].data[0].position, compare_values(operator_name, lhs_result, rhs_result));
         SplitElements_delete(split_elements);
-        return Boolean(compare_values(operator_name, lhs_result, rhs_result));
+        return result;
     } else {
         return evaluate_addition(context, queue);
     }
@@ -630,9 +641,7 @@ struct Any evaluate_equality(struct Variables *context, struct ElementQueue *que
         struct Any lhs_result = with_queue(context, split_elements->data, evaluate_comparison);
         struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_comparison);
         SplitElements_delete(split_elements);
-        return Boolean(equality_check ?
-                       Any_equal(lhs_result, rhs_result) :
-                       Any_unequal(lhs_result, rhs_result));
+        return Boolean(equality_check == Any_raw_equal(lhs_result, rhs_result));
     } else {
         return evaluate_comparison(context, queue);
     }
@@ -760,7 +769,7 @@ struct Assignment evaluate_lhs_expression(struct Variables *context, struct Elem
                     struct FunctionCallResult call_result =
                             parse_arguments_and_call(context, result, name, next_element->position, arguments_queue);
                     ElementQueue_delete(arguments_queue);
-                    if (call_result.type == Success) {
+                    if (call_result.type == SuccessFunctionResult) {
                         result = call_result.value;
                     } else {
                         if (name.type == StringType) {
@@ -801,7 +810,7 @@ struct Assignment evaluate_lhs_expression(struct Variables *context, struct Elem
                 fail_at_position(next_element->position, "Unexpected token");
             }
         } else {
-            fail("Logical error");
+            fail_with_message("Logical error");
         }
     }
 }
@@ -841,7 +850,7 @@ struct Any hashset(const struct List *elements) {
 struct Any hashmap(const struct List *pairs) {
     struct HashMap *result = HashMap_create();
     if (pairs->size % 2 != 0) {
-        fail("Odd number of arguments passed to HashMap constructor: %d", pairs->size);
+        fail_with_message("Odd number of arguments passed to HashMap constructor: %d", pairs->size);
     }
     for (size_t index = 0; index < pairs->size; index += 2) {
         HashMap_put(result, List_get(pairs, index), List_get(pairs, index + 1));
@@ -852,7 +861,17 @@ struct Any hashmap(const struct List *pairs) {
 struct Any parse_integer(const struct List *arguments) {
     check_arguments("parse_integer", arguments, 1, StringType);
     const struct String *input = List_get(arguments, 0).string;
-    return Integer(parse_int64(input->value, input->length, 10));
+    struct IntegerParsingResult result = parse_int64(input->value, input->length, 10);
+    if (result.success) {
+        return Integer(result.signed_result);
+    } else {
+        return Error("%s", result.error_message);
+    }
+}
+
+struct Any micro_fail(const struct List *arguments) {
+    println(arguments);
+    fail();
 }
 
 struct StatementResult {
@@ -866,7 +885,7 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
                                                struct List *arguments) {
     if (arguments->size != StringList_size(function->parameter_names)) {
         struct FunctionCallResult result;
-        result.type = ArgumentNumberMismatch;
+        result.type = ArgumentNumberMismatchFunctionResult;
         result.arguments_passed = arguments->size;
         result.arguments_expected = StringList_size(function->parameter_names);
         return result;
@@ -877,7 +896,7 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
     while (name_iterator) {
         const struct String *name = StringListIterator_get(name_iterator);
         if (index >= arguments->size) {
-            fail("Logical error");
+            fail_with_message("Logical error");
         }
         struct Any value = List_get(arguments, index);
         create_variable(locals, name, value);
@@ -885,14 +904,14 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
         ++index;
     }
     if (index != arguments->size) {
-        fail("Logical error");
+        fail_with_message("Logical error");
     }
     struct ElementQueue *body_queue = ElementQueue_create(function->body);
     struct Any function_result = run_block(locals, body_queue).value;
     ElementQueue_delete(body_queue);
     Variables_release(locals);
     struct FunctionCallResult result;
-    result.type = Success;
+    result.type = SuccessFunctionResult;
     result.value = function_result;
     return result;
 }
@@ -908,15 +927,15 @@ parse_arguments_and_call(struct Variables *context, struct Any function, struct 
 
 static struct FunctionCallResult call(struct Variables *context, struct Any function, struct Any name,
                                       struct Position position, struct List *arguments) {
-    struct FunctionCallResult result = {Error};
+    struct FunctionCallResult result = {ErrorFunctionResult};
     if (function.type == FunctionPointerType) {
-        result.type = Success;
+        result.type = SuccessFunctionResult;
         result.value = function.function(arguments);
     } else if (function.type == ComplexType) {
         if (function.complex_value->type == FunctionComplexType) {
             struct Function *complex_function = (struct Function *) function.complex_value;
             result = call_function(context, complex_function, arguments);
-            if (result.type == ArgumentNumberMismatch) {
+            if (result.type == ArgumentNumberMismatchFunctionResult) {
                 if (name.type == StringType) {
                     fail_at_position(position,
                                      "Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.",
@@ -940,7 +959,7 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
 static struct Any call_or_fail(struct Variables *context, struct Any function, struct Any name,
                                struct Position position, struct List *arguments) {
     struct FunctionCallResult call_result = call(context, function, name, position, arguments);
-    if (call_result.type == Success) {
+    if (call_result.type == SuccessFunctionResult) {
         return call_result.value;
     } else {
         if (name.type == StringType) {
@@ -995,7 +1014,7 @@ struct SplitAssignment split_assignment(struct Elements *statement) {
     struct SplitElements *split_elements = SplitElements_by_operator(queue, "=");
     if (split_elements->size < 2) {
         if (statement->size < 1) {
-            fail("logical error");
+            fail_with_message("logical error");
         }
         fail_at_position(statement->data[statement->size - 1].position, "Unexpected end of line");
     } else if (split_elements->size > 2) {
@@ -1033,7 +1052,7 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
             if (assignment.error_message) {
                 fail_at_position(sides.assignment_operator->position, "%s", assignment.error_message);
             } else {
-                fail("Logical error");
+                fail_with_message("Logical error");
             }
         }
         struct ElementQueue *rhs_queue = ElementQueue_create(sides.rhs);
@@ -1050,7 +1069,7 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
             negative_case = read_curly_block(queue);
         }
         struct Any condition_result = with_queue(context, condition, evaluate_expression);
-        if (Any_true(condition_result)) {
+        if (Any_raw_true(condition_result)) {
             return run_with_queue(context, positive_case, run_block);
         } else if (negative_case) {
             return run_with_queue(context, negative_case, run_block);
@@ -1060,7 +1079,7 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
         const struct Elements *positive_case = read_curly_block(queue);
         while (true) {
             struct Any condition_result = with_queue(context, condition, evaluate_expression);
-            if (Any_true(condition_result)) {
+            if (Any_raw_true(condition_result)) {
                 struct StatementResult while_block_result = run_with_queue(context, positive_case, run_block);
                 if (while_block_result.is_return) {
                     return while_block_result;
@@ -1109,8 +1128,10 @@ void micro_run(struct ParsedModule *module) {
     create_builtin_function(globals, "HashSet", hashset);
     create_builtin_function(globals, "HashMap", hashmap);
     create_builtin_function(globals, "parse_integer", parse_integer);
+    create_builtin_function(globals, "fail", parse_integer);
     create_constant(globals, String_from_literal("true"), True());
     create_constant(globals, String_from_literal("false"), False());
+    create_constant(globals, String_from_literal("None"), None());
     // TODO move to a module
     create_builtin_function(globals, "read_text_file", micro_read_text_file);
     struct ElementQueue *queue = ElementQueue_create(module->elements);
@@ -1122,7 +1143,7 @@ void micro_run(struct ParsedModule *module) {
 
 int main(int argc, const char **argv) {
     if (argc != 2) {
-        fail("Expecting single argument <path to source file>");
+        fail_with_message("Expecting single argument <path to source file>");
     }
     struct ParsedModule *module = read_file(argv[1]);
     micro_run(module);

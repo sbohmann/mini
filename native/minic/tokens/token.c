@@ -16,7 +16,7 @@ static void check_character_legality(const char *path, size_t line, size_t colum
     if (c == 0x9 || (c >= 0x20 && c < 0x7f) || (c < 0)) {
         return;
     }
-    fail("Illegal character [0x%02x] at [%s], line %zu, column %zu", (uint8_t)c, path, line, column);
+    fail_with_message("Illegal character [0x%02x] at [%s], line %zu, column %zu", (uint8_t) c, path, line, column);
 }
 
 static size_t advance_column(size_t column, char c) {
@@ -60,12 +60,13 @@ static void process_line(const char *path, size_t line_number, struct TokenList 
                 char next = (char)(index < line->length - 1 ? line->value[index + 1] : 0);
                 current_token_reader = TokenReader_create((struct Position) {path, line_number, column}, c, next);
                 if (!current_token_reader) {
-                    fail("Illegal character [%c] (0x%02x) at line %zu, column %zu, file [%s]",
-                         c, (int) c, line_number, column, path);
+                    fail_with_message("Illegal character [%c] (0x%02x) at line %zu, column %zu, file [%s]",
+                                      c, (int) c, line_number, column, path);
                 }
                 if (!TokenReader_add_char(current_token_reader, c)) {
-                    fail("Newly created token reader did not acccept initial character [%c] (0x%02x) at line %zu, column %zu, file [%s]",
-                         c, (int) c, line_number, column, path);
+                    fail_with_message(
+                            "Newly created token reader did not acccept initial character [%c] (0x%02x) at line %zu, column %zu, file [%s]",
+                            c, (int) c, line_number, column, path);
                 }
             }
             current_token_column = column;
@@ -102,21 +103,23 @@ struct Tokens *read_tokens(const char *path, const struct Source *source) {
 }
 
 _Noreturn void fail_at_position(struct Position position, const char *format, ...) {
+    fprintf(stderr, "%s:%zu:%zu: ",
+            position.path, position.line, position.column);
     va_list arguments;
     va_start(arguments, format);
     vfprintf(stderr, format, arguments);
     va_end(arguments);
     fprintf(stderr, "\n");
-    fail("Error at line %zu, column %zu, file [%s]",
-            position.line, position.column, position.path);
+    fail();
 }
 
 _Noreturn void fail_after_position(struct Position position, const char *format, ...) {
+    fprintf(stderr, "%s:%zu:%zu: Unexpected end of input",
+            position.path, position.line, position.column);
     va_list arguments;
     va_start(arguments, format);
     vfprintf(stderr, format, arguments);
     va_end(arguments);
     fprintf(stderr, "\n");
-    fail("Unexpected end of input after line %zu, column %zu, file [%s]",
-         position.line, position.column, position.path);
+    fail();
 }

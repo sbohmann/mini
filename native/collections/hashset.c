@@ -58,14 +58,14 @@ void HashSet_release(struct HashSet *instance) {
 
 static size_t level_index(Hash hash, uint8_t level) {
     if (5 * level >= 32) {
-        fail("HashSet: illegal level: %d", (int) level);
+        fail_with_message("HashSet: illegal level: %d", (int) level);
     }
     return (hash >> (5 * level)) % 0x20;
 }
 
 static bool find_element(struct ValueList *values, Element element) {
     while (values) {
-        if (Any_equal(values->element, element)) {
+        if (Any_raw_equal(values->element, element)) {
             return true;
         }
         values = values->next;
@@ -140,7 +140,7 @@ static bool Node_contains(struct Node *node, uint8_t level, Element element, Has
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         while (values) {
-            if (Any_equal(values->element, element)) {
+            if (Any_raw_equal(values->element, element)) {
                 return true;
             }
             values = values->next;
@@ -169,9 +169,9 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Element elemen
         struct ValueList *values = node->values;
         struct ValueList **source = &node->values;
         while (values) {
-            if (Any_equal(values->element, element)) {
+            if (Any_raw_equal(values->element, element)) {
                 if (*found) {
-                    fail("Found multiple entries for element %zu", element);
+                    fail_with_message("Found multiple entries for element %zu", element);
                 }
                 struct ValueList *next = values->next;
                 free(values);

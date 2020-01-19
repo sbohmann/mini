@@ -68,14 +68,14 @@ void HashMap_release(struct HashMap *instance) {
 
 static size_t level_index(Hash hash, uint8_t level) {
     if (5 * level >= 32) {
-        fail("HashMap: illegal level: %d", (int) level);
+        fail_with_message("HashMap: illegal level: %d", (int) level);
     }
     return (hash >> (5 * level)) % 0x20;
 }
 
 static bool replace_value(struct ValueList *values, Key key, Value value) {
     while (values) {
-        if (Any_equal(values->key, key)) {
+        if (Any_raw_equal(values->key, key)) {
             Any_release(values->value);
             values->value = value;
             return true;
@@ -154,7 +154,7 @@ static bool Node_set(struct Node *node, uint8_t level, Key key, Hash hash, Value
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         while (values) {
-            if (Any_equal(values->key, key)) {
+            if (Any_raw_equal(values->key, key)) {
                 values->value = value;
                 return true;
             }
@@ -183,7 +183,7 @@ static struct MapResult Node_get(struct Node *node, uint8_t level, Key key, Hash
     if (node->is_value_node) {
         struct ValueList *values = node->values;
         while (values) {
-            if (Any_equal(values->key, key)) {
+            if (Any_raw_equal(values->key, key)) {
                 return (struct MapResult) { true, values->value };
             }
             values = values->next;
@@ -212,9 +212,9 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Key key, Hash 
         struct ValueList *values = node->values;
         struct ValueList **source = &node->values;
         while (values) {
-            if (Any_equal(values->key, key)) {
+            if (Any_raw_equal(values->key, key)) {
                 if (*found) {
-                    fail("Found multiple entries for key %zu", key);
+                    fail_with_message("Found multiple entries for key %zu", key);
                 }
                 struct ValueList *next = values->next;
                 free(values);

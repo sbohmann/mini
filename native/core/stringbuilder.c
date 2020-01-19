@@ -32,7 +32,7 @@ char StringBuilder_char_at(struct StringBuilder *self, size_t index) {
     if (index < self->length) {
         return self->buffer[index];
     } else {
-        fail("StringBuilder_char_at: index %zu out of bounds. Length: %zu", index, self->length);
+        fail_with_message("StringBuilder_char_at: index %zu out of bounds. Length: %zu", index, self->length);
     }
 }
 
@@ -41,7 +41,7 @@ static void enlarge(struct StringBuilder *self, size_t minimum_capacity) {
     while (new_capacity < minimum_capacity) {
         new_capacity *= 2;
         if (new_capacity == 0) {
-            fail("Maximum capacity exceeded for minimum capacity %zu", minimum_capacity);
+            fail_with_message("Maximum capacity exceeded for minimum capacity %zu", minimum_capacity);
         }
     }
     char *new_buffer = allocate(new_capacity);

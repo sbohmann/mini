@@ -1,0 +1,120 @@
+let data = HashMap()
+let index = None
+
+fn run() {
+    while (true) {
+        if (step()) {
+            break;
+        }
+    }
+}
+
+fn step() {
+    let opcode = read_opcode()
+    if (opcode == 1) {
+        add()
+        return false
+    }
+    if (opcode == 2) {
+        multiply()
+        return false
+    }
+    if (opcode == 99) {
+        return true
+    }
+    fail("Unknown opcode: ", opcode)
+}
+
+fn read_opcode() {
+    let result = data.get(index)
+    if (!result) {
+        fail("Index out of range: " + index)
+    }
+    return result
+}
+
+fn add() {
+    binary_operation(fn (lhs, rhs) { return lhs + rhs })
+}
+
+fn multiply() {
+    binary_operation(fn (lhs, rhs) { return lhs * rhs })
+}
+
+fn binary_operation(raw_operation) {
+    let lhs_source = data.get(index + 1)
+    let rhs_source = data.get(index + 2)
+    let result = raw_operation(data.get(lhs_source), data.get(rhs_source))
+    let target = data.get(index + 3)
+    data.put(target, result)
+    index = index + 4
+}
+
+fn read_data() {
+    let raw_data = read_raw_data()
+    build_data(raw_data)
+}
+
+fn read_raw_data() {
+    return read_text_file('input.txt')
+        .split(',')
+        .map(fn (line) { return parse_integer(line.trim()) })
+}
+
+fn build_data(raw_data) {
+    data = HashMap()
+    let index = 0
+    while (index < raw_data.size) {
+        data.put(index, raw_data[index])
+        index = index + 1
+    }
+    index = 0
+}
+
+fn a() {
+    read_data()
+
+    data.set(1, 12)
+    data.set(2, 2)
+
+    run()
+
+    console.log("a: " + data.get(0))
+}
+
+fn b() {
+    let raw_data = read_raw_data()
+    let noun = 0
+    while (noun <= 99) {
+        let verb = 0
+        while (verb <= 99) {
+            build_data(raw_data)
+            data.put(1, noun)
+            data.put(2, verb)
+            run()
+            if (data.get(0) === 19690720) {
+                console.log('noun: ' + noun + ', verb: ' + verb)
+                console.log('b: ' + (100 * noun + verb))
+            }
+            ++verb
+        }
+        ++noun
+    }
+}
+
+fn simple() {
+    let simple = [[1, 0, 0, 0, 99],
+        [2, 3, 0, 3, 99],
+        [2, 4, 4, 5, 99, 0],
+        [1, 1, 1, 4, 99, 5, 6, 0, 99]]
+
+    for (let input of simple) {
+        build_data(input)
+        run()
+        for (let entry of data.entries()) {
+            console.log(entry[0] + ': ' + entry[1])
+        }
+    }
+}
+
+b()

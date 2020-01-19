@@ -74,15 +74,15 @@ struct String * StringList_to_array(const struct StringList * self) {
     struct StringListElement *iterator = StringList_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail("Logical error in StringList_to_array - target overrun");
+            fail_with_message("Logical error in StringList_to_array - target overrun");
         }
         *result_iterator = *StringListIterator_get(iterator);
         iterator = StringListIterator_next(iterator);
         ++result_iterator;
     }
     if (result_iterator - result != size) {
-        fail("Logical error in result lines creation - offset: [%zu], size: [%zu]",
-             result_iterator - result, size);
+        fail_with_message("Logical error in result lines creation - offset: [%zu], size: [%zu]",
+                          result_iterator - result, size);
     }
     return result;
 }
@@ -99,7 +99,7 @@ struct StringListElement * StringListIterator_next(struct StringListElement * it
     if (iterator) {
         return iterator->next;
     } else {
-        fail("Attempt to get next from null iterator");
+        fail_with_message("Attempt to get next from null iterator");
     }
 }
 
@@ -107,7 +107,7 @@ struct StringListElement * StringListIterator_previous(struct StringListElement 
     if (iterator) {
         return iterator->previous;
     } else {
-        fail("Attempt to get previous from null iterator");
+        fail_with_message("Attempt to get previous from null iterator");
     }
 }
 
@@ -115,6 +115,6 @@ const struct String * StringListIterator_get(struct StringListElement * iterator
     if (iterator) {
         return iterator->value;
     } else {
-        fail("Attempt to get value from null iterator");
+        fail_with_message("Attempt to get value from null iterator");
     }
 }

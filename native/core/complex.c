@@ -22,7 +22,7 @@ const char *ComplexType_to_string(enum ComplexType type) {
         case FunctionComplexType:
             return "Function";
         default:
-            fail("<unknown complex type %d>", type);
+            fail_with_message("<unknown complex type %d>", type);
     }
 }
 
@@ -39,7 +39,7 @@ void Complex_init(struct ComplexValue *instance) {
 
 void retain(struct ComplexValue *instance) {
     if (!instance) {
-        fail("Attempting to retain a null ComplexValue pointer");
+        fail_with_message("Attempting to retain a null ComplexValue pointer");
     }
     if (DEBUG_ENABLED) fprintf(stderr, "retain from %zu, %zu\n", instance->reference_count->strong_count, instance->reference_count->weak_count);
     ++instance->reference_count->weak_count;
@@ -49,7 +49,7 @@ void retain(struct ComplexValue *instance) {
 
 bool release(struct ComplexValue *instance) {
     if (!instance) {
-        fail("Attempting to release a null ComplexValue pointer");
+        fail_with_message("Attempting to release a null ComplexValue pointer");
     }
     if (DEBUG_ENABLED) fprintf(stderr, "release from %zu, %zu\n", instance->reference_count->strong_count, instance->reference_count->weak_count);
     size_t new_strong_count = --instance->reference_count->strong_count;
@@ -59,7 +59,7 @@ bool release(struct ComplexValue *instance) {
         if (DEBUG_ENABLED) fprintf(stderr, "both zero\n");
         free(instance->reference_count);
         if (new_strong_count != 0) {
-            fail("weak count went to zero but strong count went to %zu\n", new_strong_count);
+            fail_with_message("weak count went to zero but strong count went to %zu\n", new_strong_count);
         }
         if (instance->destructor) {
             instance->destructor(instance);

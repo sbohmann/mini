@@ -4,6 +4,7 @@
 #include <core/complex.h>
 #include <core/errors.h>
 #include <core/allocate.h>
+#include <stdarg.h>
 
 static const size_t reasonable_prime = 92821;
 
@@ -21,8 +22,10 @@ const char *AnyType_to_string(enum AnyType type) {
             return "Flat";
         case FunctionPointerType:
             return "FunctionPointer";
+        case ErrorType:
+            return "Error";
         default:
-            fail("<Unknown type %d>", type);
+            fail_with_message("<Unknown type %d>", type);
     }
 }
 
@@ -56,7 +59,7 @@ struct Any False() {
 }
 
 struct Any Not(struct Any value) {
-    return Boolean(!Any_true(value));
+    return Boolean(!Any_raw_true(value));
 }
 
 struct Any Integer(int64_t value) {
@@ -88,6 +91,23 @@ struct Any Complex(struct ComplexValue *instance) {
     return result;
 }
 
+struct Any Error(const char *format, ...) {
+    // TODO switch error to a complex string
+    static const size_t buffer_length = 256;
+    char buffer[buffer_length];
+    va_list arguments;
+    va_start(arguments, format);
+    int length = vsnprintf(buffer, buffer_length, format, arguments);
+    va_end(arguments);
+    if (length >= buffer_length) {
+        length = (int)(buffer_length - 1);
+    }
+    struct Any result = None();
+    result.type = StringType;
+    result.string = String_from_buffer(buffer, length);
+    return result;
+}
+
 void Any_retain(struct Any instance) {
     if (instance.type == ComplexType) {
         retain(instance.complex_value);
@@ -99,7 +119,7 @@ void Any_release(struct Any instance) {
         if (release(instance.complex_value)) {
             memset(&instance, 0, sizeof(struct Any));
             if (instance.type != NoneType) {
-                fail("Logical error - any type not None after memset: %d", instance.type);
+                fail_with_message("Logical error - any type not None after memset: %d", instance.type);
             }
         }
     }
@@ -129,6 +149,7 @@ Hash Any_hash(struct Any value) {
         case IntegerType:
             return int64_hash(value.integer);
         case StringType:
+        case ErrorType:
             return value.string->hash;
         case ComplexType:
             // TODO relay
@@ -138,11 +159,11 @@ Hash Any_hash(struct Any value) {
         case FunctionPointerType:
             return (size_t) value.function;
         default:
-            fail("Any_hash: value has unknown type %d", value.type);
+            fail_with_message("Any_hash: value has unknown type %d", value.type);
     }
 }
 
-bool Any_equal(struct Any lhs, struct Any rhs) {
+bool Any_raw_equal(struct Any lhs, struct Any rhs) {
     enum AnyType type = lhs.type;
     if (rhs.type != type) {
         return false;
@@ -153,6 +174,7 @@ bool Any_equal(struct Any lhs, struct Any rhs) {
         case IntegerType:
             return lhs.integer == rhs.integer;
         case StringType:
+        case ErrorType:
             return String_equal(lhs.string, rhs.string);
         case ComplexType:
             // TODO relay
@@ -162,60 +184,81 @@ bool Any_equal(struct Any lhs, struct Any rhs) {
         case FunctionPointerType:
             return lhs.function == rhs.function;
         default:
-            fail("Any_equal: value has unknown type %d", type);
+            fail_with_message("Any_equal: value has unknown type %d", type);
     }
 }
 
-bool Any_unequal(struct Any lhs, struct Any rhs) {
-    return !Any_equal(lhs, rhs);
+struct Any Any_equal(struct Any lhs, struct Any rhs) {
+    return Boolean(Any_raw_equal(lhs, rhs));
 }
 
-bool Any_less_than(struct Any lhs, struct Any rhs) {
+struct Any Any_unequal(struct Any lhs, struct Any rhs) {
+    return Boolean(!Any_raw_equal(lhs, rhs));
+}
+
+struct Any Any_less_than(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
-        return lhs.integer < rhs.integer;
+        return Boolean(lhs.integer < rhs.integer);
     } else {
-        fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
+        return Error("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
-bool Any_greater_than(struct Any lhs, struct Any rhs) {
+struct Any Any_greater_than(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
-        return lhs.integer > rhs.integer;
+        return Boolean(lhs.integer > rhs.integer);
     } else {
-        fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
+        return Error("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
-bool Any_less_than_or_equal(struct Any lhs, struct Any rhs) {
+struct Any Any_less_than_or_equal(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
-        return lhs.integer <= rhs.integer;
+        return Boolean(lhs.integer <= rhs.integer);
     } else {
-        fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
+        return Error("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
-bool Any_greater_than_or_equal(struct Any lhs, struct Any rhs) {
+struct Any Any_greater_than_or_equal(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
-        return lhs.integer >= rhs.integer;
+        return Boolean(lhs.integer >= rhs.integer);
     } else {
-        fail("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
+        return Error("Comparison not supported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
-bool Any_true(struct Any value) {
+bool Any_raw_true(struct Any value) {
     switch (value.type) {
         case NoneType:
             return false;
         case BooleanType:
             return value.boolean;
         case StringType:
+        case ComplexType:
             // true because equivalent to a ComplexString
             return true;
-        case ComplexType:
             // Complex types are never null
             return true;
         default:
-            fail("Cannot convert type %s to boolean", Any_typename(value));
+            fail_with_message("Cannot convert type %s to boolean", Any_typename(value));
+    }
+}
+
+struct Any Any_true(struct Any value) {
+    switch (value.type) {
+        case NoneType:
+            return False();
+        case BooleanType:
+            return Boolean(value.boolean);
+        case StringType:
+        case ComplexType:
+            // true because equivalent to a ComplexString
+            return True();
+            // Complex types are never null
+            return True();
+        default:
+            return Error("Cannot convert type %s to boolean", Any_typename(value));
     }
 }
 
@@ -224,7 +267,7 @@ struct Any Any_add(struct Any lhs, struct Any rhs) {
         struct Any result = Integer(lhs.integer + rhs.integer);
         return result;
     } else {
-        fail("Addition unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+        return Error("Addition unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
@@ -233,7 +276,7 @@ struct Any Any_subtract(struct Any lhs, struct Any rhs) {
         struct Any result = Integer(lhs.integer - rhs.integer);
         return result;
     } else {
-        fail("Subtraction unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+        return Error("Subtraction unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
@@ -242,19 +285,19 @@ struct Any Any_multiply(struct Any lhs, struct Any rhs) {
         struct Any result = Integer(lhs.integer * rhs.integer);
         return result;
     } else {
-        fail("Multiplication unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+        return Error("Multiplication unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
 struct Any Any_divide(struct Any lhs, struct Any rhs) {
     if (lhs.type == IntegerType && rhs.type == IntegerType) {
         if (rhs.integer == 0) {
-            fail("Division by zero", Any_typename(lhs), Any_typename(rhs));
+            return Error("Division by zero", Any_typename(lhs), Any_typename(rhs));
         }
         struct Any result = Integer(lhs.integer / rhs.integer);
         return result;
     } else {
-        fail("Division unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+        return Error("Division unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
     }
 }
 

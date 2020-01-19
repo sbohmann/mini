@@ -39,7 +39,7 @@ static struct Any create_hex_value(struct NumberTokenReader *self, const struct 
     }
     struct Any result = None();
     result.type = IntegerType;
-    result.integer = parse_int64(text->value + 2, text->length - 2, 16);
+    result.integer = parse_int64_or_fail(text->value + 2, text->length - 2, 16);
     return result;
 }
 
@@ -50,7 +50,7 @@ static struct Any create_fraction_value(struct NumberTokenReader *self, const st
 }
 
 static struct Any create_decimal_value(struct NumberTokenReader *self, const struct String *text) {
-    return Integer(parse_int64(text->value, text->length, 10));
+    return Integer(parse_int64_or_fail(text->value, text->length, 10));
 }
 
 static struct Any create_value(struct TokenReader *base, const struct String *text) {

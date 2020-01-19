@@ -47,7 +47,7 @@ struct List *List_concatenate(const struct List *lhs, const struct List *rhs) {
         result->capacity *= 2;
     }
     if (result->capacity < lhs->size + rhs->size) {
-        fail("Logical error");
+        fail_with_message("Logical error");
     }
     result->data = allocate(result->capacity * sizeof(struct Any));
     for (size_t index = 0; index < lhs->size; ++index) {
@@ -66,7 +66,7 @@ void List_add(struct List *self, struct Any value) {
     if (self->size == self->capacity) {
         size_t new_capacity = 2 * self->capacity;
         if (new_capacity <= self->capacity) {
-            fail("Exceeded maximum list capacity");
+            fail_with_message("Exceeded maximum list capacity");
         }
         struct Any *new_data = allocate(new_capacity * sizeof(struct Any));
         self->capacity = new_capacity;
@@ -83,7 +83,7 @@ struct Any List_get(const struct List *self, size_t index) {
     if (index < self->size) {
         return self->data[index];
     } else {
-        fail("Index out of bounds: %zu, size: %zu", index, self->size);
+        fail_with_message("Index out of bounds: %zu, size: %zu", index, self->size);
     }
 }
 
@@ -92,6 +92,6 @@ void List_set(struct List *self, size_t index, struct Any value) {
         Any_retain(value);
         self->data[index] = value;
     } else {
-        fail("Index out of bounds: %zu, size: %zu", index, self->size);
+        fail_with_message("Index out of bounds: %zu, size: %zu", index, self->size);
     }
 }

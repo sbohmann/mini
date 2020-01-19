@@ -66,15 +66,15 @@ static void hash_map() {
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0) {
             if (value.type != StringType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
-            size_t parsed = parse_uint64(value.string->value, value.string->length, 10);
+            size_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, key);
+                fail_with_message("parsed [%zu] != key [%zu]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
         }
     }
@@ -91,15 +91,15 @@ static void hash_map() {
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
-            uint64_t parsed = parse_uint64(value.string->value, value.string->length, 10);
+            uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%zu] != key [%zu]", parsed, key);
+                fail_with_message("parsed [%zu] != key [%zu]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
         }
     }
@@ -122,15 +122,15 @@ static void hash_map() {
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0) {
             if (value.type != StringType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
-            uint64_t parsed = parse_uint64(value.string->value, value.string->length, 10);
+            uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%" PRIu64 "] != key [%" PRIu64 "]", parsed, key);
+                fail_with_message("parsed [%" PRIu64 "] != key [%" PRIu64 "]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
         }
     }
@@ -147,15 +147,15 @@ static void hash_map() {
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
-            uint64_t parsed = parse_uint64(value.string->value, value.string->length, 10);
+            uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%" PRIu64 "] != key [%" PRIu64 "]", parsed, key);
+                fail_with_message("parsed [%" PRIu64 "] != key [%" PRIu64 "]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
         }
     }
@@ -175,15 +175,15 @@ static void hash_map() {
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0) {
             if (value.type != StringType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
-            uint64_t parsed = parse_uint64(value.string->value, value.string->length, 10);
+            uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%" PRIu64 "] != key [%" PRIu64 "]", parsed, key);
+                fail_with_message("parsed [%" PRIu64 "] != key [%" PRIu64 "]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
         }
     }
@@ -200,15 +200,15 @@ static void hash_map() {
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0 && key % 5 != 0) {
             if (value.type != StringType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
-            uint64_t parsed = parse_uint64(value.string->value, value.string->length, 10);
+            uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
             if (parsed != key) {
-                fail("parsed [%" PRIu64 "] != key [%" PRIu64 "]", parsed, key);
+                fail_with_message("parsed [%" PRIu64 "] != key [%" PRIu64 "]", parsed, key);
             }
         } else {
             if (value.type != NoneType) {
-                fail("Wrong type: %d", value.type);
+                fail_with_message("Wrong type: %d", value.type);
             }
         }
     }

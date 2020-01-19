@@ -70,7 +70,7 @@ void Struct_release(struct Struct *instance) {
 
 static size_t level_index(Hash hash, uint8_t level) {
     if (5 * level >= 32) {
-        fail("Struct: illegal level: %d", (int) level);
+        fail_with_message("Struct: illegal level: %d", (int) level);
     }
     return (hash >> (5 * level)) % 0x20;
 }
@@ -79,9 +79,9 @@ static bool replace_value(struct ValueList *values, Name name, Value value, bool
     while (values) {
         if (String_equal(values->name, name)) {
             if (values->constant) {
-                fail("Attempt to overwrite constant [%s]", name);
+                fail_with_message("Attempt to overwrite constant [%s]", name);
             } else if (constant) {
-                fail("Attempt to overwrite variable [%s] with a constant", name);
+                fail_with_message("Attempt to overwrite variable [%s] with a constant", name);
             }
             Any_release(values->value);
             values->value = value;
@@ -174,7 +174,7 @@ static bool Node_set(struct Node *node, uint8_t level, Name name, Hash hash, Val
         while (values) {
             if (String_equal(values->name, name)) {
                 if (values->constant) {
-                    fail("Attempt to overwrite constant [%s]", name);
+                    fail_with_message("Attempt to overwrite constant [%s]", name);
                 }
                 values->value = value;
                 return true;
@@ -235,10 +235,10 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Name name, Has
         while (values) {
             if (String_equal(values->name, name)) {
                 if (*found) {
-                    fail("Found multiple entries for name %zu", name);
+                    fail_with_message("Found multiple entries for name %zu", name);
                 }
                 if (values->constant) {
-                    fail("Attempt to remove constant [%s]", name);
+                    fail_with_message("Attempt to remove constant [%s]", name);
                 }
                 struct ValueList *next = values->next;
                 free(values);

@@ -17,11 +17,11 @@ const struct String *read_text_file(const char *path) {
     char *raw_result = allocate_raw((size_t) size + 1);
     size_t bytes_read = fread(raw_result, 1, (size_t) size, file);
     if (bytes_read != size) {
-        fail("fread read %l bytes, expected: %l, while reading source from path %s",
-             bytes_read, size, path);
+        fail_with_message("fread read %l bytes, expected: %l, while reading source from path %s",
+                          bytes_read, size, path);
     }
     if (fclose(file) == EOF) {
-        fail_errno("fread failed while reading source from path %s", path);
+        fail_with_message_and_errno("fread failed while reading source from path %s", path);
     }
     
     raw_result[size] = 0;

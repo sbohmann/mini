@@ -19,8 +19,8 @@ SplitElements_from_lists(const struct ElementsList *groups, const struct Element
         if (number_of_separators == result->size) {
             fail_at_position(ElementList_to_array(separators)[number_of_separators - 1].position, "Dangling separator");
         } else if (number_of_separators != result->size - 1) {
-            fail("Logical error - %d groups %d separators (expected %d)",
-                 result->size, number_of_separators, result->size - 1);
+            fail_with_message("Logical error - %d groups %d separators (expected %d)",
+                              result->size, number_of_separators, result->size - 1);
         }
         result->separators = ElementList_to_array(separators);
     }

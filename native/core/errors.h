@@ -1,8 +1,10 @@
 #pragma once
 
-_Noreturn void fail(const char *format, ...);
+_Noreturn void fail();
 
-_Noreturn void fail_errno(const char *format, ...);
+_Noreturn void fail_with_message(const char *format, ...);
+
+_Noreturn void fail_with_message_and_errno(const char *format, ...);
 
 void non_null_errno(const void *pointer, const char *format, ...);
 

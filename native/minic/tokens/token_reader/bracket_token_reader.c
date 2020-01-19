@@ -23,7 +23,7 @@ static enum TokenType bracket_type(char c) {
     } else if (is_closing_bracket(c)) {
         return ClosingBracket;
     } else {
-        fail("Not a bracket: [%c] (0x%02x)", c, (int)c);
+        fail_with_message("Not a bracket: [%c] (0x%02x)", c, (int) c);
     }
 }
 

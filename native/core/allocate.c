@@ -14,7 +14,7 @@ void * allocate(size_t size) {
 void * allocate_raw(size_t size) {
     void *result = malloc(size);
     if (!result) {
-        fail("Failed to allocate %zu bytes of memory.", size);
+        fail_with_message("Failed to allocate %zu bytes of memory.", size);
     }
     return result;
 }

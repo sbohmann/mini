@@ -59,8 +59,9 @@ void add_bracket(struct ElementList *elements, struct TokenQueue *tokens, const 
     struct ElementList *bracket_elements = collect_elements(tokens);
     const struct Token *closing_bracket = TokenQueue_next(tokens);
     if (!closing_bracket) {
-        fail("Missing closing bracket (opening bracket at line %zu, column %zu, file [%s])",
-             opening_bracket->position.line, opening_bracket->position.column, opening_bracket->position.path);
+        fail_with_message("Missing closing bracket (opening bracket at line %zu, column %zu, file [%s])",
+                          opening_bracket->position.line, opening_bracket->position.column,
+                          opening_bracket->position.path);
     }
     enum BracketType type = bracket_type(opening_bracket);
     if (bracket_type(closing_bracket) != bracket_type(opening_bracket)) {
