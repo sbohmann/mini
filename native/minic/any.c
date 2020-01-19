@@ -59,7 +59,14 @@ struct Any False() {
 }
 
 struct Any Not(struct Any value) {
-    return Boolean(!Any_raw_true(value));
+    struct Any raw_result = Any_true(value);
+    if (raw_result.type == BooleanType) {
+        return Boolean(!raw_result.boolean);
+    } else if (raw_result.type == ErrorType) {
+        return raw_result;
+    } else {
+        fail_with_message("Logical error.");
+    }
 }
 
 struct Any Integer(int64_t value) {
@@ -103,7 +110,7 @@ struct Any Error(const char *format, ...) {
         length = (int)(buffer_length - 1);
     }
     struct Any result = None();
-    result.type = StringType;
+    result.type = ErrorType;
     result.string = String_from_buffer(buffer, length);
     return result;
 }
@@ -267,7 +274,7 @@ struct Any Any_add(struct Any lhs, struct Any rhs) {
         struct Any result = Integer(lhs.integer + rhs.integer);
         return result;
     } else {
-        return Error("Addition unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+        return Error("Addition unsupported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
@@ -276,7 +283,7 @@ struct Any Any_subtract(struct Any lhs, struct Any rhs) {
         struct Any result = Integer(lhs.integer - rhs.integer);
         return result;
     } else {
-        return Error("Subtraction unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+        return Error("Subtraction unsupported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
@@ -285,7 +292,7 @@ struct Any Any_multiply(struct Any lhs, struct Any rhs) {
         struct Any result = Integer(lhs.integer * rhs.integer);
         return result;
     } else {
-        return Error("Multiplication unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+        return Error("Multiplication unsupported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 
@@ -297,7 +304,7 @@ struct Any Any_divide(struct Any lhs, struct Any rhs) {
         struct Any result = Integer(lhs.integer / rhs.integer);
         return result;
     } else {
-        return Error("Division unsupported for types %s and %s: ", Any_typename(lhs), Any_typename(rhs));
+        return Error("Division unsupported for types %s and %s", Any_typename(lhs), Any_typename(rhs));
     }
 }
 

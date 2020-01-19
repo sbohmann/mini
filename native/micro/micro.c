@@ -166,11 +166,11 @@ bool has_complex_type(struct Any value, enum ComplexType type) {
            value.complex_value->type == type;
 }
 
-static void check_arguments(const char *name, const struct List *arguments, size_t number, ...) {
+static struct Any check_arguments(const char *name, const struct List *arguments, size_t number, ...) {
     va_list argp;
     va_start(argp, number);
     if (arguments->size != number) {
-        fail_with_message("Argument number mismatch in call to %s - %zu arguments passed, %zu expected",
+        return Error("Argument number mismatch in call to %s - %zu arguments passed, %zu expected",
                           name, arguments->size, number);
     }
     for (size_t index = 0; index < number; ++index) {
@@ -179,17 +179,18 @@ static void check_arguments(const char *name, const struct List *arguments, size
         if (type == ComplexType) {
             enum ComplexType complex_type = va_arg(argp, enum ComplexType);
             if (argument.type != ComplexType || argument.complex_value->type != complex_type) {
-                fail_with_message("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
+                return Error("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
                                   Any_typename(argument), ComplexType_to_string(complex_type));
             }
         } else {
             if (argument.type != type) {
-                fail_with_message("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
+                return Error("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
                                   Any_typename(argument), AnyType_to_string(type));
             }
         }
     }
     va_end(argp);
+    return None();
 }
 
 static void check_arguments_with_position(struct Position position, const char *name,
@@ -497,6 +498,7 @@ bool is_division_operator(const struct Element *element) {
 
 struct Any evaluate_division(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_division_operator)) {
+        const struct Element *first_element = ElementQueue_peek(queue);
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_division_operator);
         struct Any result = None();
         for (size_t index = 0; index < split_elements->size; ++index) {
@@ -505,7 +507,7 @@ struct Any evaluate_division(struct Variables *context, struct ElementQueue *que
             if (index == 0) {
                 result = group_result;
             } else {
-                result = handle_error(group->data[index].position, Any_divide(result, group_result));
+                result = handle_error(first_element->position, Any_divide(result, group_result));
             }
         }
         SplitElements_delete(split_elements);
@@ -521,6 +523,7 @@ bool is_multiplication_operator(const struct Element *element) {
 
 struct Any evaluate_multiplication(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_multiplication_operator)) {
+        const struct Element *first_element = ElementQueue_peek(queue);
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_multiplication_operator);
         struct Any result = None();
         for (size_t index = 0; index < split_elements->size; ++index) {
@@ -529,7 +532,7 @@ struct Any evaluate_multiplication(struct Variables *context, struct ElementQueu
             if (index == 0) {
                 result = group_result;
             } else {
-                result = handle_error(group->data[index].position, Any_multiply(result, group_result));
+                result = handle_error(first_element->position, Any_multiply(result, group_result));
             }
         }
         SplitElements_delete(split_elements);
@@ -545,6 +548,7 @@ bool is_minus_operator(const struct Element *element) {
 
 struct Any evaluate_subtraction(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_minus_operator)) {
+        const struct Element *first_element = ElementQueue_peek(queue);
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_minus_operator);
         struct Any result = None();
         for (size_t index = 0; index < split_elements->size; ++index) {
@@ -553,7 +557,7 @@ struct Any evaluate_subtraction(struct Variables *context, struct ElementQueue *
             if (index == 0) {
                 result = group_result;
             } else {
-                result = handle_error(group->data[index].position, Any_subtract(result, group_result));
+                result = handle_error(first_element->position, Any_subtract(result, group_result));
             }
         }
         SplitElements_delete(split_elements);
@@ -569,6 +573,7 @@ bool is_plus_operator(const struct Element *element) {
 
 struct Any evaluate_addition(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_plus_operator)) {
+        const struct Element *first_element = ElementQueue_peek(queue);
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_plus_operator);
         struct Any result = None();
         for (size_t index = 0; index < split_elements->size; ++index) {
@@ -577,7 +582,7 @@ struct Any evaluate_addition(struct Variables *context, struct ElementQueue *que
             if (index == 0) {
                 result = group_result;
             } else {
-                result = handle_error(group->data[index].position, Any_add(result, group_result));
+                result = handle_error(first_element->position, Any_add(result, group_result));
             }
         }
         SplitElements_delete(split_elements);
@@ -611,6 +616,7 @@ struct Any compare_values(const struct String *operator_name, struct Any lhs, st
 
 struct Any evaluate_comparison(struct Variables *context, struct ElementQueue *queue) {
     if (ElementQueue_contains(queue, is_comparison_operator)) {
+        const struct Element *first_element = ElementQueue_peek(queue);
         struct SplitElements *split_elements = SplitElements_by_predicate(queue, is_comparison_operator);
         if (split_elements->size != 2) {
             fail_at_position(split_elements->data[0].data[0].position, "Unsupported chained equality check");
@@ -618,7 +624,7 @@ struct Any evaluate_comparison(struct Variables *context, struct ElementQueue *q
         const struct String *operator_name = split_elements->separators[0].token->text;
         struct Any lhs_result = with_queue(context, split_elements->data, evaluate_addition);
         struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_addition);
-        struct Any result = handle_error(split_elements->data[0].data[0].position, compare_values(operator_name, lhs_result, rhs_result));
+        struct Any result = handle_error(first_element->position, compare_values(operator_name, lhs_result, rhs_result));
         SplitElements_delete(split_elements);
         return result;
     } else {
@@ -859,7 +865,10 @@ struct Any hashmap(const struct List *pairs) {
 }
 
 struct Any parse_integer(const struct List *arguments) {
-    check_arguments("parse_integer", arguments, 1, StringType);
+    struct Any argument_check_result = check_arguments("parse_integer", arguments, 1, StringType);
+    if (argument_check_result.type == ErrorType) {
+        return argument_check_result;
+    }
     const struct String *input = List_get(arguments, 0).string;
     struct IntegerParsingResult result = parse_int64(input->value, input->length, 10);
     if (result.success) {
@@ -910,10 +919,17 @@ static struct FunctionCallResult call_function(struct Variables *context, struct
     struct Any function_result = run_block(locals, body_queue).value;
     ElementQueue_delete(body_queue);
     Variables_release(locals);
-    struct FunctionCallResult result;
-    result.type = SuccessFunctionResult;
-    result.value = function_result;
-    return result;
+    if (function_result.type == ErrorType) {
+        struct FunctionCallResult result;
+        result.type = ErrorFunctionResult;
+        result.value = function_result;
+        return result;
+    } else {
+        struct FunctionCallResult result;
+        result.type = SuccessFunctionResult;
+        result.value = function_result;
+        return result;
+    }
 }
 
 static struct FunctionCallResult
@@ -927,14 +943,15 @@ parse_arguments_and_call(struct Variables *context, struct Any function, struct 
 
 static struct FunctionCallResult call(struct Variables *context, struct Any function, struct Any name,
                                       struct Position position, struct List *arguments) {
-    struct FunctionCallResult result = {ErrorFunctionResult};
     if (function.type == FunctionPointerType) {
+        struct FunctionCallResult result;
         result.type = SuccessFunctionResult;
         result.value = function.function(arguments);
+        return result;
     } else if (function.type == ComplexType) {
         if (function.complex_value->type == FunctionComplexType) {
             struct Function *complex_function = (struct Function *) function.complex_value;
-            result = call_function(context, complex_function, arguments);
+            struct FunctionCallResult result = call_function(context, complex_function, arguments);
             if (result.type == ArgumentNumberMismatchFunctionResult) {
                 if (name.type == StringType) {
                     fail_at_position(position,
@@ -945,6 +962,10 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
                                      "Argument number mismatch in call to function - %zu arguments passed, %zu expected.",
                                      result.arguments_passed, result.arguments_expected);
                 }
+            } else if (result.type == ErrorFunctionResult) {
+                fail_at_position(position, "%s", result.value);
+            } else {
+                return result;
             }
         } else {
             fail_at_position(position, "Error: failed to call non-function complex value of type %s\n",
@@ -953,7 +974,6 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
     } else {
         fail_at_position(position, "Error: failed to call non-function value of type %s\n", Any_typename(function));
     }
-    return result;
 }
 
 static struct Any call_or_fail(struct Variables *context, struct Any function, struct Any name,
@@ -1069,7 +1089,8 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
             negative_case = read_curly_block(queue);
         }
         struct Any condition_result = with_queue(context, condition, evaluate_expression);
-        if (Any_raw_true(condition_result)) {
+        struct Any condition_result_is_true = handle_error(condition->data[0].position, Any_true(condition_result));
+        if (condition_result_is_true.boolean) {
             return run_with_queue(context, positive_case, run_block);
         } else if (negative_case) {
             return run_with_queue(context, negative_case, run_block);
