@@ -941,6 +941,11 @@ struct Any micro_fail(const struct List *arguments) {
     fail_with_message("fail was called by program");
 }
 
+struct Any micro_exit(const struct List *arguments) {
+    check_arguments("exit", arguments, 1, IntegerType);
+    exit(List_get(arguments, 0).integer);
+}
+
 struct StatementResult {
     bool is_return;
     struct Any value;
@@ -1216,6 +1221,7 @@ void micro_run(struct ParsedModule *module) {
     create_builtin_function(globals, "HashMap", hashmap);
     create_builtin_function(globals, "parse_integer", parse_integer);
     create_builtin_function(globals, "fail", micro_fail);
+    create_builtin_function(globals, "exit", micro_exit);
     create_constant(globals, String_from_literal("true"), True());
     create_constant(globals, String_from_literal("false"), False());
     create_constant(globals, String_from_literal("None"), None());

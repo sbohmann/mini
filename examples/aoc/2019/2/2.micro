@@ -70,10 +70,10 @@ fn read_raw_data() {
 
 fn build_data(raw_data) {
     data = HashMap()
-    let index = 0
-    while (index < raw_data.size) {
-        data.put(index, raw_data[index])
-        index = index + 1
+    let data_index = 0
+    while (data_index < raw_data.size) {
+        data.put(data_index, raw_data[data_index])
+        data_index = data_index + 1
     }
     index = 0
 }
@@ -93,7 +93,6 @@ fn b() {
     let raw_data = read_raw_data()
     let noun = 0
     while (noun <= 99) {
-        println("noun ", noun)
         let verb = 0
         while (verb <= 99) {
             build_data(raw_data)
@@ -102,10 +101,10 @@ fn b() {
             data.put(2, verb)
             # println("filled data.")
             run()
-            println(data.get(4))
             if (data.get(0) == 19690720) {
-                console.log('noun: ' + noun + ', verb: ' + verb)
-                console.log('b: ' + (100 * noun + verb))
+                println('noun: ', noun, ', verb: ', verb)
+                println('b: ', (100 * noun + verb))
+                exit(0)
             }
             verb = verb + 1
         }
@@ -130,4 +129,4 @@ fn simple() {
     })
 }
 
-simple()
+b()
