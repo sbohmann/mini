@@ -57,6 +57,7 @@ static struct Any create_value(struct TokenReader *base, const struct String *te
     }
     struct Any result = None();
     result.type = StringType;
+    // This String instance, and its internal buffer, are separate from the resulting token's text
     result.string = StringBuilder_result(self->value);
     return result;
 }

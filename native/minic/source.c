@@ -65,3 +65,9 @@ struct Source *read_source(const char *path) {
     free((void *) source_text);
     return result;
 }
+
+void Source_delete(struct Source *instance) {
+    for (size_t index = 0; index < instance->number_of_lines; ++index) {
+        String_delete((struct String *) (instance->lines + index));
+    }
+}

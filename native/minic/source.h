@@ -10,3 +10,5 @@ struct Source {
 };
 
 struct Source * read_source(const char *path);
+
+void Source_delete(struct Source *instance);
