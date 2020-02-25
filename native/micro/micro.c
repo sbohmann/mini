@@ -171,7 +171,7 @@ static struct Any check_arguments(const char *name, const struct List *arguments
     va_start(argp, number);
     if (arguments->size != number) {
         return Error("Argument number mismatch in call to %s - %zu arguments passed, %zu expected",
-                          name, arguments->size, number);
+                     name, arguments->size, number);
     }
     for (size_t index = 0; index < number; ++index) {
         struct Any argument = List_get(arguments, index);
@@ -180,12 +180,12 @@ static struct Any check_arguments(const char *name, const struct List *arguments
             enum ComplexType complex_type = va_arg(argp, enum ComplexType);
             if (argument.type != ComplexType || argument.complex_value->type != complex_type) {
                 return Error("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
-                                  Any_typename(argument), ComplexType_to_string(complex_type));
+                             Any_typename(argument), ComplexType_to_string(complex_type));
             }
         } else {
             if (argument.type != type) {
                 return Error("Argument %zu in call to %s has illegal type %s - expecting %s", index + 1, name,
-                                  Any_typename(argument), AnyType_to_string(type));
+                             Any_typename(argument), AnyType_to_string(type));
             }
         }
     }
@@ -226,6 +226,34 @@ static void check_arguments_with_position(struct Position position, const char *
     va_end(argp);
 }
 
+struct HashMapForeachContext {
+    struct Variables *context;
+    struct Any function;
+    struct Any name;
+    struct Position position;
+};
+
+struct HashMapForeachContext create_hashmap_foreach_context(
+        struct Variables *context,
+        struct Any function,
+        struct Any function_name,
+        struct Position position) {
+    struct HashMapForeachContext delegate_context;
+    delegate_context.context = context;
+    delegate_context.function = function;
+    delegate_context.name = function_name;
+    delegate_context.position = position;
+    return delegate_context;
+}
+
+void hashmap_foreach_delegate(Key key, Value value, struct HashMapForeachContext *context) {
+    struct List *arguments = List_create();
+    List_add(arguments, key);
+    List_add(arguments, value);
+    call(context->context, context->function, context->name, context->position, arguments);
+    release(&arguments->base);
+}
+
 struct Any call_method(struct Variables *context, struct Any instance, const struct String *name,
                        struct Position position, struct ElementQueue *queue) {
     struct Any result = instance;
@@ -257,7 +285,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
     } else if (has_complex_type(instance, MapComplexType) && equal(name, "get")) {
         if (arguments->size != 1) {
             fail_at_position(position,
-                             "Argument number mismatch in call to HashSet.contains - %zu arguments passed, 1 expected",
+                             "Argument number mismatch in call to HashMap.get - %zu arguments passed, 1 expected",
                              arguments->size);
         }
         struct MapResult map_result = HashMap_get((struct HashMap *) instance.complex_value,
@@ -270,7 +298,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
     } else if (has_complex_type(instance, MapComplexType) && equal(name, "at")) {
         if (arguments->size != 1) {
             fail_at_position(position,
-                             "Argument number mismatch in call to HashSet.contains - %zu arguments passed, 1 expected",
+                             "Argument number mismatch in call to HashMap.at - %zu arguments passed, 1 expected",
                              arguments->size);
         }
         struct MapResult map_result = HashMap_get((struct HashMap *) instance.complex_value,
@@ -279,6 +307,32 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         Struct_put(map_result_struct, String_from_literal("found"), Boolean(map_result.found));
         Struct_put(map_result_struct, String_from_literal("value"), map_result.value);
         result = Complex(&map_result_struct->base);
+    } else if (has_complex_type(instance, MapComplexType) && equal(name, "foreach")) {
+        if (arguments->size != 1) {
+            fail_at_position(position,
+                             "Argument number mismatch in call to HashMap.foreach - %zu arguments passed, 1 expected",
+                             arguments->size);
+        }
+        struct Any function = List_get(arguments, 0);
+        struct Any function_name = None();
+        if (function.type == FunctionPointerType) {
+            function_name = String(function.function_name);
+        } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
+            const struct String *raw_name = ((struct Function *) function.complex_value)->name;
+            if (raw_name != 0) {
+                function_name = String(raw_name);
+            }
+        }
+        struct HashMapForeachContext delegate_context = create_hashmap_foreach_context(
+                context,
+                function,
+                function_name,
+                position);
+        HashMap_foreach(
+                (struct HashMap *) instance.complex_value,
+                (HashMapForeachFunction) hashmap_foreach_delegate,
+                &delegate_context);
+        result = None();
     } else if (has_complex_type(instance, ListComplexType) && equal(name, "map")) {
         if (arguments->size != 1) {
             fail_at_position(position,
@@ -303,7 +357,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
             List_add(map_result, call_or_fail(context, function, function_name, position, function_arguments));
             release(&function_arguments->base);
         }
-        return Complex(&map_result->base);
+        result = Complex(&map_result->base);
     } else if (has_complex_type(instance, ListComplexType) && equal(name, "filter")) {
         if (arguments->size != 1) {
             fail_at_position(position,
@@ -336,7 +390,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
             }
             release(&function_arguments->base);
         }
-        return Complex(&filter_result->base);
+        result = Complex(&filter_result->base);
     } else if (has_complex_type(instance, ListComplexType) && equal(name, "foreach")) {
         if (arguments->size != 1) {
             fail_at_position(position,
@@ -361,14 +415,14 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
             call_or_fail(context, function, function_name, position, function_arguments);
             release(&function_arguments->base);
         }
-        return None();
+        result = None();
     } else if (instance.type == StringType && equal(name, "split")) {
         check_arguments_with_position(position, "String.split", arguments, 1, StringType, StringType);
         const struct String *separator = List_get(arguments, 0).string;
-        return String_split(instance.string, separator);
+        result = String_split(instance.string, separator);
     } else if (instance.type == StringType && equal(name, "trim")) {
         check_arguments_with_position(position, "String.split", arguments, 0);
-        return String_trim(instance.string);
+        result = String_trim(instance.string);
     } else {
         fail_at_position(position, "Call to undefined method %s.%s", Any_typename(instance), name->value);
     }
@@ -624,7 +678,8 @@ struct Any evaluate_comparison(struct Variables *context, struct ElementQueue *q
         const struct String *operator_name = split_elements->separators[0].token->text;
         struct Any lhs_result = with_queue(context, split_elements->data, evaluate_addition);
         struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_addition);
-        struct Any result = handle_error(first_element->position, compare_values(operator_name, lhs_result, rhs_result));
+        struct Any result = handle_error(first_element->position,
+                                         compare_values(operator_name, lhs_result, rhs_result));
         SplitElements_delete(split_elements);
         return result;
     } else {
@@ -643,7 +698,7 @@ struct Any evaluate_equality(struct Variables *context, struct ElementQueue *que
         if (split_elements->size != 2) {
             fail_at_position(split_elements->data[0].data[0].position, "Unsupported chained equality check");
         }
-        bool equality_check = is_symbol_of_name(split_elements->separators, "==");
+        bool equality_check = is_operator_with_text(split_elements->separators, "==");
         struct Any lhs_result = with_queue(context, split_elements->data, evaluate_comparison);
         struct Any rhs_result = with_queue(context, split_elements->data + 1, evaluate_comparison);
         SplitElements_delete(split_elements);
@@ -655,6 +710,9 @@ struct Any evaluate_equality(struct Variables *context, struct ElementQueue *que
 
 struct Any evaluate_expression(struct Variables *context, struct ElementQueue *queue) {
     const struct Element *first_element = ElementQueue_peek(queue);
+    if (first_element->type == TokenElement && equal(first_element->token->text, "++")) {
+        printf("Here");
+    }
     if (is_bracket_element_of_type(first_element, Paren)) {
         const struct Elements *contained_expression = read_paren_block(queue);
         struct ElementQueue *contained_expression_queue = ElementQueue_create(contained_expression);
@@ -668,9 +726,9 @@ struct Any evaluate_expression(struct Variables *context, struct ElementQueue *q
         // TODO list literal
         fail_at_position(first_element->position, "TODO map / set literal {a: 1, \"b\": 2, 3: 3} / {1, 2, 3}");
     } else if (ElementQueue_contains(queue, is_operator)) {
-        return evaluate_equality(context, queue);
+        return handle_error(first_element->position, evaluate_equality(context, queue));
     } else {
-        return evaluate_simple_expression(context, queue);
+        return handle_error(first_element->position, evaluate_simple_expression(context, queue));
     }
 }
 
@@ -880,7 +938,12 @@ struct Any parse_integer(const struct List *arguments) {
 
 struct Any micro_fail(const struct List *arguments) {
     println(arguments);
-    fail();
+    fail_with_message("fail was called by program");
+}
+
+struct Any micro_exit(const struct List *arguments) {
+    check_arguments("exit", arguments, 1, IntegerType);
+    exit(List_get(arguments, 0).integer);
 }
 
 struct StatementResult {
@@ -1088,6 +1151,10 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
             read_symbol(queue);
             negative_case = read_curly_block(queue);
         }
+        const struct Element *next_element = ElementQueue_peek(queue);
+        if (next_element) {
+            fail_at_position(next_element->position, "Unexpected token after if statement");
+        }
         struct Any condition_result = with_queue(context, condition, evaluate_expression);
         struct Any condition_result_is_true = handle_error(condition->data[0].position, Any_true(condition_result));
         if (condition_result_is_true.boolean) {
@@ -1098,6 +1165,10 @@ struct StatementResult execute_statement(struct Variables *context, struct Eleme
     } else if (equal(symbol, "while")) {
         const struct Elements *condition = read_paren_block(queue);
         const struct Elements *positive_case = read_curly_block(queue);
+        const struct Element *next_element = ElementQueue_peek(queue);
+        if (next_element) {
+            fail_at_position(next_element->position, "Unexpected token after while loop");
+        }
         while (true) {
             struct Any condition_result = with_queue(context, condition, evaluate_expression);
             if (Any_raw_true(condition_result)) {
@@ -1149,7 +1220,8 @@ void micro_run(struct ParsedModule *module) {
     create_builtin_function(globals, "HashSet", hashset);
     create_builtin_function(globals, "HashMap", hashmap);
     create_builtin_function(globals, "parse_integer", parse_integer);
-    create_builtin_function(globals, "fail", parse_integer);
+    create_builtin_function(globals, "fail", micro_fail);
+    create_builtin_function(globals, "exit", micro_exit);
     create_constant(globals, String_from_literal("true"), True());
     create_constant(globals, String_from_literal("false"), False());
     create_constant(globals, String_from_literal("None"), None());

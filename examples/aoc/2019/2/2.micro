@@ -4,36 +4,37 @@ let index = 0
 fn run() {
     while (true) {
         if (step()) {
-            println("step returned true")
-            break;
+            # println("step returned true")
+            return None
         }
-        println("step returned false: ")
+        # println("step returned false: ")
     }
 }
 
 fn step() {
     let opcode = read_opcode()
     if (opcode == 1) {
-        println("add...")
+        # println("add...")
         add()
         return false
     }
     if (opcode == 2) {
-        println("mul...")
+        # println("mul...")
         multiply()
         return false
     }
     if (opcode == 99) {
-        println("99!!!")
+        # println("99!!!")
         return true
     }
     fail("Unknown opcode: ", opcode)
 }
 
 fn read_opcode() {
-    println("reading opcode at index ", index)
+    # println("reading opcode at index ", index)
     let result = data.get(index)
-    if (!result) {
+    # println("result: ", result, result == 0, result == None)
+    if (result == None) {
         fail("Index out of range: ", index)
     }
     return result
@@ -69,10 +70,10 @@ fn read_raw_data() {
 
 fn build_data(raw_data) {
     data = HashMap()
-    let index = 0
-    while (index < raw_data.size) {
-        data.put(index, raw_data[index])
-        index = index + 1
+    let data_index = 0
+    while (data_index < raw_data.size) {
+        data.put(data_index, raw_data[data_index])
+        data_index = data_index + 1
     }
     index = 0
 }
@@ -80,52 +81,52 @@ fn build_data(raw_data) {
 fn a() {
     read_data()
 
-    data.set(1, 12)
-    data.set(2, 2)
+    data.put(1, 12)
+    data.put(2, 2)
 
     run()
 
-    console.log("a: " + data.get(0))
+    println("a: ", data.get(0))
 }
 
 fn b() {
     let raw_data = read_raw_data()
     let noun = 0
     while (noun <= 99) {
-        println("noun ", noun)
         let verb = 0
         while (verb <= 99) {
-            println("verb ", verb)
             build_data(raw_data)
-            println("built data.")
+            # println("built data.")
             data.put(1, noun)
             data.put(2, verb)
-            println("filled data.")
+            # println("filled data.")
             run()
-            println("ran.")
-            if (data.get(0) === 19690720) {
-                console.log('noun: ' + noun + ', verb: ' + verb)
-                console.log('b: ' + (100 * noun + verb))
+            if (data.get(0) == 19690720) {
+                println('noun: ', noun, ', verb: ', verb)
+                println('b: ', (100 * noun + verb))
+                exit(0)
             }
-            ++verb
+            verb = verb + 1
         }
-        ++noun
+        noun = noun + 1
     }
 }
 
 fn simple() {
-    let simple = [[1, 0, 0, 0, 99],
-        [2, 3, 0, 3, 99],
-        [2, 4, 4, 5, 99, 0],
-        [1, 1, 1, 4, 99, 5, 6, 0, 99]]
+    let simple = List(
+        List(1, 0, 0, 0, 99),
+        List(2, 3, 0, 3, 99),
+        List(2, 4, 4, 5, 99, 0),
+        List(1, 1, 1, 4, 99, 5, 6, 0, 99))
 
-    for (let input of simple) {
+    simple.foreach(fn (input) {
         build_data(input)
         run()
-        for (let entry of data.entries()) {
-            console.log(entry[0] + ': ' + entry[1])
-        }
-    }
+        data.foreach(fn (key, value) {
+            println(key, ': ', value)
+        })
+        println('\n')
+    })
 }
 
 b()
