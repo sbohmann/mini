@@ -7,6 +7,7 @@
 #include <core/string.h>
 #include <generated/char_list.h>
 #include <minic/list.h>
+#include <core/stringbuilder.h>
 
 static bool matches(const struct String *value, const struct String *separator, size_t index) {
     for (size_t offset = 0; offset < separator->length; ++offset) {
@@ -60,7 +61,7 @@ static bool is_whitespace(char c) {
 }
 
 struct Any String_trim(const struct String *value) {
-    struct CharList *buffer = CharList_create();
+    struct StringBuilder *buffer = StringBuilder_create();
     size_t start = 0;
     bool collecting = false;
     for (size_t index = 0; index < value->length; ++index) {
@@ -68,30 +69,17 @@ struct Any String_trim(const struct String *value) {
         if (!is_whitespace(c)) {
             if (collecting) {
                 for (size_t whitespace_index = start; whitespace_index < index; ++whitespace_index) {
-                    CharList_append(buffer, value->value[whitespace_index]);
+                    StringBuilder_append(buffer, value->value[whitespace_index]);
                 }
             } else {
                 collecting = true;
             }
-            CharList_append(buffer, c);
+            StringBuilder_append(buffer, c);
             start = index + 1;
         }
     }
-    size_t length = CharList_size(buffer);
-    char *result = allocate_raw(length + 1);
-    struct CharListElement *iterator = CharList_begin(buffer);
-    size_t index = 0;
-    while (iterator) {
-        if (index >= length) {
-            fail("Logical error");
-        }
-        result[index] = CharListIterator_get(iterator);
-        iterator = CharListIterator_next(iterator);
-        ++index;
-    }
-    if (index != length) {
-        fail("Logical error");
-    }
-    result[length] = 0;
-    return StringLiteral(String_preallocated(result, length));
+    size_t length = StringBuilder_length(buffer);
+    // TODO use complex string
+    // creating new string literals on the fly will leak memory
+    return StringLiteral(StringBuilder_result(buffer));
 }
