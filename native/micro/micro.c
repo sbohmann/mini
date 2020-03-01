@@ -46,7 +46,7 @@ static struct Variables *create_bindings(const struct Variables *context, const 
             fail_at_position(part->data[1].position, "Unexpected token");
         }
         const struct Element *name_element = part->data;
-        if (name_element->type != TokenElement || name_element->token->type != Symbol) {
+        if (name_element->type != TokenElement || name_element->token->type != SymbolToken) {
             fail_at_position(name_element->position, "Unexpected token");
         }
         const struct String *name = name_element->token->text;
@@ -316,11 +316,11 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         struct Any function = List_get(arguments, 0);
         struct Any function_name = None();
         if (function.type == FunctionPointerType) {
-            function_name = String(function.function_name);
+            function_name = StringLiteral(function.function_name);
         } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
             const struct String *raw_name = ((struct Function *) function.complex_value)->name;
             if (raw_name != 0) {
-                function_name = String(raw_name);
+                function_name = StringLiteral(raw_name);
             }
         }
         struct HashMapForeachContext delegate_context = create_hashmap_foreach_context(
@@ -344,11 +344,11 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         struct List *map_result = List_create();
         struct Any function_name = None();
         if (function.type == FunctionPointerType) {
-            function_name = String(function.function_name);
+            function_name = StringLiteral(function.function_name);
         } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
             const struct String *raw_name = ((struct Function *) function.complex_value)->name;
             if (raw_name != 0) {
-                function_name = String(raw_name);
+                function_name = StringLiteral(raw_name);
             }
         }
         for (size_t index = 0; index < input->size; ++index) {
@@ -369,11 +369,11 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         struct List *filter_result = List_create();
         struct Any function_name = None();
         if (function.type == FunctionPointerType) {
-            function_name = String(function.function_name);
+            function_name = StringLiteral(function.function_name);
         } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
             const struct String *raw_name = ((struct Function *) function.complex_value)->name;
             if (raw_name != 0) {
-                function_name = String(raw_name);
+                function_name = StringLiteral(raw_name);
             }
         }
         for (size_t index = 0; index < input->size; ++index) {
@@ -401,11 +401,11 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         struct List *input = (struct List *) instance.complex_value;
         struct Any function_name = None();
         if (function.type == FunctionPointerType) {
-            function_name = String(function.function_name);
+            function_name = StringLiteral(function.function_name);
         } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
             const struct String *raw_name = ((struct Function *) function.complex_value)->name;
             if (raw_name != 0) {
-                function_name = String(raw_name);
+                function_name = StringLiteral(raw_name);
             }
         }
         for (size_t index = 0; index < input->size; ++index) {
@@ -416,11 +416,11 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
             release(&function_arguments->base);
         }
         result = None();
-    } else if (instance.type == StringType && equal(name, "split")) {
-        check_arguments_with_position(position, "String.split", arguments, 1, StringType, StringType);
+    } else if (instance.type == StringLiteralType && equal(name, "split")) {
+        check_arguments_with_position(position, "String.split", arguments, 1, StringLiteralType, StringLiteralType);
         const struct String *separator = List_get(arguments, 0).string;
         result = String_split(instance.string, separator);
-    } else if (instance.type == StringType && equal(name, "trim")) {
+    } else if (instance.type == StringLiteralType && equal(name, "trim")) {
         check_arguments_with_position(position, "String.split", arguments, 0);
         result = String_trim(instance.string);
     } else {
@@ -445,7 +445,7 @@ struct Any read_property(struct Variables *context, struct Any instance, const s
     } else if (has_complex_type(instance, StringComplexType) && equal(name, "length")) {
         // TODO
         result = Integer(0);
-    } else if (instance.type == StringType && equal(name, "length")) {
+    } else if (instance.type == StringLiteralType && equal(name, "length")) {
         result = Integer(((struct String *) instance.complex_value)->length);
     } else {
         fail_at_position(position, "Undefined property %s.%s", Any_typename(instance), name->value);
@@ -461,7 +461,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
     struct Any result;
     struct Any name = None();
     const struct Element *second_element = ElementQueue_peek(queue);
-    if (first_token->type == Symbol) {
+    if (first_token->type == SymbolToken) {
         if (equal(first_token->text, "fn")) {
             struct Function *function = read_function(context, queue, 0);
             return Complex(&function->base);
@@ -477,10 +477,10 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
                 fail_at_position(first_token->position, "Undefined variable [%s]", first_token->text->value);
             }
         }
-        name = String(first_token->text);
-    } else if (first_token->type == NumberLiteral || first_token->type == StringLiteral) {
+        name = StringLiteral(first_token->text);
+    } else if (first_token->type == NumberLiteralToken || first_token->type == StringLiteralToken) {
         result = first_token->value;
-    } else if (first_token->type == Operator && equal(first_token->text, "!")) {
+    } else if (first_token->type == OperatorToken && equal(first_token->text, "!")) {
         result = Not(evaluate_simple_expression(context, queue));
     } else {
         fail_at_position(first_token->position, "Unexpected expression: [%s]", first_token->text->value);
@@ -514,7 +514,7 @@ struct Any evaluate_simple_expression(struct Variables *context, struct ElementQ
                 if (call_result.type == SuccessFunctionResult) {
                     result = call_result.value;
                 } else {
-                    if (name.type == StringType) {
+                    if (name.type == StringLiteralType) {
                         fail_at_position(next_element->position, "Call to %s failed.", name.string->value);
                     } else {
                         fail_at_position(next_element->position, "Call failed.");
@@ -771,7 +771,7 @@ struct Assignment evaluate_lhs_expression(struct Variables *context, struct Elem
     struct Any result = None();
     struct Any name = None();
     const struct Element *second_element = ElementQueue_peek(queue);
-    if (first_token->type == Symbol) {
+    if (first_token->type == SymbolToken) {
         if (equal(first_token->text, "fn")) {
             assignment.error_message = "Assignment to function";
             return assignment;
@@ -796,8 +796,8 @@ struct Assignment evaluate_lhs_expression(struct Variables *context, struct Elem
                 fail_at_position(first_token->position, "Undefined variable [%s]", first_token->text->value);
             }
         }
-        name = String(first_token->text);
-    } else if (first_token->type == NumberLiteral || first_token->type == StringLiteral) {
+        name = StringLiteral(first_token->text);
+    } else if (first_token->type == NumberLiteralToken || first_token->type == StringLiteralToken) {
         assignment.error_message = "Assignment to literal value";
         return assignment;
     } else {
@@ -825,7 +825,7 @@ struct Assignment evaluate_lhs_expression(struct Variables *context, struct Elem
                     assignment.function = assign_to_struct;
                     return assignment;
                 }
-                name = String(element_name);
+                name = StringLiteral(element_name);
             } else if (is_bracket_element_of_type(next_element, Paren)) {
                 const struct Elements *arguments = read_paren_block(queue);
                 if (ElementQueue_peek(queue)) {
@@ -836,7 +836,7 @@ struct Assignment evaluate_lhs_expression(struct Variables *context, struct Elem
                     if (call_result.type == SuccessFunctionResult) {
                         result = call_result.value;
                     } else {
-                        if (name.type == StringType) {
+                        if (name.type == StringLiteralType) {
                             fail_at_position(next_element->position, "Call to %s failed.", name.string->value);
                         } else {
                             fail_at_position(next_element->position, "Call failed.");
@@ -923,7 +923,7 @@ struct Any hashmap(const struct List *pairs) {
 }
 
 struct Any parse_integer(const struct List *arguments) {
-    struct Any argument_check_result = check_arguments("parse_integer", arguments, 1, StringType);
+    struct Any argument_check_result = check_arguments("parse_integer", arguments, 1, StringLiteralType);
     if (argument_check_result.type == ErrorType) {
         return argument_check_result;
     }
@@ -1016,7 +1016,7 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
             struct Function *complex_function = (struct Function *) function.complex_value;
             struct FunctionCallResult result = call_function(context, complex_function, arguments);
             if (result.type == ArgumentNumberMismatchFunctionResult) {
-                if (name.type == StringType) {
+                if (name.type == StringLiteralType) {
                     fail_at_position(position,
                                      "Argument number mismatch in call to function %s - %zu arguments passed, %zu expected.",
                                      name.string->value, result.arguments_passed, result.arguments_expected);
@@ -1045,7 +1045,7 @@ static struct Any call_or_fail(struct Variables *context, struct Any function, s
     if (call_result.type == SuccessFunctionResult) {
         return call_result.value;
     } else {
-        if (name.type == StringType) {
+        if (name.type == StringLiteralType) {
             fail_at_position(position, "Call to function %s failed", name.string->value);
         } else {
             fail_at_position(position, "Call to function failed");
@@ -1238,6 +1238,6 @@ int main(int argc, const char **argv) {
     if (argc != 2) {
         fail_with_message("Expecting single argument <path to source file>");
     }
-    struct ParsedModule *module = read_file(argv[1]);
+    struct ParsedModule *module = ParsedModule_read(argv[1]);
     micro_run(module);
 }

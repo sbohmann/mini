@@ -25,7 +25,7 @@ void read_comma(struct ElementQueue *elements) {
     if (!comma) {
         fail_after_position(ElementQueue_last_position(elements), "Unexpected end of input - expecting comma");
     }
-    if (comma->type != TokenElement || comma->token->type != Operator || !equal(comma->token->text, ",")) {
+    if (comma->type != TokenElement || comma->token->type != OperatorToken || !equal(comma->token->text, ",")) {
         fail_at_position(comma->position, "Expected comma, found [%s]", element_text(comma));
     }
 }
@@ -35,7 +35,7 @@ void read_operator(struct ElementQueue *elements) {
     if (!operator) {
         fail_after_position(ElementQueue_last_position(elements), "Unexpected end of input - expecting operator");
     }
-    if (operator->type != TokenElement || operator->token->type != Operator) {
+    if (operator->type != TokenElement || operator->token->type != OperatorToken) {
         fail_at_position(operator->position, "Expected an operator, found [%s]", element_text(operator));
     }
 }
@@ -45,7 +45,7 @@ void read_operator_with_text(struct ElementQueue *elements, const char *text) {
     if (!operator) {
         fail_after_position(ElementQueue_last_position(elements), "Unexpected end of input - expecting operator %s", text);
     }
-    if (operator->type != TokenElement || operator->token->type != Operator || !equal(operator->token->text, text)) {
+    if (operator->type != TokenElement || operator->token->type != OperatorToken || !equal(operator->token->text, text)) {
         fail_at_position(operator->position, "Expected %s, found [%s]", text, element_text(operator));
     }
 }
@@ -53,7 +53,7 @@ void read_operator_with_text(struct ElementQueue *elements, const char *text) {
 bool is_operator(const struct Element *candidate) {
     return candidate &&
            candidate->type == TokenElement &&
-           candidate->token->type == Operator;
+           candidate->token->type == OperatorToken;
 }
 
 bool is_operator_with_text(const struct Element *candidate, const char *text) {
@@ -77,7 +77,7 @@ const struct Token *read_symbol(struct ElementQueue *elements) {
     if (!element) {
         fail_after_position(ElementQueue_last_position(elements), "Unexpected end of input - expecting symbol");
     }
-    if (element->type != TokenElement || element->token->type != Symbol) {
+    if (element->type != TokenElement || element->token->type != SymbolToken) {
         fail_at_position(element->position, "Expected symbol, found [%s]", element_text(element));
     }
     return element->token;
@@ -86,7 +86,7 @@ const struct Token *read_symbol(struct ElementQueue *elements) {
 bool is_symbol(const struct Element *element) {
     return element &&
            element->type == TokenElement &&
-           element->token->type == Symbol;
+           element->token->type == SymbolToken;
 }
 
 bool is_symbol_of_name(const struct Element *element, const char *name) {

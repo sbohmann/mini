@@ -9,7 +9,7 @@ enum AnyType {
     NoneType = 0x00,
     BooleanType = 0x01,
     IntegerType = 0x02,
-    StringType = 0x11,
+    StringLiteralType = 0x11,
     ComplexType = 0x21,
     FlatType = 0x22,
     FunctionPointerType = 0x23,
@@ -47,7 +47,7 @@ struct Any Not(struct Any value);
 
 struct Any Integer(int64_t value);
 
-struct Any String(const struct String *value);
+struct Any StringLiteral(const struct String *value);
 
 struct Any Function(struct Any (*value) (const struct List *), const char *name);
 

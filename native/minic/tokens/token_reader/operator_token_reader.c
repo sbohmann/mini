@@ -11,13 +11,13 @@ static bool process_char(struct TokenReader *self, char c) {
 
 static struct Any create_value(struct TokenReader *self, const struct String *text) {
     struct Any result = None();
-    result.type = StringType;
+    result.type = StringLiteralType;
     result.string = text;
     return result;
 }
 
 struct TokenReader *OperatorTokenReader_create() {
     struct TokenReader *self = allocate(sizeof(struct TokenReader));
-    TokenReader_init(Operator, self, process_char, create_value, 0);
+    TokenReader_init(OperatorToken, self, process_char, create_value, 0);
     return self;
 }

@@ -13,12 +13,12 @@ struct Position {
 };
 
 enum TokenType {
-    Symbol,
-    StringLiteral,
-    NumberLiteral,
-    Operator,
-    OpeningBracket,
-    ClosingBracket
+    SymbolToken,
+    StringLiteralToken,
+    NumberLiteralToken,
+    OperatorToken,
+    OpeningBracketToken,
+    ClosingBracketToken
 };
 
 struct Token {

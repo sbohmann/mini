@@ -19,19 +19,17 @@ const struct String *String_preallocated(const char *value, size_t length) {
     result->length = length;
     result->value = value;
     result->hash = string_hash(result->value, result->length);
-    result->is_literal = false;
     return result;
 }
 
 const struct String *String_from_buffer(char *buffer, size_t length) {
-    struct String *result = allocate_raw(sizeof(struct String));
+    struct String *result = allocate(sizeof(struct String));
     result->length = length;
-    char *value = allocate(length + 1);
+    char *value = allocate_raw(length + 1);
     memcpy(value, buffer, length);
     value[length] = 0;
     result->value = value;
     result->hash = string_hash(result->value, result->length);
-    result->is_literal = false;
     return result;
 }
 

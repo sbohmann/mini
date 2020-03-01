@@ -11,6 +11,8 @@ struct String {
     const char * value;
     Hash hash;
     bool is_literal;
+    // TODO instead mark as used in the parser GC
+    bool pinned;
 };
 
 const struct String *String_from_literal(const char *literal);

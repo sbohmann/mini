@@ -67,7 +67,8 @@ void add_bracket(struct ElementList *elements, struct TokenQueue *tokens, const 
     if (bracket_type(closing_bracket) != bracket_type(opening_bracket)) {
         fail_at_position(closing_bracket->position,
                          "Bracket type mismatch (opening bracket at line %zu, column %zu, file [%s])",
-                         opening_bracket->position.line, opening_bracket->position.column, opening_bracket->position.path);
+                         opening_bracket->position.line, opening_bracket->position.column,
+                         opening_bracket->position.path);
     }
     struct Element *result = allocate(sizeof(struct Element));
     result->position = opening_bracket->position;
@@ -85,10 +86,10 @@ static void add_elements(struct ElementList *elements, struct TokenQueue *tokens
     while (true) {
         const struct Token *token = TokenQueue_peek(tokens);
         if (token) {
-            if (token->type == OpeningBracket) {
+            if (token->type == OpeningBracketToken) {
                 TokenQueue_next(tokens);
                 add_bracket(elements, tokens, token);
-            } else if (token->type == ClosingBracket) {
+            } else if (token->type == ClosingBracketToken) {
                 return;
             } else {
                 TokenQueue_next(tokens);
@@ -118,4 +119,10 @@ struct Elements *read_elements(const struct Tokens *tokens) {
     struct Elements *result = Elements_from_list(elements);
     ElementList_delete(elements);
     return result;
+}
+
+void Elements_delete(struct Elements *elements) {
+    for (size_t index = 0; index < elements->size; ++index) {
+        struct Element *element = elements->data[index];
+    }
 }

@@ -56,7 +56,7 @@ static struct Any create_value(struct TokenReader *base, const struct String *te
         fail_at_position(base->position, "Unclosed string literal");
     }
     struct Any result = None();
-    result.type = StringType;
+    result.type = StringLiteralType;
     // This String instance, and its internal buffer, are separate from the resulting token's text
     result.string = StringBuilder_result(self->value);
     return result;
@@ -69,7 +69,7 @@ void delete(struct TokenReader *base) {
 
 struct TokenReader *StringTokenReader_create(char quote_char) {
     struct StringTokenReader *self = allocate(sizeof(struct StringTokenReader));
-    TokenReader_init(StringLiteral, &self->base, process_char, create_value, delete);
+    TokenReader_init(StringLiteralToken, &self->base, process_char, create_value, delete);
     self->quote_char = quote_char;
     self->value = StringBuilder_create();
     return &self->base;

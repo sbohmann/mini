@@ -41,3 +41,5 @@ struct Element {
 };
 
 struct Elements * read_elements(const struct Tokens *tokens);
+
+void Elements_delete(struct Elements *elements);

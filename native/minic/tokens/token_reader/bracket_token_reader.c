@@ -12,16 +12,16 @@ static bool process_char(struct TokenReader *self, char c) {
 
 static struct Any create_value(struct TokenReader *self, const struct String *text) {
     struct Any result = None();
-    result.type = StringType;
+    result.type = StringLiteralType;
     result.string = text;
     return result;
 }
 
 static enum TokenType bracket_type(char c) {
     if (is_opening_bracket(c)) {
-        return OpeningBracket;
+        return OpeningBracketToken;
     } else if (is_closing_bracket(c)) {
-        return ClosingBracket;
+        return ClosingBracketToken;
     } else {
         fail_with_message("Not a bracket: [%c] (0x%02x)", c, (int) c);
     }

@@ -14,8 +14,8 @@ const char *AnyType_to_string(enum AnyType type) {
             return "None";
         case IntegerType:
             return "Integer";
-        case StringType:
-            return "String";
+        case StringLiteralType:
+            return "StringLiteral";
         case ComplexType:
             return "Complex";
         case FlatType:
@@ -76,10 +76,11 @@ struct Any Integer(int64_t value) {
     return result;
 }
 
-struct Any String(const struct String *value) {
+struct Any StringLiteral(const struct String *value) {
     struct Any result = None();
-    result.type = StringType;
+    result.type = StringLiteralType;
     result.string = value;
+    ((struct String *) value)->pinned = true;
     return result;
 }
 
@@ -155,7 +156,7 @@ Hash Any_hash(struct Any value) {
             return 0;
         case IntegerType:
             return int64_hash(value.integer);
-        case StringType:
+        case StringLiteralType:
         case ErrorType:
             return value.string->hash;
         case ComplexType:
@@ -180,7 +181,7 @@ bool Any_raw_equal(struct Any lhs, struct Any rhs) {
             return true;
         case IntegerType:
             return lhs.integer == rhs.integer;
-        case StringType:
+        case StringLiteralType:
         case ErrorType:
             return String_equal(lhs.string, rhs.string);
         case ComplexType:
@@ -241,7 +242,7 @@ bool Any_raw_true(struct Any value) {
             return false;
         case BooleanType:
             return value.boolean;
-        case StringType:
+        case StringLiteralType:
         case ComplexType:
             // true because equivalent to a ComplexString
             return true;
@@ -258,7 +259,7 @@ struct Any Any_true(struct Any value) {
             return False();
         case BooleanType:
             return Boolean(value.boolean);
-        case StringType:
+        case StringLiteralType:
         case ComplexType:
             // true because equivalent to a ComplexString
             return True();

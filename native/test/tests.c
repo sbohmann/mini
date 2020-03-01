@@ -16,7 +16,7 @@ static void print(struct Any value) {
         case IntegerType:
             printf("%d", (int) value.integer);
             break;
-        case StringType:
+        case StringLiteralType:
             printf("%s", value.string->value);
             break;
         case ComplexType:
@@ -42,10 +42,10 @@ static void hash_map() {
     struct HashMap *map = HashMap_create();
     uint64_t key = 1234567;
     print(HashMap_get(map, Integer(key)).value);
-    HashMap_put(map, Integer(key), String(String_from_literal("Hi! :D")));
+    HashMap_put(map, Integer(key), StringLiteral(String_from_literal("Hi! :D")));
     print(HashMap_get(map, Integer(key)).value);
     print(HashMap_get(map, Integer(key + 1)).value);
-    HashMap_put(map, Integer(key + 1), String(String_from_literal("Ok ^^")));
+    HashMap_put(map, Integer(key + 1), StringLiteral(String_from_literal("Ok ^^")));
     print(HashMap_get(map, Integer(key)).value);
     print(HashMap_get(map, Integer(key + 1)).value);
     HashMap_remove(map, Integer(key));
@@ -57,7 +57,7 @@ static void hash_map() {
         PRN(build)
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%" PRIu64, key);
-        struct Any value = String(String_from_buffer(buffer, strlen(buffer)));
+        struct Any value = StringLiteral(String_from_buffer(buffer, strlen(buffer)));
         HashMap_put(map, Integer(key), value);
     }
     
@@ -65,7 +65,7 @@ static void hash_map() {
         PRN(check)
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0) {
-            if (value.type != StringType) {
+            if (value.type != StringLiteralType) {
                 fail_with_message("Wrong type: %d", value.type);
             }
             size_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
@@ -90,7 +90,7 @@ static void hash_map() {
         PRN(check pruned)
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0 && key % 5 != 0) {
-            if (value.type != StringType) {
+            if (value.type != StringLiteralType) {
                 fail_with_message("Wrong type: %d", value.type);
             }
             uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
@@ -112,7 +112,7 @@ static void hash_map() {
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%" PRIu64, key);
         struct Any value;
-        value.type = StringType;
+        value.type = StringLiteralType;
         value.string = String_from_buffer(buffer, strlen(buffer));
         HashMap_put(map, Integer(key), value);
     }
@@ -121,7 +121,7 @@ static void hash_map() {
         PRN(check middle)
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0) {
-            if (value.type != StringType) {
+            if (value.type != StringLiteralType) {
                 fail_with_message("Wrong type: %d", value.type);
             }
             uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
@@ -146,7 +146,7 @@ static void hash_map() {
         PRN(check pruned middle)
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0 && key % 5 != 0) {
-            if (value.type != StringType) {
+            if (value.type != StringLiteralType) {
                 fail_with_message("Wrong type: %d", value.type);
             }
             uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
@@ -166,7 +166,7 @@ static void hash_map() {
         PRN(build high)
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%" PRIu64, key);
-        struct Any value = String(String_from_buffer(buffer, strlen(buffer)));
+        struct Any value = StringLiteral(String_from_buffer(buffer, strlen(buffer)));
         HashMap_put(map, Integer(key), value);
     }
     
@@ -174,7 +174,7 @@ static void hash_map() {
         PRN(check high)
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0) {
-            if (value.type != StringType) {
+            if (value.type != StringLiteralType) {
                 fail_with_message("Wrong type: %d", value.type);
             }
             uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);
@@ -199,7 +199,7 @@ static void hash_map() {
         PRN(check pruned high)
         struct Any value = HashMap_get(map, Integer(key)).value;
         if (key % 3 == 0 && key % 5 != 0) {
-            if (value.type != StringType) {
+            if (value.type != StringLiteralType) {
                 fail_with_message("Wrong type: %d", value.type);
             }
             uint64_t parsed = parse_uint64_or_fail(value.string->value, value.string->length, 10);

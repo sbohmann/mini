@@ -18,7 +18,7 @@ void print_value(struct Any value) {
         case IntegerType:
             printf("%d", (int) value.integer);
             break;
-        case StringType:
+        case StringLiteralType:
             printf("%s", value.string->value);
             break;
         case ComplexType:

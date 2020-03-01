@@ -35,7 +35,7 @@ void SplitElements_delete(struct SplitElements *instance) {
 
 bool is_comma(const struct Element *element) {
     return element->type == TokenElement &&
-           element->token->type == Operator &&
+           element->token->type == OperatorToken &&
            equal(element->token->text, ",");
 }
 
@@ -134,7 +134,7 @@ SplitElements_by_predicate(struct ElementQueue *queue, bool (*predicate)(const s
 }
 
 static bool is_possible_line_start(const struct Element *element) {
-    return element->type == TokenElement && element->token->type == Symbol;
+    return element->type == TokenElement && element->token->type == SymbolToken;
 }
 
 struct SplitElements *SplitElements_by_line(struct ElementQueue *queue) {

@@ -11,4 +11,6 @@ struct ParsedModule
     const struct Elements *elements;
 };
 
-struct ParsedModule * read_file(const char *path);
+struct ParsedModule * ParsedModule_read(const char *path);
+
+void ParsedModule_delete(struct ParsedModule *instance);

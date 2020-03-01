@@ -23,7 +23,7 @@ void add_fragment(struct List *list, const struct String *input, size_t start, s
         char *fragment = allocate_raw(length + 1);
         memcpy(fragment, input->value + start, length);
         fragment[length] = 0;
-        List_add(list, String(String_preallocated(fragment, length)));
+        List_add(list, StringLiteral(String_preallocated(fragment, length)));
     }
 }
 
@@ -93,5 +93,5 @@ struct Any String_trim(const struct String *value) {
         fail("Logical error");
     }
     result[length] = 0;
-    return String(String_preallocated(result, length));
+    return StringLiteral(String_preallocated(result, length));
 }
