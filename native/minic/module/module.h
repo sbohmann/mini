@@ -1,5 +1,6 @@
 #pragma once
 
+#include "minic/source.h"
 #include "minic/tokens/token.h"
 #include "minic/elements/element.h"
 

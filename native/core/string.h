@@ -11,8 +11,6 @@ struct String {
     const char * value;
     Hash hash;
     bool is_literal;
-    // TODO instead mark as used in the parser GC
-    bool pinned;
 };
 
 const struct String *String_from_literal(const char *literal);
@@ -24,5 +22,7 @@ const struct String *String_from_buffer(char *literal, size_t length);
 bool String_equal(const struct String *lhs, const struct String *rhs);
 
 bool String_equal_to_literal(const struct String *lhs, const char *rhs);
+
+void String_pin(const struct String *instance);
 
 void String_delete(struct String *instance);

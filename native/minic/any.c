@@ -80,15 +80,15 @@ struct Any StringLiteral(const struct String *value) {
     struct Any result = None();
     result.type = StringLiteralType;
     result.string = value;
-    ((struct String *) value)->pinned = true;
+    String_pin(value);
     return result;
 }
 
-struct Any Function(struct Any (*value) (const struct List *), const char *name) {
+struct Any FunctionPointer(struct Any (*value) (const struct List *), const char *name) {
     struct Any result = None();
     result.type = FunctionPointerType;
-    result.function = value;
-    result.function_name = String_from_literal(name);
+    result.function.pointer = value;
+    result.function.name = String_from_literal(name);
     return result;
 }
 
@@ -165,7 +165,7 @@ Hash Any_hash(struct Any value) {
         case FlatType:
             return string_hash(value.flat_value, sizeof(value.flat_value));
         case FunctionPointerType:
-            return (size_t) value.function;
+            return (size_t) value.function.pointer;
         default:
             fail_with_message("Any_hash: value has unknown type %d", value.type);
     }
@@ -190,7 +190,7 @@ bool Any_raw_equal(struct Any lhs, struct Any rhs) {
         case FlatType:
             return lhs.flat_value == rhs.flat_value;
         case FunctionPointerType:
-            return lhs.function == rhs.function;
+            return lhs.function.pointer == rhs.function.pointer;
         default:
             fail_with_message("Any_equal: value has unknown type %d", type);
     }

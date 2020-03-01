@@ -29,9 +29,9 @@ struct Any {
         struct ComplexValue * complex_value;
         char flat_value[8];
         struct {
-            struct Any (*function)(const struct List *);
-            const struct String *function_name;
-        };
+            struct Any (*pointer)(const struct List *);
+            const struct String *name;
+        } function;
     };
 };
 
@@ -49,7 +49,7 @@ struct Any Integer(int64_t value);
 
 struct Any StringLiteral(const struct String *value);
 
-struct Any Function(struct Any (*value) (const struct List *), const char *name);
+struct Any FunctionPointer(struct Any (*value) (const struct List *), const char *name);
 
 struct Any Complex(struct ComplexValue *instance);
 

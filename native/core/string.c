@@ -41,6 +41,10 @@ bool String_equal_to_literal(const struct String *lhs, const char *rhs) {
     return strcmp(lhs->value, rhs) == 0;
 }
 
+void String_pin(const struct String *instance) {
+    // TODO mark in parser GC
+}
+
 void String_delete(struct String *instance) {
     if (!instance->is_literal) {
         free((void *)instance->value);

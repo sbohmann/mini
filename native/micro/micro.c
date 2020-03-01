@@ -316,7 +316,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         struct Any function = List_get(arguments, 0);
         struct Any function_name = None();
         if (function.type == FunctionPointerType) {
-            function_name = StringLiteral(function.function_name);
+            function_name = StringLiteral(function.function.name);
         } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
             const struct String *raw_name = ((struct Function *) function.complex_value)->name;
             if (raw_name != 0) {
@@ -344,7 +344,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         struct List *map_result = List_create();
         struct Any function_name = None();
         if (function.type == FunctionPointerType) {
-            function_name = StringLiteral(function.function_name);
+            function_name = StringLiteral(function.function.name);
         } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
             const struct String *raw_name = ((struct Function *) function.complex_value)->name;
             if (raw_name != 0) {
@@ -369,7 +369,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         struct List *filter_result = List_create();
         struct Any function_name = None();
         if (function.type == FunctionPointerType) {
-            function_name = StringLiteral(function.function_name);
+            function_name = StringLiteral(function.function.name);
         } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
             const struct String *raw_name = ((struct Function *) function.complex_value)->name;
             if (raw_name != 0) {
@@ -401,7 +401,7 @@ struct Any call_method(struct Variables *context, struct Any instance, const str
         struct List *input = (struct List *) instance.complex_value;
         struct Any function_name = None();
         if (function.type == FunctionPointerType) {
-            function_name = StringLiteral(function.function_name);
+            function_name = StringLiteral(function.function.name);
         } else if (function.type == ComplexType && function.complex_value->type == FunctionComplexType) {
             const struct String *raw_name = ((struct Function *) function.complex_value)->name;
             if (raw_name != 0) {
@@ -1009,7 +1009,7 @@ static struct FunctionCallResult call(struct Variables *context, struct Any func
     if (function.type == FunctionPointerType) {
         struct FunctionCallResult result;
         result.type = SuccessFunctionResult;
-        result.value = function.function(arguments);
+        result.value = function.function.pointer(arguments);
         return result;
     } else if (function.type == ComplexType) {
         if (function.complex_value->type == FunctionComplexType) {
@@ -1192,8 +1192,8 @@ struct StatementResult run_block(struct Variables *context, struct ElementQueue 
     struct SplitElements *statements = SplitElements_by_line(queue);
     for (size_t index = 0; index < statements->size; ++index) {
         struct Elements *statement = statements->data + index;
-        size_t line = statement->data[0].position.line;
         if (DEBUG_ENABLED) {
+            size_t line = statement->data[0].position.line;
             printf("line %zu: ", line);
             print_statement(statement);
         }
@@ -1208,7 +1208,7 @@ struct StatementResult run_block(struct Variables *context, struct ElementQueue 
 }
 
 void create_builtin_function(struct Variables *context, const char *name, struct Any (*function)(const struct List *)) {
-    create_constant(context, String_from_literal(name), Function(function, name));
+    create_constant(context, String_from_literal(name), FunctionPointer(function, name));
 }
 
 void micro_run(struct ParsedModule *module) {

@@ -13,5 +13,5 @@ struct ParsedModule *ParsedModule_read(const char *path) {
 }
 
 void ParsedModule_delete(struct ParsedModule *instance) {
-    Elements_delete(instance->elements);
+    // TODO create and run parser GC, leaving but pinned strings
 }

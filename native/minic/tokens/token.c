@@ -123,9 +123,3 @@ _Noreturn void fail_after_position(struct Position position, const char *format,
     fprintf(stderr, "\n");
     fail();
 }
-
-void Token_delete(struct Token *instance) {
-    Any_release(instance->value);
-    String_delete((struct String *)instance->text);
-    free(instance);
-}

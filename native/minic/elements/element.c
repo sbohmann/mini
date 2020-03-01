@@ -120,9 +120,3 @@ struct Elements *read_elements(const struct Tokens *tokens) {
     ElementList_delete(elements);
     return result;
 }
-
-void Elements_delete(struct Elements *elements) {
-    for (size_t index = 0; index < elements->size; ++index) {
-        struct Element *element = elements->data[index];
-    }
-}
