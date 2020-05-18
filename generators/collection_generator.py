@@ -83,9 +83,9 @@ def generate_integer_list():
     generator.run()
 
 
-def generate_char_list():
-    generator = Generator('char', 'list')
-    generator.name = 'Char'
+def generate_void_pointer_list():
+    generator = Generator('void *', 'list')
+    generator.name = 'VoidPointer'
     generator.run()
 
 
@@ -95,4 +95,4 @@ generate_element_list()
 generate_elements_list()
 generate_string_list()
 generate_integer_list()
-generate_char_list()
+generate_void_pointer_list()

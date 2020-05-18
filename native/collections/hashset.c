@@ -96,11 +96,13 @@ static struct Node *Node_add(struct Node *node, uint8_t level, Element element, 
         struct ValueList *existing_values = node->values;
         if (find_element(existing_values, element)) {
             return node;
-        } else if (level == MaximumLevel || node->hash == hash) {
+        } else if (node->hash == hash) {
 //            printf("Collision!!!");
             node->values = insert_element(existing_values, element);
             ++(*size);
             return node;
+        } else if (level == MaximumLevel) {
+            fail("Logical error");
         } else {
             struct Node *new_node = allocate(sizeof(struct Node));
             size_t existing_node_index = level_index(node->hash, level);

@@ -74,15 +74,15 @@ struct Token * TokenList_to_array(const struct TokenList * self) {
     struct TokenListElement *iterator = TokenList_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail_with_message("Logical error in TokenList_to_array - target overrun");
+            fail("Logical error in TokenList_to_array - target overrun");
         }
         *result_iterator = *TokenListIterator_get(iterator);
         iterator = TokenListIterator_next(iterator);
         ++result_iterator;
     }
     if (result_iterator - result != size) {
-        fail_with_message("Logical error in result lines creation - offset: [%zu], size: [%zu]",
-                          result_iterator - result, size);
+        fail("Logical error in result lines creation - offset: [%zu], size: [%zu]",
+             result_iterator - result, size);
     }
     return result;
 }
@@ -99,7 +99,7 @@ struct TokenListElement * TokenListIterator_next(struct TokenListElement * itera
     if (iterator) {
         return iterator->next;
     } else {
-        fail_with_message("Attempt to get next from null iterator");
+        fail("Attempt to get next from null iterator");
     }
 }
 
@@ -107,7 +107,7 @@ struct TokenListElement * TokenListIterator_previous(struct TokenListElement * i
     if (iterator) {
         return iterator->previous;
     } else {
-        fail_with_message("Attempt to get previous from null iterator");
+        fail("Attempt to get previous from null iterator");
     }
 }
 
@@ -115,6 +115,6 @@ const struct Token * TokenListIterator_get(struct TokenListElement * iterator) {
     if (iterator) {
         return iterator->value;
     } else {
-        fail_with_message("Attempt to get value from null iterator");
+        fail("Attempt to get value from null iterator");
     }
 }

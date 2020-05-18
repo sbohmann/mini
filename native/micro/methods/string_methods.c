@@ -5,7 +5,6 @@
 #include <core/errors.h>
 #include <core/allocate.h>
 #include <core/string.h>
-#include <generated/char_list.h>
 #include <minic/list.h>
 #include <core/stringbuilder.h>
 
@@ -78,7 +77,6 @@ struct Any String_trim(const struct String *value) {
             start = index + 1;
         }
     }
-    size_t length = StringBuilder_length(buffer);
     // TODO use complex string
     // creating new string literals on the fly will leak memory
     return StringLiteral(StringBuilder_result(buffer));

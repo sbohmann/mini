@@ -119,11 +119,13 @@ static struct Node *Node_put(struct Node *node, uint8_t level, Name name, Hash h
         struct ValueList *existing_values = node->values;
         if (replace_value(existing_values, name, value, constant)) {
             return node;
-        } else if (level == MaximumLevel || node->hash == hash) {
+        } else if (node->hash == hash) {
 //            printf("Collision!!!");
             node->values = insert_value(existing_values, name, &value, constant);
             ++(*size);
             return node;
+        } else if (level == MaximumLevel) {
+            fail("Logical error");
         } else {
             struct Node *new_node = allocate(sizeof(struct Node));
             size_t existing_node_index = level_index(node->hash, level);
