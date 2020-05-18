@@ -29,16 +29,18 @@ class Generator:
     def _render(self, suffix):
         template = template_environment.get_template(self.kind + '.' + suffix)
         path = os.path.join(output_directory, self.file_name + '.' + suffix)
-        open(path, 'w').write(template.render(
-            name=self.name,
-            type=self.type_name,
-            value=self.value_type,
-            constvalue=self.const_value_type,
-            prefix=self.value_type_prefix,
-            file=self.file_name,
-            system_include=self.system_include,
-            local_include=self.local_include,
-            value_dereference=self.value_dereference))
+        text = template.render(name=self.name, type=self.type_name, value=self.value_type,
+                                 constvalue=self.const_value_type, prefix=self.value_type_prefix, file=self.file_name,
+                                 system_include=self.system_include, local_include=self.local_include,
+                                 value_dereference=self.value_dereference)
+        if os.path.isfile(path):
+            file = open(path, 'r')
+            existing_text = file.read()
+            file.close()
+            if existing_text == text:
+                return
+        print("Writing file [" + path + "]")
+        open(path, 'w').write(text)
 
 
 def generate_token_list():
