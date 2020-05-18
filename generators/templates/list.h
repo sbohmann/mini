@@ -9,7 +9,7 @@ struct {{name}}List;
 
 struct {{name}}ListElement;
 
-struct {{name}}List * {{name}}List_create();
+struct {{name}}List * {{name}}List_create(void);
 
 void {{name}}List_delete(struct {{name}}List * instance);
 

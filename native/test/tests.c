@@ -38,7 +38,7 @@ static void print(struct Any value) {
 
 #define PRN(message) if (key % 1000 == 0) { printf(#message ": %" PRIu64 "\n", key); }
 
-static void hash_map() {
+static void hash_map(void) {
     struct HashMap *map = HashMap_create();
     uint64_t key = 1234567;
     print(HashMap_get(map, Integer(key)).value);
@@ -214,14 +214,14 @@ static void hash_map() {
     }
 }
 
-void hashes() {
+void hashes(void) {
     printf("%d\n", int64_hash(1999998));
     printf("%d\n", int64_hash(-1999999));
 }
 
 #define TEST(name) if (!name()) { fprintf(stderr, "Test case " #name " failed.\n"); exit(1); }
 
-int main() {
+int main(void) {
     hashes();
     hash_map();
     printf("Success.\n");

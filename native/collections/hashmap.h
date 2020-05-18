@@ -16,7 +16,7 @@ typedef struct Any Key;
 typedef struct Any Value;
 typedef void (*HashMapForeachFunction) (Key key, Value value, void *context);
 
-struct HashMap * HashMap_create();
+struct HashMap * HashMap_create(void);
 
 void HashMap_release(struct HashMap *instance);
 

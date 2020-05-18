@@ -6,7 +6,7 @@ struct VoidPointerList;
 
 struct VoidPointerListElement;
 
-struct VoidPointerList * VoidPointerList_create();
+struct VoidPointerList * VoidPointerList_create(void);
 
 void VoidPointerList_delete(struct VoidPointerList * instance);
 

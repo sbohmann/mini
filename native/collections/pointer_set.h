@@ -12,7 +12,7 @@ struct PointerSet;
 
 typedef size_t Element;
 
-struct PointerSet * PointerSet_create();
+struct PointerSet * PointerSet_create(void);
 
 void PointerSet_delete(struct PointerSet *instance);
 

@@ -35,13 +35,13 @@ struct Any {
     };
 };
 
-struct Any None();
+struct Any None(void);
 
 struct Any Boolean(bool value);
 
-struct Any True();
+struct Any True(void);
 
-struct Any False();
+struct Any False(void);
 
 struct Any Not(struct Any value);
 

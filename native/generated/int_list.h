@@ -7,7 +7,7 @@ struct IntList;
 
 struct IntListElement;
 
-struct IntList * IntList_create();
+struct IntList * IntList_create(void);
 
 void IntList_delete(struct IntList * instance);
 

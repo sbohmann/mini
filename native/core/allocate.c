@@ -10,7 +10,7 @@
 static struct VoidPointerList *allocated_pointers = 0;
 static struct PointerSet *marked_pointers = 0;
 
-void ParserGC_init() {
+void ParserGC_init(void) {
     if (allocated_pointers) {
         fail_with_message("Attempting to re-initialize ParserGC");
     }
@@ -24,7 +24,7 @@ void ParserGC_mark(void *pointer) {
     PointerSet_add(marked_pointers, (size_t)pointer);
 }
 
-void ParserGC_free() {
+void ParserGC_free(void) {
     if (!allocated_pointers) {
         fail_with_message("Attempting to free non-initialized ParserGC");
     }

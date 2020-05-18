@@ -29,7 +29,7 @@ const char *AnyType_to_string(enum AnyType type) {
     }
 }
 
-struct Any None() {
+struct Any None(void) {
     static struct Any *result = 0;
     if (result == 0) {
         result = allocate(sizeof(struct Any));
@@ -44,14 +44,14 @@ struct Any Boolean(bool value) {
     return result;
 }
 
-struct Any True() {
+struct Any True(void) {
     struct Any result = None();
     result.type = BooleanType;
     result.boolean = true;
     return result;
 }
 
-struct Any False() {
+struct Any False(void) {
     struct Any result = None();
     result.type = BooleanType;
     result.boolean = false;

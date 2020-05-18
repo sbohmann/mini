@@ -8,7 +8,7 @@ struct TokenList;
 
 struct TokenListElement;
 
-struct TokenList * TokenList_create();
+struct TokenList * TokenList_create(void);
 
 void TokenList_delete(struct TokenList * instance);
 

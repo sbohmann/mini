@@ -904,7 +904,7 @@ struct Any list(const struct List *elements) {
 }
 
 struct Any hashset(const struct List *elements) {
-    struct HashSet *result = HashSet_create(elements);
+    struct HashSet *result = HashSet_create();
     for (size_t index = 0; index < elements->size; ++index) {
         HashSet_add(result, List_get(elements, index));
     }

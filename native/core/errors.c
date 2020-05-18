@@ -12,11 +12,11 @@
     vfprintf(stderr, (format), arguments); \
     va_end(arguments);
 
-static void newline() {
+static void newline(void) {
     fputc('\n', stderr);
 }
 
-_Noreturn void fail() {
+_Noreturn void fail(void) {
     exit(1);
 }
 

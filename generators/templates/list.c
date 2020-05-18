@@ -17,7 +17,7 @@ struct {{name}}ListElement {
     struct {{name}}ListElement *previous;
 };
 
-struct {{name}}List * {{name}}List_create() {
+struct {{name}}List * {{name}}List_create(void) {
     return allocate(sizeof(struct {{name}}List));
 }
 
@@ -74,14 +74,14 @@ void {{name}}List_prepend(struct {{name}}List * self, {{prefix}}value) {
     struct {{name}}ListElement *iterator = {{name}}List_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail("Logical error in {{name}}List_to_array - target overrun");
+            fail_with_message("Logical error in {{name}}List_to_array - target overrun");
         }
         *result_iterator = {{value_dereference}}{{name}}ListIterator_get(iterator);
         iterator = {{name}}ListIterator_next(iterator);
         ++result_iterator;
     }
     if (result_iterator - result != size) {
-        fail("Logical error in result lines creation - offset: [%zu], size: [%zu]",
+        fail_with_message("Logical error in result lines creation - offset: [%zu], size: [%zu]",
              result_iterator - result, size);
     }
     return result;
@@ -99,7 +99,7 @@ struct {{name}}ListElement * {{name}}ListIterator_next(struct {{name}}ListElemen
     if (iterator) {
         return iterator->next;
     } else {
-        fail("Attempt to get next from null iterator");
+        fail_with_message("Attempt to get next from null iterator");
     }
 }
 
@@ -107,7 +107,7 @@ struct {{name}}ListElement * {{name}}ListIterator_previous(struct {{name}}ListEl
     if (iterator) {
         return iterator->previous;
     } else {
-        fail("Attempt to get previous from null iterator");
+        fail_with_message("Attempt to get previous from null iterator");
     }
 }
 
@@ -115,7 +115,7 @@ struct {{name}}ListElement * {{name}}ListIterator_previous(struct {{name}}ListEl
     if (iterator) {
         return iterator->value;
     } else {
-        fail("Attempt to get value from null iterator");
+        fail_with_message("Attempt to get value from null iterator");
     }
 }
 

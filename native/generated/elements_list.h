@@ -8,7 +8,7 @@ struct ElementsList;
 
 struct ElementsListElement;
 
-struct ElementsList * ElementsList_create();
+struct ElementsList * ElementsList_create(void);
 
 void ElementsList_delete(struct ElementsList * instance);
 

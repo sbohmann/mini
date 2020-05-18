@@ -31,7 +31,7 @@ void add_fragment(struct List *list, const struct String *input, size_t start, s
 struct Any String_split(const struct String *value, const struct String *separator) {
     struct List *result = List_create();
     if (separator->length == 0) {
-        fail("String.split: separator length is zero");
+        fail_with_message("String.split: separator length is zero");
     }
     size_t current_start = 0;
     for (size_t index = 0; index <= value->length - separator->length;) {

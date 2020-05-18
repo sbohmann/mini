@@ -17,7 +17,7 @@ struct IntListElement {
     struct IntListElement *previous;
 };
 
-struct IntList * IntList_create() {
+struct IntList * IntList_create(void) {
     return allocate(sizeof(struct IntList));
 }
 
@@ -74,14 +74,14 @@ int64_t * IntList_to_array(const struct IntList * self) {
     struct IntListElement *iterator = IntList_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail("Logical error in IntList_to_array - target overrun");
+            fail_with_message("Logical error in IntList_to_array - target overrun");
         }
         *result_iterator = IntListIterator_get(iterator);
         iterator = IntListIterator_next(iterator);
         ++result_iterator;
     }
     if (result_iterator - result != size) {
-        fail("Logical error in result lines creation - offset: [%zu], size: [%zu]",
+        fail_with_message("Logical error in result lines creation - offset: [%zu], size: [%zu]",
              result_iterator - result, size);
     }
     return result;
@@ -99,7 +99,7 @@ struct IntListElement * IntListIterator_next(struct IntListElement * iterator) {
     if (iterator) {
         return iterator->next;
     } else {
-        fail("Attempt to get next from null iterator");
+        fail_with_message("Attempt to get next from null iterator");
     }
 }
 
@@ -107,7 +107,7 @@ struct IntListElement * IntListIterator_previous(struct IntListElement * iterato
     if (iterator) {
         return iterator->previous;
     } else {
-        fail("Attempt to get previous from null iterator");
+        fail_with_message("Attempt to get previous from null iterator");
     }
 }
 
@@ -115,6 +115,6 @@ int64_t IntListIterator_get(struct IntListElement * iterator) {
     if (iterator) {
         return iterator->value;
     } else {
-        fail("Attempt to get value from null iterator");
+        fail_with_message("Attempt to get value from null iterator");
     }
 }

@@ -15,7 +15,7 @@ struct Struct {
 typedef const struct String *Name;
 typedef struct Any Value;
 
-struct Struct * Struct_create();
+struct Struct * Struct_create(void);
 
 void Struct_release(struct Struct *instance);
 

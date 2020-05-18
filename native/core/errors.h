@@ -1,6 +1,6 @@
 #pragma once
 
-_Noreturn void fail();
+_Noreturn void fail(void);
 
 _Noreturn void fail_with_message(const char *format, ...);
 

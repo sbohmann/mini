@@ -125,7 +125,7 @@ static struct Node *Node_put(struct Node *node, uint8_t level, Name name, Hash h
             ++(*size);
             return node;
         } else if (level == MaximumLevel) {
-            fail("Logical error");
+            fail_with_message("Logical error");
         } else {
             struct Node *new_node = allocate(sizeof(struct Node));
             size_t existing_node_index = level_index(node->hash, level);

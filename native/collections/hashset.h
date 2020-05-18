@@ -15,7 +15,7 @@ struct HashSet;
 
 typedef struct Any Element;
 
-struct HashSet * HashSet_create();
+struct HashSet * HashSet_create(void);
 
 void HashSet_release(struct HashSet *instance);
 

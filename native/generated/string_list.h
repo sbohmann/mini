@@ -8,7 +8,7 @@ struct StringList;
 
 struct StringListElement;
 
-struct StringList * StringList_create();
+struct StringList * StringList_create(void);
 
 void StringList_delete(struct StringList * instance);
 

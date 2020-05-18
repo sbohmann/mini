@@ -17,7 +17,7 @@ struct VoidPointerListElement {
     struct VoidPointerListElement *previous;
 };
 
-struct VoidPointerList * VoidPointerList_create() {
+struct VoidPointerList * VoidPointerList_create(void) {
     return allocate(sizeof(struct VoidPointerList));
 }
 
@@ -74,14 +74,14 @@ void * * VoidPointerList_to_array(const struct VoidPointerList * self) {
     struct VoidPointerListElement *iterator = VoidPointerList_begin(self);
     while (iterator) {
         if (result_iterator - result > size - 1) {
-            fail("Logical error in VoidPointerList_to_array - target overrun");
+            fail_with_message("Logical error in VoidPointerList_to_array - target overrun");
         }
         *result_iterator = VoidPointerListIterator_get(iterator);
         iterator = VoidPointerListIterator_next(iterator);
         ++result_iterator;
     }
     if (result_iterator - result != size) {
-        fail("Logical error in result lines creation - offset: [%zu], size: [%zu]",
+        fail_with_message("Logical error in result lines creation - offset: [%zu], size: [%zu]",
              result_iterator - result, size);
     }
     return result;
@@ -99,7 +99,7 @@ struct VoidPointerListElement * VoidPointerListIterator_next(struct VoidPointerL
     if (iterator) {
         return iterator->next;
     } else {
-        fail("Attempt to get next from null iterator");
+        fail_with_message("Attempt to get next from null iterator");
     }
 }
 
@@ -107,7 +107,7 @@ struct VoidPointerListElement * VoidPointerListIterator_previous(struct VoidPoin
     if (iterator) {
         return iterator->previous;
     } else {
-        fail("Attempt to get previous from null iterator");
+        fail_with_message("Attempt to get previous from null iterator");
     }
 }
 
@@ -115,6 +115,6 @@ void * VoidPointerListIterator_get(struct VoidPointerListElement * iterator) {
     if (iterator) {
         return iterator->value;
     } else {
-        fail("Attempt to get value from null iterator");
+        fail_with_message("Attempt to get value from null iterator");
     }
 }
