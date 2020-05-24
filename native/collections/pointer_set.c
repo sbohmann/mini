@@ -19,7 +19,7 @@ struct Node {
 };
 
 struct PointerSet *PointerSet_create() {
-    return allocate(sizeof(struct PointerSet));
+    return allocate_unmanaged(sizeof(struct PointerSet));
 }
 
 static void delete_node(struct Node *node) {
@@ -48,7 +48,7 @@ static size_t level_index(Element value, uint8_t level) {
 }
 
 static struct Node *create_value_node(Element value) {
-    struct Node *new_node = allocate(sizeof(struct Node));
+    struct Node *new_node = allocate_unmanaged(sizeof(struct Node));
     new_node->is_value_node = true;
     new_node->value = value;
     return new_node;
@@ -62,7 +62,7 @@ static struct Node *Node_add(struct Node *node, uint8_t level, Element value, si
         } else if (level == MaximumLevel) {
             fail_with_message("Logical error");
         } else {
-            struct Node *new_node = allocate(sizeof(struct Node));
+            struct Node *new_node = allocate_unmanaged(sizeof(struct Node));
             size_t existing_node_index = level_index(node->value, level);
             if (existing_node_index != index) {
                 new_node->sub_nodes[existing_node_index] = node;
