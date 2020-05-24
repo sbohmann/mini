@@ -29,7 +29,7 @@ _Noreturn void fail_with_message(const char *format, ...) {
     } else {
         fprintf(stderr, "fail was called.");
     }
-    exit(1);
+    fail();
 }
 
 _Noreturn void fail_with_message_and_errno(const char *format, ...) {
@@ -42,7 +42,7 @@ _Noreturn void fail_with_message_and_errno(const char *format, ...) {
     } else {
         fprintf(stderr, "fail was called.");
     }
-    exit(1);
+    fail();
 }
 
 void non_null_errno(const void *pointer, const char *format, ...) {
@@ -53,7 +53,7 @@ void non_null_errno(const void *pointer, const char *format, ...) {
             PRINT(format)
             newline();
         }
-        exit(1);
+        fail();
     }
 }
 
@@ -65,6 +65,6 @@ void non_negative_errno(long value, const char *format, ...) {
             PRINT(format)
             newline();
         }
-        exit(1);
+        fail();
     }
 }
