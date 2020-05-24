@@ -49,7 +49,7 @@ void ParserGC_free(void) {
             if (PointerSet_contains(freed_pointers, (size_t)pointer)) {
                 struct VoidPointerListElement *debug_iterator = VoidPointerList_begin(allocated_pointers);
                 while (debug_iterator) {
-                    fprintf(stderr, "%zu", pointer);
+                    fprintf(stderr, "%zux\n", pointer);
                     debug_iterator = VoidPointerListIterator_next(debug_iterator);
                 }
                 fail_with_message("Double free from ParserGC");
