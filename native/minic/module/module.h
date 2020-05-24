@@ -14,5 +14,3 @@ struct ParsedModule
 };
 
 struct ParsedModule * ParsedModule_read(const char *path);
-
-void ParsedModule_delete(struct ParsedModule *instance);

@@ -11,7 +11,3 @@ struct ParsedModule *ParsedModule_read(const char *path) {
     result->elements = read_elements(result->tokens);
     return result;
 }
-
-void ParsedModule_delete(struct ParsedModule *instance) {
-    // TODO create and run parser GC, leaving but pinned strings
-}
