@@ -57,6 +57,7 @@ void ParserGC_free(void) {
             free(pointer);
             PointerSet_add(freed_pointers, (size_t)pointer);
         }
+        iterator = VoidPointerListIterator_next(iterator);
     }
     PointerSet_delete(freed_pointers);
     VoidPointerList_delete(allocated_pointers);
