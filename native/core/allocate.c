@@ -16,6 +16,7 @@ void ParserGC_init(void) {
         fail_with_message("Attempting to re-initialize ParserGC");
     }
     allocated_pointers = VoidPointerList_create();
+    marked_pointers = PointerSet_create();
     garbage_collection_paused = false;
 }
 

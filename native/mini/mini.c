@@ -10,7 +10,7 @@ int main(int argc, const char **argv) {
     }
     ParserGC_init();
     struct ParsedModule *module = ParsedModule_read(argv[1]);
-    printf("%d elements in parsed module\n", module->elements->size);
+    printf("%zu elements in parsed module\n", module->elements->size);
     ParserGC_free();
     printf("OK.\n");
 }
