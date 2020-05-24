@@ -100,9 +100,8 @@ static bool Node_contains(struct Node *node, uint8_t level, Element value) {
         if (node->value == value) {
             return true;
         } else {
-            fail_with_message("Logical error");
+            return false;
         }
-        
     } else {
         size_t index = level_index(value, level);
         if (node->sub_nodes[index]) {
