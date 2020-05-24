@@ -97,6 +97,7 @@ void deallocate(void *pointer) {
 void deallocate_unmanaged(void *pointer) {
     if (allocated_pointers && !garbage_collection_paused) {
         return;
+        
 //        fail_with_message("free called with activated garbage collector");
     }
     free(pointer);
