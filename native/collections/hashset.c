@@ -43,7 +43,7 @@ static void delete_node(struct Node *node) {
             }
         }
     }
-    free(node);
+    deallocate(node);
 }
 
 void HashSet_destructor(struct HashSet *instance) {
@@ -176,7 +176,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Element elemen
                     fail_with_message("Found multiple entries for element %zu", element);
                 }
                 struct ValueList *next = values->next;
-                free(values);
+                deallocate(values);
                 *source = next;
                 values = next;
                 *found = true;
@@ -188,7 +188,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Element elemen
         if (node->values) {
             return node;
         } else {
-            free(node);
+            deallocate(node);
             return 0;
         }
     } else {
@@ -200,7 +200,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Element elemen
                     return node;
                 }
             }
-            free(node);
+            deallocate(node);
             return 0;
         } else {
             return node;

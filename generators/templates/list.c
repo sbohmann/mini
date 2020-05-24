@@ -25,10 +25,10 @@ void {{name}}List_delete(struct {{name}}List * instance) {
     struct {{name}}ListElement *element = instance->first;
     while (element) {
         struct {{name}}ListElement *next = element->next;
-        free(element);
+        deallocate(element);
         element = next;
     }
-    free(instance);
+    deallocate(instance);
 }
 
 size_t {{name}}List_size(const struct {{name}}List * self) {

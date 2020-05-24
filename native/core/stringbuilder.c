@@ -20,8 +20,8 @@ struct StringBuilder *StringBuilder_create() {
 }
 
 void StringBuilder_delete(struct StringBuilder *instance) {
-    free(instance->buffer);
-    free(instance);
+    deallocate(instance->buffer);
+    deallocate(instance);
 }
 
 size_t StringBuilder_length(struct StringBuilder *self) {
@@ -48,7 +48,7 @@ static void enlarge(struct StringBuilder *self, size_t minimum_capacity) {
     memcpy(new_buffer, self->buffer, self->length);
     char *old_buffer = self->buffer;
     self->buffer = new_buffer;
-    free(old_buffer);
+    deallocate(old_buffer);
 }
 
 void StringBuilder_append(struct StringBuilder *self, char c) {

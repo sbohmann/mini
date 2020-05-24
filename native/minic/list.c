@@ -8,7 +8,7 @@ static void List_destructor(struct List *instance) {
     for (size_t index = 0; index < instance->size; ++index) {
         Any_release(instance->data[index]);
     }
-    free(instance->data);
+    deallocate(instance->data);
 }
 
 struct List *List_create() {
@@ -71,7 +71,7 @@ void List_add(struct List *self, struct Any value) {
         struct Any *new_data = allocate(new_capacity * sizeof(struct Any));
         self->capacity = new_capacity;
         memcpy(new_data, self->data, self->size * sizeof(struct Any));
-        free(self->data);
+        deallocate(self->data);
         self->data = new_data;
     }
     Any_retain(value);

@@ -38,14 +38,14 @@ void ParserGC_mark(void *pointer) {
 
 void ParserGC_free(void) {
     if (!allocated_pointers) {
-        fail_with_message("Attempting to free non-initialized ParserGC");
+        fail_with_message("Attempting to deallocate non-initialized ParserGC");
     }
     garbage_collection_paused = true;
     struct VoidPointerListElement *iterator = VoidPointerList_begin(allocated_pointers);
     while (iterator) {
         void *pointer = VoidPointerListIterator_get(iterator);
         if (!PointerSet_contains(marked_pointers, (size_t)pointer)) {
-            free(pointer);
+            deallocate(pointer);
         }
     }
     VoidPointerList_delete(allocated_pointers);
@@ -75,9 +75,7 @@ void * allocate_unmanaged(size_t size) {
 
 void * allocate_raw(size_t size) {
     void *result = allocate_raw_unmanaged(size);
-    if (allocated_pointers) {
-        VoidPointerList_append(allocated_pointers, result);
-    }
+    store_pointer(result);
     return result;
 }
 
@@ -87,4 +85,11 @@ void * allocate_raw_unmanaged(size_t size) {
         fail_with_message("Failed to allocate %zu bytes of memory.", size);
     }
     return result;
+}
+
+void deallocate(void *pointer) {
+    if (allocated_pointers && !garbage_collection_paused) {
+        return;
+    }
+    free(pointer);
 }

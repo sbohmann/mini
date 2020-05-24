@@ -51,7 +51,7 @@ void TokenReader_delete(struct TokenReader *instance) {
         instance->delete(instance);
     }
     StringBuilder_delete(instance->buffer);
-    free(instance);
+    deallocate(instance);
 }
 
 bool TokenReader_add_char(struct TokenReader *self, char c) {

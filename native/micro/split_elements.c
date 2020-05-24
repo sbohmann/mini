@@ -28,9 +28,9 @@ SplitElements_from_lists(const struct ElementsList *groups, const struct Element
 }
 
 void SplitElements_delete(struct SplitElements *instance) {
-    free(instance->data);
-    free(instance->separators);
-    free(instance);
+    deallocate(instance->data);
+    deallocate(instance->separators);
+    deallocate(instance);
 }
 
 bool is_comma(const struct Element *element) {

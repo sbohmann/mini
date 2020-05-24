@@ -57,21 +57,21 @@ bool release(struct ComplexValue *instance) {
     if (DEBUG_ENABLED) fprintf(stderr, "released to %zu, %zu\n", instance->reference_count->strong_count, instance->reference_count->weak_count);
     if (new_weak_count == 0) {
         if (DEBUG_ENABLED) fprintf(stderr, "both zero\n");
-        free(instance->reference_count);
+        deallocate(instance->reference_count);
         if (new_strong_count != 0) {
             fail_with_message("weak count went to zero but strong count went to %zu\n", new_strong_count);
         }
         if (instance->destructor) {
             instance->destructor(instance);
         }
-        free(instance);
+        deallocate(instance);
         return true;
     } else if (new_strong_count == 0) {
         if (DEBUG_ENABLED) fprintf(stderr, "strong zero\n");
         if (instance->destructor) {
             instance->destructor(instance);
         }
-        free(instance);
+        deallocate(instance);
         return true;
     }
     return false;

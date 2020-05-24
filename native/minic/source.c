@@ -62,7 +62,7 @@ static struct Source *create_source(const struct String *text) {
 struct Source *read_source(const char *path) {
     const struct String *source_text = read_text_file(path);
     struct Source *result = create_source(source_text);
-    free((void *) source_text);
+    deallocate((void *) source_text);
     return result;
 }
 

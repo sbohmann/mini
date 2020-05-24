@@ -30,14 +30,14 @@ static void delete_node(struct Node *node) {
             }
         }
     }
-    free(node);
+    deallocate(node);
 }
 
 void PointerSet_delete(struct PointerSet *instance) {
     if (instance->root) {
         delete_node(instance->root);
     }
-    free(instance);
+    deallocate(instance);
 }
 
 static size_t level_index(Element value, uint8_t level) {
@@ -124,7 +124,7 @@ bool PointerSet_contains(struct PointerSet *self, Element value) {
 
 static struct Node *Node_remove(struct Node *node, uint8_t level, Element value, bool *found) {
     if (node->is_value_node) {
-        free(node);
+        deallocate(node);
         return 0;
     } else {
         size_t index = level_index(value, level);
@@ -135,7 +135,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Element value,
                     return node;
                 }
             }
-            free(node);
+            deallocate(node);
             return 0;
         } else {
             return node;

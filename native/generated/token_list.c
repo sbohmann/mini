@@ -25,10 +25,10 @@ void TokenList_delete(struct TokenList * instance) {
     struct TokenListElement *element = instance->first;
     while (element) {
         struct TokenListElement *next = element->next;
-        free(element);
+        deallocate(element);
         element = next;
     }
-    free(instance);
+    deallocate(instance);
 }
 
 size_t TokenList_size(const struct TokenList * self) {

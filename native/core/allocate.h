@@ -12,3 +12,4 @@ void * allocate(size_t size);
 void * allocate_unmanaged(size_t size);
 void * allocate_raw(size_t size);
 void * allocate_raw_unmanaged(size_t size);
+void deallocate(void *pointer);

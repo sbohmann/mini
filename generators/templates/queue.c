@@ -17,7 +17,7 @@ struct {{name}}Queue *{{name}}Queue_create(const struct {{name}}s *list) {
 }
 
 void {{name}}Queue_delete(struct {{name}}Queue *instance) {
-    free(instance);
+    deallocate(instance);
 }
 
 {{constvalue}}{{name}}Queue_peek(struct {{name}}Queue *self) {

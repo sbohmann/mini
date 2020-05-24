@@ -1000,7 +1000,7 @@ parse_arguments_and_call(struct Variables *context, struct Any function, struct 
                          struct Position position, struct ElementQueue *arguments) {
     struct List *argument_list = read_arguments(context, arguments);
     struct FunctionCallResult result = call(context, function, name, position, argument_list);
-    free(argument_list);
+    deallocate(argument_list);
     return result;
 }
 

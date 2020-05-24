@@ -47,6 +47,6 @@ void String_pin(const struct String *instance) {
 
 void String_delete(struct String *instance) {
     if (!instance->is_literal) {
-        free((void *)instance->value);
+        deallocate((void *)instance->value);
     }
 }

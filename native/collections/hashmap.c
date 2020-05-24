@@ -40,7 +40,7 @@ static void delete_values(struct ValueList *values) {
     if (values->next) {
         delete_values(values->next);
     }
-    free(values);
+    deallocate(values);
 }
 
 static void delete_node(struct Node *node) {
@@ -53,7 +53,7 @@ static void delete_node(struct Node *node) {
             }
         }
     }
-    free(node);
+    deallocate(node);
 }
 
 void HashMap_destructor(struct HashMap *instance) {
@@ -219,7 +219,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Key key, Hash 
                     fail_with_message("Found multiple entries for key %zu", key);
                 }
                 struct ValueList *next = values->next;
-                free(values);
+                deallocate(values);
                 *source = next;
                 values = next;
                 *found = true;
@@ -231,7 +231,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Key key, Hash 
         if (node->values) {
             return node;
         } else {
-            free(node);
+            deallocate(node);
             return 0;
         }
     } else {
@@ -243,7 +243,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Key key, Hash 
                     return node;
                 }
             }
-            free(node);
+            deallocate(node);
             return 0;
         } else {
             return node;

@@ -25,10 +25,10 @@ void IntList_delete(struct IntList * instance) {
     struct IntListElement *element = instance->first;
     while (element) {
         struct IntListElement *next = element->next;
-        free(element);
+        deallocate(element);
         element = next;
     }
-    free(instance);
+    deallocate(instance);
 }
 
 size_t IntList_size(const struct IntList * self) {

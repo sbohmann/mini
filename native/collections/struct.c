@@ -42,7 +42,7 @@ static void delete_values(struct ValueList *values) {
     if (values->next) {
         delete_values(values->next);
     }
-    free(values);
+    deallocate(values);
 }
 
 static void delete_node(struct Node *node) {
@@ -55,7 +55,7 @@ static void delete_node(struct Node *node) {
             }
         }
     }
-    free(node);
+    deallocate(node);
 }
 
 void Struct_destructor(struct Struct *instance) {
@@ -243,7 +243,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Name name, Has
                     fail_with_message("Attempt to remove constant [%s]", name);
                 }
                 struct ValueList *next = values->next;
-                free(values);
+                deallocate(values);
                 *source = next;
                 values = next;
                 *found = true;
@@ -255,7 +255,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Name name, Has
         if (node->values) {
             return node;
         } else {
-            free(node);
+            deallocate(node);
             return 0;
         }
     } else {
@@ -267,7 +267,7 @@ static struct Node *Node_remove(struct Node *node, uint8_t level, Name name, Has
                     return node;
                 }
             }
-            free(node);
+            deallocate(node);
             return 0;
         } else {
             return node;

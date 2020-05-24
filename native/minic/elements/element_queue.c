@@ -17,7 +17,7 @@ struct ElementQueue *ElementQueue_create(const struct Elements *list) {
 }
 
 void ElementQueue_delete(struct ElementQueue *instance) {
-    free(instance);
+    deallocate(instance);
 }
 
 const struct Element *ElementQueue_peek(struct ElementQueue *self) {

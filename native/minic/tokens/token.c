@@ -80,7 +80,7 @@ static void process_line(const char *path, size_t line_number, struct TokenList 
 static void delete_token_list(struct TokenList *tokens) {
 //    struct TokenListElement *iterator = TokenList_begin(tokens);
 //    while (iterator) {
-//        free(TokenListIterator_get(iterator));
+//        deallocate(TokenListIterator_get(iterator));
 //    }
     TokenList_delete(tokens);
 }

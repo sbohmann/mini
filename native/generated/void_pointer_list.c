@@ -25,10 +25,10 @@ void VoidPointerList_delete(struct VoidPointerList * instance) {
     struct VoidPointerListElement *element = instance->first;
     while (element) {
         struct VoidPointerListElement *next = element->next;
-        free(element);
+        deallocate(element);
         element = next;
     }
-    free(instance);
+    deallocate(instance);
 }
 
 size_t VoidPointerList_size(const struct VoidPointerList * self) {
