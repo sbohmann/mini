@@ -39,6 +39,7 @@ void ParserGC_free(void) {
     if (!allocated_pointers) {
         fail_with_message("Attempting to free non-initialized ParserGC");
     }
+    garbage_collection_paused = true;
     struct VoidPointerListElement *iterator = VoidPointerList_begin(allocated_pointers);
     while (iterator) {
         void *pointer = VoidPointerListIterator_get(iterator);
