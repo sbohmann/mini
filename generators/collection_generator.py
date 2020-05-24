@@ -17,6 +17,7 @@ class Generator:
         self.system_include = None
         self.local_include = None
         self.allocate = 'allocate'
+        self.deallocate = 'deallocate'
 
     def run(self):
         self.type_name = 'struct ' + self.raw_type if self.struct else self.raw_type
@@ -32,9 +33,10 @@ class Generator:
         template = template_environment.get_template(self.kind + '.' + suffix)
         path = os.path.join(output_directory, self.file_name + '.' + suffix)
         text = template.render(name=self.name, type=self.type_name, value=self.value_type,
-                                 constvalue=self.const_value_type, prefix=self.value_type_prefix, file=self.file_name,
-                                 system_include=self.system_include, local_include=self.local_include,
-                                 value_dereference=self.value_dereference, allocate=self.allocate)
+                               constvalue=self.const_value_type, prefix=self.value_type_prefix, file=self.file_name,
+                               system_include=self.system_include, local_include=self.local_include,
+                               allocate=self.allocate, deallocate=self.deallocate,
+                               value_dereference=self.value_dereference)
         if os.path.isfile(path):
             file = open(path, 'r')
             existing_text = file.read()
@@ -91,6 +93,7 @@ def generate_void_pointer_list():
     generator = Generator('void *', 'list')
     generator.name = 'VoidPointer'
     generator.allocate = 'allocate_unmanaged'
+    generator.deallocate = 'deallocate_unmanaged'
     generator.run()
 
 
