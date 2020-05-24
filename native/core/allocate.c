@@ -9,6 +9,7 @@
 
 static struct VoidPointerList *allocated_pointers = 0;
 static struct PointerSet *marked_pointers = 0;
+
 static bool garbage_collection_paused = false;
 
 void ParserGC_init(void) {
@@ -54,11 +55,15 @@ void ParserGC_free(void) {
     garbage_collection_paused = false;
 }
 
+static void store_pointer(void *value) {
+    if (allocated_pointers && !garbage_collection_paused) {
+        VoidPointerList_append(allocated_pointers, value);
+    }
+}
+
 void * allocate(size_t size) {
     void *result = allocate_unmanaged(size);
-    if (allocated_pointers) {
-        VoidPointerList_append(allocated_pointers, result);
-    }
+    store_pointer(result);
     return result;
 }
 
