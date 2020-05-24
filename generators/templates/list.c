@@ -18,7 +18,7 @@ struct {{name}}ListElement {
 };
 
 struct {{name}}List * {{name}}List_create(void) {
-    return allocate(sizeof(struct {{name}}List));
+    return {{allocate}}(sizeof(struct {{name}}List));
 }
 
 void {{name}}List_delete(struct {{name}}List * instance) {
@@ -36,7 +36,7 @@ size_t {{name}}List_size(const struct {{name}}List * self) {
 }
 
 void {{name}}List_append(struct {{name}}List * self, {{prefix}}value) {
-    struct {{name}}ListElement * element = allocate(sizeof(struct {{name}}ListElement));
+    struct {{name}}ListElement * element = {{allocate}}(sizeof(struct {{name}}ListElement));
     element->value = value;
     if (self->size == 0) {
         self->first = element;
@@ -51,7 +51,7 @@ void {{name}}List_append(struct {{name}}List * self, {{prefix}}value) {
 }
 
 void {{name}}List_prepend(struct {{name}}List * self, {{prefix}}value) {
-    struct {{name}}ListElement * element = allocate(sizeof(struct {{name}}ListElement));
+    struct {{name}}ListElement * element = {{allocate}}(sizeof(struct {{name}}ListElement));
     element->value = value;
     if (self->size == 0) {
         self->first = element;
@@ -69,7 +69,7 @@ void {{name}}List_prepend(struct {{name}}List * self, {{prefix}}value) {
     const size_t size = {{name}}List_size(self);
     const size_t element_size = sizeof({{type}});
     const size_t result_size = element_size * size;
-    {{type}} *result = allocate(result_size);
+    {{type}} *result = {{allocate}}(result_size);
     {{type}} *result_iterator = result;
     struct {{name}}ListElement *iterator = {{name}}List_begin(self);
     while (iterator) {

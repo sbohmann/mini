@@ -8,9 +8,9 @@ int main(int argc, const char **argv) {
     if (argc != 2) {
         fail_with_message("Expecting single argument <path to source file>");
     }
-//    ParserGC_init();
+    ParserGC_init();
     struct ParsedModule *module = ParsedModule_read(argv[1]);
     printf("%d elements in parsed module\n", module->elements->size);
-//    ParserGC_free();
+    ParserGC_free();
     printf("OK.\n");
 }

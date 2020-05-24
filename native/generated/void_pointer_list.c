@@ -1,4 +1,4 @@
-#include "voidpointer_list.h"
+#include "void_pointer_list.h"
 
 #include <stdlib.h>
 
@@ -18,7 +18,7 @@ struct VoidPointerListElement {
 };
 
 struct VoidPointerList * VoidPointerList_create(void) {
-    return allocate(sizeof(struct VoidPointerList));
+    return allocate_unmanaged(sizeof(struct VoidPointerList));
 }
 
 void VoidPointerList_delete(struct VoidPointerList * instance) {
@@ -36,7 +36,7 @@ size_t VoidPointerList_size(const struct VoidPointerList * self) {
 }
 
 void VoidPointerList_append(struct VoidPointerList * self, void * value) {
-    struct VoidPointerListElement * element = allocate(sizeof(struct VoidPointerListElement));
+    struct VoidPointerListElement * element = allocate_unmanaged(sizeof(struct VoidPointerListElement));
     element->value = value;
     if (self->size == 0) {
         self->first = element;
@@ -51,7 +51,7 @@ void VoidPointerList_append(struct VoidPointerList * self, void * value) {
 }
 
 void VoidPointerList_prepend(struct VoidPointerList * self, void * value) {
-    struct VoidPointerListElement * element = allocate(sizeof(struct VoidPointerListElement));
+    struct VoidPointerListElement * element = allocate_unmanaged(sizeof(struct VoidPointerListElement));
     element->value = value;
     if (self->size == 0) {
         self->first = element;
@@ -69,7 +69,7 @@ void * * VoidPointerList_to_array(const struct VoidPointerList * self) {
     const size_t size = VoidPointerList_size(self);
     const size_t element_size = sizeof(void *);
     const size_t result_size = element_size * size;
-    void * *result = allocate(result_size);
+    void * *result = allocate_unmanaged(result_size);
     void * *result_iterator = result;
     struct VoidPointerListElement *iterator = VoidPointerList_begin(self);
     while (iterator) {

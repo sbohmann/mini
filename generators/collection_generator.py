@@ -1,4 +1,5 @@
 import os
+from name_conversion import uppercase_to_underscore
 
 import jinja2
 
@@ -15,6 +16,7 @@ class Generator:
         self.mutable = False
         self.system_include = None
         self.local_include = None
+        self.allocate = 'allocate'
 
     def run(self):
         self.type_name = 'struct ' + self.raw_type if self.struct else self.raw_type
@@ -22,7 +24,7 @@ class Generator:
         self.const_value_type = 'const ' + self.value_type if (self.struct and not self.mutable) else self.value_type
         self.value_type_prefix = self.const_value_type if self.struct else self.value_type + ' '
         self.value_dereference = '*' if self.struct else ''
-        self.file_name = self.name.lower() + '_' + self.kind
+        self.file_name = uppercase_to_underscore(self.name) + '_' + self.kind
         self._render('h')
         self._render('c')
 
@@ -32,7 +34,7 @@ class Generator:
         text = template.render(name=self.name, type=self.type_name, value=self.value_type,
                                  constvalue=self.const_value_type, prefix=self.value_type_prefix, file=self.file_name,
                                  system_include=self.system_include, local_include=self.local_include,
-                                 value_dereference=self.value_dereference)
+                                 value_dereference=self.value_dereference, allocate=self.allocate)
         if os.path.isfile(path):
             file = open(path, 'r')
             existing_text = file.read()
@@ -88,6 +90,7 @@ def generate_integer_list():
 def generate_void_pointer_list():
     generator = Generator('void *', 'list')
     generator.name = 'VoidPointer'
+    generator.allocate = 'allocate_unmanaged'
     generator.run()
 
 
