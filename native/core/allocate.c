@@ -41,13 +41,19 @@ void ParserGC_free(void) {
         fail_with_message("Attempting to deallocate non-initialized ParserGC");
     }
     garbage_collection_paused = true;
+    struct PointerSet *freed_pointers = PointerSet_create();
     struct VoidPointerListElement *iterator = VoidPointerList_begin(allocated_pointers);
     while (iterator) {
         void *pointer = VoidPointerListIterator_get(iterator);
         if (!PointerSet_contains(marked_pointers, (size_t)pointer)) {
-            deallocate(pointer);
+            if (PointerSet_contains(freed_pointers, (size_t)pointer)) {
+                fail_with_message("Double free from ParserGC");
+            }
+            free(pointer);
+            PointerSet_add(freed_pointers, (size_t)pointer);
         }
     }
+    PointerSet_delete(freed_pointers);
     VoidPointerList_delete(allocated_pointers);
     PointerSet_delete(marked_pointers);
     allocated_pointers = 0;
