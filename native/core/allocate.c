@@ -36,6 +36,7 @@ void ParserGC_free(void) {
         }
     }
     VoidPointerList_delete(allocated_pointers);
+    PointerSet_delete(marked_pointers);
     allocated_pointers = 0;
 }
 
