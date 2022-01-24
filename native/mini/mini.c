@@ -16,7 +16,6 @@ int main(int argc, const char **argv) {
             case TokenElement:
                 ParserGC_mark(module->elements->data[index].token->text);
                 break;
-            default:
         }
     }
     ParserGC_free();
