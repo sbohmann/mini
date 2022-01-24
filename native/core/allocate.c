@@ -29,7 +29,7 @@ void ParserGC_resume() {
     garbage_collection_paused = false;
 }
 
-void ParserGC_mark(void *pointer) {
+void ParserGC_mark(const void *pointer) {
     if (!allocated_pointers) {
         fail_with_message("ParserGC not initialized");
     }
