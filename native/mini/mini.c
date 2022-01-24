@@ -13,6 +13,6 @@ int main(int argc, const char **argv) {
     printf("%zu elements in parsed module\n", module->elements->size);
     ParserGC_mark(module->elements->data);
     ParserGC_free();
+    deallocate(module->elements->data);
     printf("OK.\n");
-
 }
