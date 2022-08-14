@@ -11,6 +11,8 @@ int main(int argc, const char **argv) {
     ParserGC_init();
     struct ParsedModule *module = ParsedModule_read(argv[1]);
     printf("%zu elements in parsed module\n", module->elements->size);
+    ParserGC_mark(module->elements->data);
     ParserGC_free();
+    deallocate(module->elements->data);
     printf("OK.\n");
 }
