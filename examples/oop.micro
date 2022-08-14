@@ -1,0 +1,39 @@
+fn Printer() {
+    let self = struct {
+        width: 50
+    }
+
+    self.height = 60
+
+    self.print_impl = fn[self](value) {
+        println('[[[', value, ']]]')
+    }
+
+    self.printnum = fn (x) {
+        println(3 * x)
+    }
+
+    return struct {
+        print: fn [self] (value) {
+            self.print_impl('vvvvvvv')
+            self.print_impl(value)
+            self.printnum(7)
+            self.print_impl('^^^^^^^')
+        },
+        print2: fn [self] (value) {
+            self.print_impl('vvvvvvv')
+            self.print_impl(value)
+            self.printnum(7)
+            self.print_impl('^^^^^^^')
+        },
+        print3: fn [self] (value) {
+            self.print_impl('vvvvvvv')
+            self.print_impl(value)
+            self.printnum(7)
+            self.print_impl('^^^^^^^')
+        }
+    }
+}
+
+let p = Printer()
+p.print3('Hi!')
