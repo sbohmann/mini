@@ -1,2 +1,5 @@
 #pragma once
 
+struct {{name}} {
+
+};
