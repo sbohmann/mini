@@ -20,7 +20,7 @@ class Generator:
     def _render(self, suffix):
         template = template_environment.get_template('ast.' + suffix)
         path = os.path.join(output_directory, self.file_name + '.' + suffix)
-        text = template.render(name=self.name, file=self.file_name)
+        text = template.render(name=self.name, file=self.file_name, fields=self.fields)
         if os.path.isfile(path):
             file = open(path, 'r')
             existing_text = file.read()
