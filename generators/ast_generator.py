@@ -30,34 +30,55 @@ class Generator:
             file = open(path, 'r')
             existing_text = file.read()
             file.close()
-            if existing_text == text:
-                return
-        print(f"Existing file text length: {len(existing_text)}")
-        print(f"text length: {len(text)}")
-        print("Writing file [" + path + "]")
-        open(path, 'w').write(text)
+            if existing_text != text:
+                print("Writing file [" + path + "]")
+                open(path, 'w').write(text)
 
     def _write_header(self, out):
         out.println(f'struct {self.name} ')
         out.block(self._write_struct_content, '};')
 
     def _write_struct_content(self, out):
-        out.println('Hi!')
+        for field in self.fields:
+            if field.is_array:
+                out.println(f"{field.element_type} *{field.name};")
+            else:
+                out.println(f"{field.type} {field.name};")
 
     def _write_code(self, out):
         pass
 
 
-def array(elementType):
-    return {
-        'type': 'array',
-        'elementType': elementType
-    }
+class Field:
+    def __init__(self, name, field_type):
+        self.name = name
+        self.type = field_type
+
+
+class Type:
+    def __init__(self, name):
+        self.name = name
+        self.element_type = None
+        self.is_array = False
+        self.is_struct = False
+
+
+def array_field(name, element_type):
+    field_type = Type('array')
+    field_type.element_type = element_type
+    field_type.is_array = True
+    return Field(name, field_type)
+
+
+def struct_field(name, struct_name):
+    field_type = Type(struct_name)
+    field_type.is_struct = True
+    return Field(name, field_type)
 
 
 def generate_token_list():
     generator = Generator('Module',
-                          {'statements': array('Statement')})
+                          [array_field('statements', 'Statement')])
     generator.run()
 
 

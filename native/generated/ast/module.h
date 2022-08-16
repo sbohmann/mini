@@ -1,4 +1,4 @@
 struct Module 
 {
-    Hi!
+    Statement *statements;
 };
