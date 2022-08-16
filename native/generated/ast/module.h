@@ -1,5 +1,4 @@
-#pragma once
-
-struct Module {
-    Statement *statements;
+struct Module 
+{
+    Hi!
 };
