@@ -1,4 +1,5 @@
 struct Module 
 {
-    Statement *statements;
+    const char * const name;
+    const struct Statement * const statements;
 };

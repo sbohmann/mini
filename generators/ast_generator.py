@@ -12,6 +12,7 @@ template_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchp
 
 class Generator:
     def __init__(self, name, fields):
+        self.file_name = None
         self.name = name
         self.fields = fields
 
@@ -40,10 +41,12 @@ class Generator:
 
     def _write_struct_content(self, out):
         for field in self.fields:
-            if field.is_array:
-                out.println(f"{field.element_type} *{field.name};")
+            if field.type.is_array:
+                out.println(f"const {field.type.element_type} * const {field.name};")
+            elif field.type.is_string:
+                out.println(f'const char * const {field.name};')
             else:
-                out.println(f"{field.type} {field.name};")
+                out.println(f"const {field.type} {field.name};")
 
     def _write_code(self, out):
         pass
@@ -61,24 +64,44 @@ class Type:
         self.element_type = None
         self.is_array = False
         self.is_struct = False
+        self.is_string = False
+
+    def __str__(self):
+        if self.is_array:
+            return f'{self.element_type} *'
+        elif self.is_struct:
+            return f'struct {self.name}'
+        elif self.is_string:
+            return 'char *'
+        else:
+            return self.name
 
 
-def array_field(name, element_type):
-    field_type = Type('array')
-    field_type.element_type = element_type
-    field_type.is_array = True
-    return Field(name, field_type)
+def array(element_type):
+    result = Type('array')
+    result.element_type = element_type
+    result.is_array = True
+    return result
 
 
-def struct_field(name, struct_name):
-    field_type = Type(struct_name)
-    field_type.is_struct = True
-    return Field(name, field_type)
+def struct(struct_name):
+    result = Type(struct_name)
+    result.is_struct = True
+    return result
+
+
+def string():
+    result = Type('string')
+    result.is_string = True
+    return result
 
 
 def generate_token_list():
     generator = Generator('Module',
-                          [array_field('statements', 'Statement')])
+                          [
+                              Field('name', string()),
+                              Field('statements', array(struct('Statement')))
+                          ])
     generator.run()
 
 
