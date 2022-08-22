@@ -43,13 +43,15 @@ class Generator:
         for field in self.fields:
             if field.type.is_array:
                 out.println(f"const {field.type.element_type} * const {field.name};")
+                out.println(f"const size_t {field.name}Length;")
             elif field.type.is_string:
                 out.println(f'const char * const {field.name};')
+                out.println(f"const size_t {field.name}Length;")
             else:
                 out.println(f"const {field.type} {field.name};")
 
     def _write_code(self, out):
-        pass
+        out.println(f'#include "{self.name}.h"')
 
 
 class Field:
