@@ -15,18 +15,53 @@ class Generator:
         self.file_name = None
         self.name = name
         self.fields = fields
+        self._imports = set()
 
     def run(self):
         self.file_name = uppercase_to_underscore(self.name)
-        self._render('h', self._write_header)
-        self._render('c', self._write_code)
+        self._write_header()
+        self._write_code()
 
-    def _render(self, suffix, action):
-        path = os.path.join(output_directory, self.file_name + '.' + suffix)
+    def _write_header(self):
+        path = os.path.join(output_directory, self.file_name + '.h')
+        buffer, out = self._create_buffer(path)
+        out.println(f'struct {self.name} ')
+        out.block(self._write_struct_content, '};')
+        text = self._prepend_imports(buffer.getvalue())
+        self._write_if_necessary(path, text)
+
+    def _write_struct_content(self, out):
+        for field in self.fields:
+            if field.type.is_array:
+                self._imports.add('<stddef.h>')
+                out.println(f"const {field.type.element_type} * const {field.name};")
+                out.println(f"const size_t {field.name}Length;")
+            elif field.type.is_string:
+                self._imports.add('"ast/ast_types.h"')
+                out.println(f'const struct ASTString {field.name};')
+                out.println(f"const size_t {field.name}Length;")
+            else:
+                out.println(f"const {field.type} {field.name};")
+
+    def _prepend_imports(self, text):
+        prefix = ['#pragma once', '']
+        if len(self._imports) > 0:
+            for import_name in sorted(self._imports):
+                prefix.append(f'#include {import_name}')
+            prefix.append('')
+        return '\n'.join(prefix) + '\n' + text
+
+    def _write_code(self):
+        path = os.path.join(output_directory, self.file_name + '.c')
+        buffer, out = self._create_buffer(path)
+        out.println(f'#include "{self.name.lower()}.h"')
+        self._write_if_necessary(path, buffer.getvalue())
+
+    def _create_buffer(self, path):
         buffer = io.StringIO()
-        out = CodeWriter(buffer)
-        action(out)
-        text = buffer.getvalue()
+        return buffer, CodeWriter(buffer)
+
+    def _write_if_necessary(self, path, text):
         if os.path.isfile(path):
             file = open(path, 'r')
             existing_text = file.read()
@@ -34,24 +69,6 @@ class Generator:
             if existing_text != text:
                 print("Writing file [" + path + "]")
                 open(path, 'w').write(text)
-
-    def _write_header(self, out):
-        out.println(f'struct {self.name} ')
-        out.block(self._write_struct_content, '};')
-
-    def _write_struct_content(self, out):
-        for field in self.fields:
-            if field.type.is_array:
-                out.println(f"const {field.type.element_type} * const {field.name};")
-                out.println(f"const size_t {field.name}Length;")
-            elif field.type.is_string:
-                out.println(f'const char * const {field.name};')
-                out.println(f"const size_t {field.name}Length;")
-            else:
-                out.println(f"const {field.type} {field.name};")
-
-    def _write_code(self, out):
-        out.println(f'#include "{self.name}.h"')
 
 
 class Field:

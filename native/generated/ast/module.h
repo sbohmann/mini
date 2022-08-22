@@ -1,8 +1,11 @@
+#pragma once
+
+#include "ast/ast_types.h"
 #include <stddef.h>
 
-struct Module
+struct Module 
 {
-    const char * const name;
+    const struct ASTString name;
     const size_t nameLength;
     const struct Statement * const statements;
     const size_t statementsLength;
