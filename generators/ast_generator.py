@@ -12,36 +12,36 @@ template_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchp
 
 class Generator:
     def __init__(self, name, fields):
-        self.file_name = None
-        self.name = name
-        self.fields = fields
+        self._file_name = None
+        self._name = name
+        self._fields = fields
+        self._is_union = False
         self._imports = set()
 
     def run(self):
-        self.file_name = uppercase_to_underscore(self.name)
+        self._file_name = uppercase_to_underscore(self._name)
         self._write_header()
         self._write_code()
 
     def _write_header(self):
-        path = os.path.join(output_directory, self.file_name + '.h')
+        path = os.path.join(output_directory, self._file_name + '.h')
         buffer, out = self._create_buffer(path)
-        out.println(f'struct {self.name} ')
+        out.println(f'struct {self._name} ')
         out.block(self._write_struct_content, '};')
         text = self._prepend_imports(buffer.getvalue())
         self._write_if_necessary(path, text)
 
     def _write_struct_content(self, out):
-        for field in self.fields:
+        for field in self._fields:
             if field.type.is_array:
                 self._imports.add('<stddef.h>')
-                out.println(f"const {field.type.element_type} * const {field.name};")
-                out.println(f"const size_t {field.name}Length;")
+                out.println(f"const {field.type.element_type} * const {field._name};")
+                out.println(f"const size_t {field._name}Length;")
             elif field.type.is_string:
                 self._imports.add('"ast/ast_types.h"')
-                out.println(f'const struct ASTString {field.name};')
-                out.println(f"const size_t {field.name}Length;")
+                out.println(f'const struct ASTString {field._name};')
             else:
-                out.println(f"const {field.type} {field.name};")
+                out.println(f"const {field.type} {field._name};")
 
     def _prepend_imports(self, text):
         prefix = ['#pragma once', '']
@@ -52,9 +52,9 @@ class Generator:
         return '\n'.join(prefix) + '\n' + text
 
     def _write_code(self):
-        path = os.path.join(output_directory, self.file_name + '.c')
+        path = os.path.join(output_directory, self._file_name + '.c')
         buffer, out = self._create_buffer(path)
-        out.println(f'#include "{self.name.lower()}.h"')
+        out.println(f'#include "{self._name.lower()}.h"')
         self._write_if_necessary(path, buffer.getvalue())
 
     def _create_buffer(self, path):
@@ -115,13 +115,15 @@ def string():
     return result
 
 
-def generate_token_list():
-    generator = Generator('Module',
-                          [
-                              Field('name', string()),
-                              Field('statements', array(struct('Statement')))
-                          ])
-    generator.run()
+Generator('Module',
+          [
+              Field('name', string()),
+              Field('statements', array(struct('Statement')))
+          ])\
+    .run()
 
+Generator('Statement',
+          [
 
-generate_token_list()
+          ]) \
+    .run()
