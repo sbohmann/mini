@@ -1,20 +1,25 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdbool.h>
 
-#include "tokenizer.h"
+#include "configuration.h"
 
 enum State {
-	verbatim,
-	signature,
-	name,
-	end
+	Verbatim,
+	StartSignature,
+	Name,
+	EndSignature
 };
 
-struct {
-} verbatim_state;
+enum State state;
+
+const size_t buffer_size = 256;
+char buffer[buffer_size];
 
 struct {
+	size_t offset;
 } signature_state;
 
 struct {
@@ -23,8 +28,25 @@ struct {
 struct {
 } end_state;
 
+static void init() {
+	state = Verbatim;
+}
+
+static void process(char c) {
+	switch (state) {
+		case Verbatim:
+			if (c == signature[0]) {
+				state = StartSignature;
+				signature_state.offset = 0;
+			} else {
+				putchar(c);
+			}
+	}
+}
+
 int main() {
-	whhile (1) {
+	init();
+	while (true) {
 		char c = getchar();
 		if (c < 0) {
 			if (errno != 0) {
