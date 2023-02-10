@@ -23,6 +23,7 @@ struct {
 } signature_state;
 
 struct {
+    size_t size;
 } name_state;
 
 struct {
@@ -35,15 +36,23 @@ static void init() {
 static void process(char c) {
     switch (state) {
         case Verbatim:
-            if (c == signature[0]) {
-                state = StartSignature;
+            if (c == start_signature[0]) {
                 signature_state.offset = 1;
+                state = StartSignature;
             } else {
                 putchar(c);
             }
         case StartSignature:
-            if (signature_state.offset <= start_signature_length) {
-                
+            if (signature_state.offset < start_signature_length - 1) {
+                if (c == start_signature[signature_state.offset]) {
+                    ++signature_state.offset;
+                } else {
+                    // TODO write signature to offset as verbatim
+                }
+            } else {
+                name_state.size = 1;
+                buffer[0] = c; 
+                state = Name;
             }
     }
 }

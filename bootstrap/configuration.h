@@ -1,10 +1,10 @@
 #include <string.h>
 
 static const char *start_signature = "@_";
-static const size_t start_signatur_length = sizeof(signature) - 1;
+static const size_t start_signature_length = sizeof(start_signature) - 1;
 
 static const char *end_signature = ";";
-static const size_t end__signatur_length = sizeof(end) - 1;
+static const size_t end__signature_length = sizeof(end_signature) - 1;
 
 static bool is_name_part(c) {
     return c == '_' ||
