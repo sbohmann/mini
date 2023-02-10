@@ -15,15 +15,12 @@ enum State {
 
 enum State state;
 
-const size_t buffer_capacity = 256;
-char buffer[buffer_capacity];
-size_t buffer_size;
-
 struct {
     size_t offset;
 } signature_state;
 
 struct {
+    char buffer[name_buffer_capacity];
     size_t size;
 } name_state;
 
@@ -52,9 +49,8 @@ static void process(char c) {
                     // and set state to Verbatim
                 }
             } else {
+                name_state.buffer[0] = c;
                 name_state.size = 1;
-                buffer[0] = c;
-                buffer_size = 1;
                 state = Name;
             }
     }

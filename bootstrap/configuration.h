@@ -1,6 +1,6 @@
 #include <string.h>
 
-const size_t buffer_capacity = 256;
+const size_t name_buffer_capacity = 256;
 
 static const char *start_signature = "@_";
 static const size_t start_signature_length = sizeof(start_signature) - 1;
