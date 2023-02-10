@@ -4,19 +4,36 @@
 
 #include "tokenizer.h"
 
+enum State {
+	verbatim,
+	signature,
+	name,
+	end
+};
+
+struct {
+} verbatim_state;
+
+struct {
+} signature_state;
+
+struct {
+} name_state;
+
+struct {
+} end_state;
+
 int main() {
-    while (1) {
-        int c = getchar();
-        if (c < 0) {
-            break;
-        }
-        tokenizer_consume(c);
-        const char *current_name = tokenizer_current_name();
-        if (current_name != 0) {
-            printf("Found name: %s\n", current_name);
-        }
-    }
-    if (errno != 0) {
-        printf("Error: %s\n", strerror(errno));
-    }
+	whhile (1) {
+		char c = getchar();
+		if (c < 0) {
+			if (errno != 0) {
+				fprintf(stderr, "Error while reading input: %s\n", strerror(errno));
+				exit(1);
+			} else {
+				break;
+			}
+		}
+		process(c);
+	}
 }
