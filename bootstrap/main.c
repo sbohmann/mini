@@ -15,8 +15,9 @@ enum State {
 
 enum State state;
 
-const size_t buffer_size = 256;
-char buffer[buffer_size];
+const size_t buffer_capacity = 256;
+char buffer[buffer_capacity];
+size_t buffer_size;
 
 struct {
     size_t offset;
@@ -48,10 +49,12 @@ static void process(char c) {
                     ++signature_state.offset;
                 } else {
                     // TODO write signature to offset as verbatim
+                    // and set state to Verbatim
                 }
             } else {
                 name_state.size = 1;
-                buffer[0] = c; 
+                buffer[0] = c;
+                buffer_size = 1;
                 state = Name;
             }
     }
