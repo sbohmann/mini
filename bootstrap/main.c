@@ -40,6 +40,7 @@ static void process(char c) {
             } else {
                 putchar(c);
             }
+            break;
         case StartSignature:
             if (signature_state.offset < start_signature_length - 1) {
                 if (c == start_signature[signature_state.offset]) {
