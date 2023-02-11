@@ -7,7 +7,7 @@ enum State state;
 
 static ReplacementCallback replacementCallback;
 
-void initialize(ReplacementCallback callback) {
+void states_initialize(ReplacementCallback callback) {
     state = Verbatim;
     replacementCallback = callback;
 }

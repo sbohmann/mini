@@ -2,10 +2,12 @@
 
 #include <stdio.h>
 
-static const size_t maximum_name_length = 127;
+#define MINI_BOOTSTRAP_NAMEBUF_MAXIMUM_NAME_LENGTH 127
+
+static const size_t maximum_name_length = MINI_BOOTSTRAP_NAMEBUF_MAXIMUM_NAME_LENGTH;
 
 struct NameBuffer {
-    char data[maximum_name_length + 1];
+    char data[MINI_BOOTSTRAP_NAMEBUF_MAXIMUM_NAME_LENGTH + 1];
     size_t size;
 };
 

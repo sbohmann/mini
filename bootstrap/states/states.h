@@ -12,9 +12,9 @@ enum State {
 
 extern enum State state;
 
-typedef const char * (*ReplacementCallback)(const char *);
+typedef const char * (*ReplacementCallback)(const char *c);
 
-void initialize(ReplacementCallback);
+void states_initialize(ReplacementCallback replacementCallback);
 
 const char * replace(const char *name);
 
