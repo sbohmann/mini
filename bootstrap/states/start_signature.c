@@ -1,6 +1,6 @@
 #include "core.h"
 
-struct {
+static struct {
     size_t offset;
 } start_signature_state;
 

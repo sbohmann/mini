@@ -51,4 +51,5 @@ static void end_of_file() {
             end_signature_end_of_file();
             break;
     }
+    state = EndOfFile;
 }
