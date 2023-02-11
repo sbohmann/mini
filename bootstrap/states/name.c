@@ -16,6 +16,8 @@ void name_process(char c) {
         add_character(c);
     } else if (c == end_signature[0]) {
         enter_end_signature_state();
+    } else if (c == start_signature[0]) {
+        enter_start_signature_state();
     } else {
         printf("%s", start_signature);
         print_name_buffer_content(stdout);
