@@ -13,12 +13,16 @@ static void switch_to_name_state(char c);
 void enter_start_signature_state() {
     start_signature_state.offset = 1;
     state = StartSignature;
+    if (debug) printf("Entered state StartSignature\n");
 }
 
 void start_signature_process(char c) {
     if (start_signature_state.offset < start_signature_length) {
+        if (debug) printf("Extending signature because offset %zu and length %zu\n",
+            start_signature_state.offset, start_signature_length);
         extend_signature(c);
     } else {
+        if (debug) printf("Switching to name state\n");
         switch_to_name_state(c);
     }
 }

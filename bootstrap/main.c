@@ -20,4 +20,5 @@ int main() {
         }
         process(c);
     }
+    end_of_file();
 }
