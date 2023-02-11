@@ -1,4 +1,6 @@
-extern const size_t name_buffer_length;
+#include <stdio.h>
+
+static const size_t name_buffer_length = 128;
 
 struct NameBuffer {
     char data[name_buffer_length];

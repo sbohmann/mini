@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "core.h"
 
 static struct {
@@ -6,7 +8,7 @@ static struct {
 
 static void print_partial_start_signature();
 static void extend_signature(char c);
-static void switch_to_name_state();
+static void switch_to_name_state(char c);
 
 void enter_start_signature_state() {
     start_signature_state.offset = 1;
@@ -30,22 +32,22 @@ static void extend_signature(char c) {
         ++start_signature_state.offset;
     } else {
         print_partial_start_signature();
-        putcchar(c);
+        putchar(c);
         enter_verbatim_state();
     }
 }
 
-static void switch_to_name_state() {
+static void switch_to_name_state(char c) {
     if (is_name_part(c)) {
         enter_name_state(c);
     } else {
-        puts(start_sognature);
-        enter_verbatim_state;
+        puts(start_signature);
+        enter_verbatim_state();
     }
 }
 
 static void print_partial_start_signature() {
     for (size_t index = 0; index < start_signature_state.offset; ++index) {
-        putchar(start_signature[index];
+        putchar(start_signature[index]);
     }
 }

@@ -4,13 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-struct {
-    char buffer[name_buffer_capacity];
-    size_t size;
-} name_state;
-
-struct {
-} end_state;
+#include "states/core.h"
 
 int main() {
     initialize();

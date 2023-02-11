@@ -1,10 +1,14 @@
+#include <stdlib.h>
+
 #include "core.h"
+#include "name_buffer.h"
 
 static void add_character(char c);
 
 void enter_name_state(char c) {
-    name.size = 0;
+    name_buffer.size = 0;
     add_character(c);
+    state = Name;
 }
 
 void name_process(char c) {
@@ -15,7 +19,7 @@ void name_process(char c) {
     } else {
         puts(start_signature);
         print_name_buffer_content(stdout);
-        putc(c);
+        putchar(c);
         enter_verbatim_state();
     }
 }
@@ -25,14 +29,14 @@ void name_end_of_file() {
 }
 
 static void add_character(char c) {
-    if (name_buffer.size < buffer_length) {
-        buffer[name_buffer.size] = c;
+    if (name_buffer.size < name_buffer_length) {
+        name_buffer.data[name_buffer.size] = c;
         ++name_buffer.size;
     } else {
         fprintf(stderr,
             "Exceeded maximum name length of %zu.\n"
             "Name buffer content:\n",
-            buffer_length);
+            name_buffer_length);
         print_name_buffer_content(stderr);
         exit(1);
     }

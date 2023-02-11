@@ -1,9 +1,9 @@
-const size_t name_buffer_length = 128;
+#include "name_buffer.h"
 
 struct NameBuffer name_buffer;
 
-static void print_name_buffer_content(FILE *file) {
-    for (size_t index = 0; index < name_state.size; ++index) {
+void print_name_buffer_content(FILE *file) {
+    for (size_t index = 0; index < name_buffer.size; ++index) {
         putc(name_buffer.data[index], stderr);
     }
 }
