@@ -11,6 +11,11 @@ const size_t start_signature_length = sizeof(START_SIGNATURE) - 1;
 const char *end_signature = END_SIGNATURE;
 const size_t end_signature_length = sizeof(END_SIGNATURE) - 1;
 
+bool is_name_start(char c) {
+    // names beginning with digits are intentionally permitted at the moment
+    return is_name_part(c);
+}
+
 bool is_name_part(char c) {
     return c == '_' ||
         (c >= 'A' && c <= 'Z') ||
