@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdbool.h>
 
 extern const char *start_signature;

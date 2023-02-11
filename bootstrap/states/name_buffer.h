@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 
 static const size_t name_buffer_length = 128;
