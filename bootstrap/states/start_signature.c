@@ -17,7 +17,7 @@ void start_signature_process(char c) {
     if (start_signature_state.offset < start_signature_length) {
         extend_signature(c);
     } else {
-        switch(to_name_state(c);
+        switch_to_name_state(c);
     }
 }
 
