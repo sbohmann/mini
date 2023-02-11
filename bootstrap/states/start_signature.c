@@ -41,7 +41,7 @@ static void switch_to_name_state(char c) {
     if (is_name_part(c)) {
         enter_name_state(c);
     } else {
-        puts(start_signature);
+        printf("%s", start_signature);
         enter_verbatim_state();
     }
 }

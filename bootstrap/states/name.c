@@ -17,7 +17,7 @@ void name_process(char c) {
     } else if (c == end_signature[0]) {
         enter_end_signature_state();
     } else {
-        puts(start_signature);
+        printf("%s", start_signature);
         print_name_buffer_content(stdout);
         putchar(c);
         enter_verbatim_state();

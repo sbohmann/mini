@@ -34,7 +34,7 @@ void end_signature_process(char c) {
 
 void end_signature_end_of_file() {
     if (end_signature_state.offset < end_signature_length) {
-        puts(start_signature);
+        printf("%s", start_signature);
         print_name_buffer_content(stdout);
         print_partial_end_signature();
     } else {
@@ -46,7 +46,7 @@ static void extend_signature(char c) {
     if (c == end_signature[end_signature_state.offset]) {
         ++end_signature_state.offset;
     } else {
-        puts(start_signature);
+        printf("%s", start_signature);
         print_name_buffer_content(stdout);
         print_partial_end_signature();
         putchar(c);
