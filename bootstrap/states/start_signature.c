@@ -31,6 +31,8 @@ void start_signature_end_of_file() {
 static void extend_signature(char c) {
     if (c == start_signature[start_signature_state.offset]) {
         ++start_signature_state.offset;
+    } else if (c == start_signature[0]) {
+        start_signature_state.offset = 1;
     } else {
         print_partial_start_signature();
         putchar(c);
@@ -39,8 +41,10 @@ static void extend_signature(char c) {
 }
 
 static void switch_state(char c) {
-    if (is_name_part(c)) {
+    if (is_name_start(c)) {
         enter_name_state(c);
+    } else if (c == start_signature[0]) {
+        start_signature_state.offset = 1;
     } else if (c == end_signature[0]) {
         name_buffer.size = 0;
         enter_end_signature_state();
