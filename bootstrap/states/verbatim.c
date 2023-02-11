@@ -4,7 +4,6 @@
 
 void enter_verbatim_state() {
     state = Verbatim;
-    if (debug) printf("Entered state Verbatim\n");
 }
 
 void verbatim_process(char c) {

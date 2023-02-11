@@ -1,7 +1,5 @@
 #include "configuration.h"
 
-static const bool debug = false;
-
 enum State {
     Verbatim,
     StartSignature,

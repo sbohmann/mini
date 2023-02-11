@@ -20,15 +20,12 @@ void enter_end_signature_state() {
     }
     end_signature_state.offset = 1;
     state = EndSignature;
-    if (debug) printf("Entered state EndSignature\n");
 }
 
 void end_signature_process(char c) {
     if (end_signature_state.offset < end_signature_length) {
-        if (debug) printf("Extending end signature\n");
         extend_signature(c);
     } else {
-        if (debug) printf("Printing result because end signature finished\n");
         print_result();
         putchar(c);
         enter_verbatim_state();
@@ -37,14 +34,10 @@ void end_signature_process(char c) {
 
 void end_signature_end_of_file() {
     if (end_signature_state.offset < end_signature_length) {
-        if (debug) printf(
-            "Not printing result because offset %zu and length %zu at EOF\n",
-            end_signature_state.offset, end_signature_length);
         puts(start_signature);
         print_name_buffer_content(stdout);
         print_partial_end_signature();
     } else {
-        if (debug) printf("Printing result because end signature finished ats EOF\n");
         print_result();
     }
 }

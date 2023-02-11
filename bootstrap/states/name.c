@@ -9,7 +9,6 @@ void enter_name_state(char c) {
     name_buffer.size = 0;
     add_character(c);
     state = Name;
-    if (debug) printf("Entered state Name\n");
 }
 
 void name_process(char c) {

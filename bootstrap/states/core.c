@@ -47,5 +47,4 @@ void end_of_file() {
             exit(1);
     }
     state = EndOfFile;
-    if (debug) printf("Entered state EndSignature\n");
 }
