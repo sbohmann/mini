@@ -13,7 +13,7 @@ static void print_partial_end_signature();
 static void print_result();
 
 void enter_end_signature_state() {
-    if (state != Name) {
+    if (state != StartSignature && state != Name) {
         fprintf(stderr, "Attempt to enter state EndSignature from illegal state %d",
             state);
         exit(1);
@@ -61,9 +61,13 @@ static void print_partial_end_signature() {
 }
 
 static void print_result() {
-    putchar('{');
-    putchar('{');
-    print_name_buffer_content(stdout);
-    putchar('}');
-    putchar('}');
+    if (name_buffer.size > 0) {
+        putchar('{');
+        putchar('{');
+        print_name_buffer_content(stdout);
+        putchar('}');
+        putchar('}');
+    } else {
+        printf("@_");
+    }
 }
