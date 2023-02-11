@@ -12,7 +12,12 @@ enum State {
 
 extern enum State state;
 
-void initialize();
+typedef const char * (*ReplacementCallback)(const char *);
+
+void initialize(ReplacementCallback);
+
+const char * replace(const char *name);
+
 void process(char c);
 void end_of_file();
 

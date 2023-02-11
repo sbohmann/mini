@@ -31,14 +31,14 @@ void name_end_of_file() {
 }
 
 static void add_character(char c) {
-    if (name_buffer.size < name_buffer_length) {
+    if (name_buffer.size < maximum_name_length) {
         name_buffer.data[name_buffer.size] = c;
         ++name_buffer.size;
     } else {
         fprintf(stderr,
             "Exceeded maximum name length of %zu.\n"
             "Name buffer content:\n",
-            name_buffer_length);
+            maximum_name_length);
         print_name_buffer_content(stderr);
         exit(1);
     }

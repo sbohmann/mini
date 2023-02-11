@@ -1,1 +1,1 @@
-clang *.c */*.c
+clang -Werror *.c */*.c

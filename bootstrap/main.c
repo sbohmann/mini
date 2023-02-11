@@ -6,8 +6,10 @@
 
 #include "states/core.h"
 
+const char *exampleReplacement(const char *name);
+
 int main() {
-    initialize();
+    initialize(exampleReplacement);
     while (true) {
         char c = getchar();
         if (c < 0) {
@@ -21,4 +23,10 @@ int main() {
         process(c);
     }
     end_of_file();
+}
+char buf[1024];
+
+const char *exampleReplacement(const char *name) {
+    snprintf(buf, sizeof(buf), "{{%s}}", name);
+    return buf;
 }

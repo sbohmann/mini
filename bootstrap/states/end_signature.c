@@ -62,11 +62,8 @@ static void print_partial_end_signature() {
 
 static void print_result() {
     if (name_buffer.size > 0) {
-        putchar('{');
-        putchar('{');
-        print_name_buffer_content(stdout);
-        putchar('}');
-        putchar('}');
+        name_buffer.data[name_buffer.size] = 0;
+        printf("%s", replace(name_buffer.data));
     } else {
         printf("@_");
     }

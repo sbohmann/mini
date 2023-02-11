@@ -2,10 +2,10 @@
 
 #include <stdio.h>
 
-static const size_t name_buffer_length = 128;
+static const size_t maximum_name_length = 127;
 
 struct NameBuffer {
-    char data[name_buffer_length];
+    char data[maximum_name_length + 1];
     size_t size;
 };
 

@@ -5,8 +5,21 @@
 
 enum State state;
 
-void initialize() {
+static ReplacementCallback replacementCallback;
+
+void initialize(ReplacementCallback callback) {
     state = Verbatim;
+    replacementCallback = callback;
+}
+
+const char * replace(const char *name) {
+    if (replacementCallback != 0) {
+        const char *result = replacementCallback(name);
+        if (result != 0) {
+            return result;
+        }
+    }
+    return name;
 }
 
 void process(char c) {
