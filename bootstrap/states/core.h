@@ -1,25 +1,6 @@
 #pragma once
 
-#include "configuration.h"
-
-enum State {
-    Verbatim,
-    StartSignature,
-    Name,
-    EndSignature,
-    EndOfFile
-};
-
-extern enum State state;
-
-typedef const char * (*ReplacementCallback)(const char *);
-
-void initialize(ReplacementCallback);
-
-const char * replace(const char *name);
-
-void process(char c);
-void end_of_file();
+#include "states.h"
 
 void enter_verbatim_state();
 void verbatim_process(char c);

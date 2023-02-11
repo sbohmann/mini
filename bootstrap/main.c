@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "states/core.h"
+#include "states/states.h"
 
 const char *exampleReplacement(const char *name);
 
@@ -24,6 +24,7 @@ int main() {
     }
     end_of_file();
 }
+
 char buf[1024];
 
 const char *exampleReplacement(const char *name) {
