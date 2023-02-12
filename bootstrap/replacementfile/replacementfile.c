@@ -107,7 +107,6 @@ static void read_replacements(struct ReplacementFile *self) {
                     fprintf(stderr, "Unexpected end of line %zu\n", line);
                     exit(1);
                 }
-                printf("Line %zu yielded:\n", line);
                 const char *name = string(name_buffer, name_length);
                 const char *value = string(value_buffer, value_length);
                 add_entry(self, name, value);
@@ -131,7 +130,6 @@ static const char *string(const char *source, size_t length) {
     }
     memcpy(result, source, length);
     result[length] = 0;
-    printf("string of length %zu: [%s]\n", length, result);
     return result;
 }
 

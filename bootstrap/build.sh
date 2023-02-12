@@ -1,1 +1,1 @@
-clang -std=c17 -Wall -Wpedantic *.c */*.c
+clang -Wall -Wpedantic *.c */*.c
