@@ -32,7 +32,7 @@ int main() {
 }
 
 static void read_replacements() {
-    const char *path = "replacements";
+    const char *path = "example_replacements";
     FILE * input_file = fopen(path, "r");
     if (input_file == NULL) {
         fprintf(stderr, "Failed to open path [%s]\n", path); 
