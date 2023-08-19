@@ -15,7 +15,7 @@ void read_ast(struct ParsedModule *module) {
 }
 
 void read_statements(struct ElementQueue *queue) {
-    const struct Element *firstElement = ElementQueue_peek(queue);
+    const struct Element *firstElement = ElementQueue_take(queue);
     if (firstElement->type == TokenElement) {
         const struct Token *token = firstElement->token;
         if (token->type == SymbolToken) {
@@ -30,11 +30,17 @@ void read_statements(struct ElementQueue *queue) {
                 read_function_declaration(queue, false);
             }
         }
+    } else {
+        fail_at_position(firstElement->position, "expected a token");
     }
 }
 
 void read_variable_declaration(struct ElementQueue *queue, bool constant) {
-
+    const struct Element *nameElement = ElementQueue_take(queue);
+    if (nameElement->type != TokenElement || nameElement->token->type != SymbolToken) {
+        fail_after_position(nameElement->position, "Not a symbol");
+    }
+    const struct String *variableName = nameElement->token->value.string;
 }
 
 void read_function_declaration(struct ElementQueue *pQueue, bool b) {

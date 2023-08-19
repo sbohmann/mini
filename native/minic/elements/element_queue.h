@@ -12,6 +12,8 @@ const struct Element *ElementQueue_peek(struct ElementQueue *self);
 
 const struct Element *ElementQueue_next(struct ElementQueue *self);
 
+const struct Element *ElementQueue_take(struct ElementQueue *self);
+
 bool ElementQueue_contains(struct ElementQueue *self, bool (*predicate)(const struct Element *));
 
 void ElementQueue_reset(struct ElementQueue *self);

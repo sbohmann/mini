@@ -11,7 +11,7 @@ struct List {
     size_t size;
 };
 
-struct List *List_create();
+struct List *List_create(void);
 
 struct List *List_copy(const struct List *other);
 

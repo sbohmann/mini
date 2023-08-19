@@ -1,4 +1,5 @@
 #include "element_queue.h"
+#include "core/errors.h"
 
 #include <stddef.h>
 #include <core/allocate.h>
@@ -35,6 +36,16 @@ const struct Element *ElementQueue_next(struct ElementQueue *self) {
         return result;
     } else {
         return 0;
+    }
+}
+
+const struct Element *ElementQueue_take(struct ElementQueue *self) {
+    if (self->index < self->list->size) {
+        const struct Element *result = self->list->data + self->index;
+        ++self->index;
+        return result;
+    } else {
+        fail_after_position(ElementQueue_last_position(self), "Unexpected end of input");
     }
 }
 

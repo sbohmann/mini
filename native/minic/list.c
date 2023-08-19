@@ -11,7 +11,7 @@ static void List_destructor(struct List *instance) {
     deallocate(instance->data);
 }
 
-struct List *List_create() {
+struct List *List_create(void) {
     struct List *result = allocate(sizeof(struct List));
     Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *))List_destructor;
