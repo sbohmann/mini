@@ -16,7 +16,6 @@ struct Statement assignmentStatement(void) {
             Assignment,
             {
                     .assignment = {
-                            2
                     }
             }
     };
