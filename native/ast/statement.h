@@ -1,27 +1,26 @@
 #pragma once
 
+#include <stdbool.h>
+
 struct FunctionDeclaration {
-    int a;
+    bool constant;
+};
+
+struct VariableDeclaration {
+    bool constant;
 };
 
 struct Assignment {
-    int b;
-};
-
-struct FunctionCall {
-    double c;
 };
 
 struct Statement {
     enum {
         FunctionDeclaration,
-        Assignment,
-        FunctionCall
     } type;
     union {
         struct FunctionDeclaration functionDeclaration;
+        struct VariableDeclaration variableDeclaration;
         struct Assignment assignment;
-        struct FunctionCall functionCall;
     } value;
 };
 
