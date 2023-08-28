@@ -104,6 +104,13 @@ def generate_statement_list():
     generator.run()
 
 
+def generate_expression_list():
+    generator = Generator('Expression', 'list')
+    generator.struct = True
+    generator.local_include = 'ast/expression.h'
+    generator.run()
+
+
 generate_token_list()
 generate_token_queue()
 generate_element_list()
@@ -112,3 +119,4 @@ generate_string_list()
 generate_integer_list()
 generate_void_pointer_list()
 generate_statement_list()
+generate_expression_list()

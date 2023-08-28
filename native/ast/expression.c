@@ -1,6 +1,8 @@
 #include "expression.h"
 
 struct FunctionCall {
+    struct Symbol *function;
+    struct ExpressionList *expressions;
 };
 
 struct Expression {
