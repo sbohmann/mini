@@ -28,7 +28,7 @@ struct Node {
 
 void HashMap_destructor(struct HashMap *instance);
 
-struct HashMap *HashMap_create() {
+struct HashMap *HashMap_create(void) {
     struct HashMap *result = allocate(sizeof(struct HashMap));
     Complex_init(&result->base);
     result->base.destructor = (void (*)(struct ComplexValue *)) HashMap_destructor;

@@ -4,7 +4,7 @@
 
 struct StringBuilder;
 
-struct StringBuilder *StringBuilder_create();
+struct StringBuilder *StringBuilder_create(void);
 
 void StringBuilder_delete(struct StringBuilder *self);
 

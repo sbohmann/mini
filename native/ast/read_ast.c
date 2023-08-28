@@ -1,9 +1,10 @@
 #include <string.h>
 
 #include "read_ast.h"
+#include "generated/statement_list.h"
 #include "minic/elements/element_queue.h"
 
-void read_statements(struct ElementQueue *queue);
+struct StatementList * read_statements(struct ElementQueue *queue);
 
 void read_variable_declaration(struct ElementQueue *queue, bool constant);
 
@@ -14,8 +15,8 @@ void read_ast(struct ParsedModule *module) {
     read_statements(queue);
 }
 
-void read_statements(struct ElementQueue *queue) {
-    StatementList *result = StatementList_create();
+struct StatementList * read_statements(struct ElementQueue *queue) {
+    struct StatementList *result = StatementList_create();
     while (true) {
         const struct Element *element = ElementQueue_next(queue);
         if (element == NULL) {

@@ -12,7 +12,7 @@ struct StringBuilder {
     char *buffer;
 };
 
-struct StringBuilder *StringBuilder_create() {
+struct StringBuilder *StringBuilder_create(void) {
     struct StringBuilder *result = allocate(sizeof(struct StringBuilder));
     const size_t initial_capacity = 32;
     *result = (struct StringBuilder) {0, initial_capacity, allocate(initial_capacity)};

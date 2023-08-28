@@ -27,7 +27,7 @@ struct Node {
 
 void HashSet_destructor(struct HashSet *instance);
 
-struct HashSet *HashSet_create() {
+struct HashSet *HashSet_create(void) {
     struct HashSet *result = allocate(sizeof(struct HashSet));
     Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *))HashSet_destructor;

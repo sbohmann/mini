@@ -15,7 +15,7 @@ static struct Any create_value(struct TokenReader *self, const struct String *te
     return result;
 }
 
-struct TokenReader *SymbolTokenReader_create() {
+struct TokenReader *SymbolTokenReader_create(void) {
     struct TokenReader *self = allocate(sizeof(struct TokenReader));
     TokenReader_init(SymbolToken, self, process_char, create_value, 0);
     return self;

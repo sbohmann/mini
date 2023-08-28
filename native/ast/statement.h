@@ -25,7 +25,7 @@ struct Statement {
     } value;
 };
 
-struct Statement functionDeclarationStatement() {
+struct Statement functionDeclarationStatement(void) {
     return (struct Statement) {
         FunctionDeclaration,
         {
@@ -36,7 +36,7 @@ struct Statement functionDeclarationStatement() {
     };
 }
 
-struct Statement assignmentStatement() {
+struct Statement assignmentStatement(void) {
     return (struct Statement) {
         Assignment,
         {
@@ -48,7 +48,7 @@ struct Statement assignmentStatement() {
 }
 
 
-struct Statement functionCallStatement() {
+struct Statement functionCallStatement(void) {
     return (struct Statement) {
         FunctionCall,
         {
