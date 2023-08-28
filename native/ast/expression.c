@@ -9,7 +9,16 @@ struct Expression {
         FunctionCall
     } type;
     union {
-        struct Assignment assignment;
         struct FunctionCall functionCall;
     } value;
 };
+
+struct Expression functionCallSExpression(void) {
+    return (struct Expression) {
+            FunctionCall,
+            {
+                    .functionCall = {
+                    }
+            }
+    };
+}

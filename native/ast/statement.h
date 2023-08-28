@@ -16,6 +16,8 @@ struct Assignment {
 struct Statement {
     enum {
         FunctionDeclaration,
+        Assignment,
+        VariableDeclaration
     } type;
     union {
         struct FunctionDeclaration functionDeclaration;
@@ -24,36 +26,6 @@ struct Statement {
     } value;
 };
 
-struct Statement functionDeclarationStatement(void) {
-    return (struct Statement) {
-        FunctionDeclaration,
-        {
-            .functionDeclaration = {
-                1
-            }
-        }
-    };
-}
+struct Statement functionDeclarationStatement(void);
 
-struct Statement assignmentStatement(void) {
-    return (struct Statement) {
-        Assignment,
-        {
-            .assignment = {
-                2
-            }
-        }
-    };
-}
-
-
-struct Statement functionCallStatement(void) {
-    return (struct Statement) {
-        FunctionCall,
-        {
-            .functionCall = {
-                3.0
-            }
-        }
-    };
-}
+struct Statement assignmentStatement(void);
