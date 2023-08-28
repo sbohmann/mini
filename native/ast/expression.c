@@ -2,7 +2,7 @@
 
 struct FunctionCall {
     struct Symbol *function;
-    struct ExpressionList *expressions;
+    struct ExpressionList *arguments;
 };
 
 struct Expression {
