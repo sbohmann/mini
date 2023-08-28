@@ -15,10 +15,14 @@ void read_ast(struct ParsedModule *module) {
 }
 
 void read_statements(struct ElementQueue *queue) {
-    const struct Element *firstElement = ElementQueue_take(queue);
-    if (firstElement->type == TokenElement) {
-        const struct Token *token = firstElement->token;
-        if (token->type == SymbolToken) {
+    StatementList *result = StatementList_create();
+    while (true) {
+        const struct Element *element = ElementQueue_next(queue);
+        if (element == NULL) {
+            return result;
+        }
+        if (element->type == TokenElement && element->token->type == SymbolToken) {
+            const struct Token *token = element->token;
             if (strcmp("var", token->text->value) == 0) {
                 ElementQueue_next(queue);
                 read_variable_declaration(queue, false);
@@ -29,9 +33,9 @@ void read_statements(struct ElementQueue *queue) {
                 ElementQueue_next(queue);
                 read_function_declaration(queue, false);
             }
+        } else {
+            fail_at_position(element->position, "Expected a symbol");
         }
-    } else {
-        fail_at_position(firstElement->position, "expected a token");
     }
 }
 
