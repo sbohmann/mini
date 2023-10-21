@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Symbol.h"
+#include "symbol.h"
 #include "generated/expression_list.h"
 
 struct Expression;

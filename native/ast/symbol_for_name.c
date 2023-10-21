@@ -6,7 +6,7 @@
 
 struct Node {
     const char *key;
-    const char *value;
+    const struct Symbol *value;
     size_t length;
     struct Node *left;
     struct Node *right;
@@ -16,9 +16,9 @@ struct SymbolForName {
     struct Node *baseNode;
 };
 
-struct SymbolForName * SymbolForName_create() {
-    struct SymbolForName *result = malloc(sizeof (struct SymbolForName));
-    bzero(result, sizeof (struct SymbolForName));
+struct SymbolForName *SymbolForName_create(void) {
+    struct SymbolForName *result = malloc(sizeof(struct SymbolForName));
+    bzero(result, sizeof(struct SymbolForName));
     return result;
 }
 
@@ -29,20 +29,11 @@ void SymbolForName_delete(struct SymbolForName *instance) {
     free(instance);
 }
 
-void deleteNode(struct Node *node) {
-    if (node == NULL) {
-        return;
-    }
-    deleteNode(node->left);
-    deleteNode(node->right);
-    free(node);
-}
-
 void insert(struct Node *node, const char *key, const char *value);
 
 struct Node *createNode(const char *key, const char *value);
 
-void SymbolForName_add(struct SymbolForName *self, const char *key, const char *value) {
+struct Symbol *SymbolForName_get(struct SymbolForName *self, const char *key, const char *value) {
     if (self->baseNode == NULL) {
         self->baseNode = createNode(key, value);
     } else {
@@ -50,18 +41,16 @@ void SymbolForName_add(struct SymbolForName *self, const char *key, const char *
     }
 }
 
-struct Symbol replacementForNode(struct Node *pNode, const char *key);
-
-struct Symbol SymbolForName_get(struct SymbolForName *self, const char *key) {
-    return replacementForNode(self->baseNode, key);
-}
-
-struct Symbol replacementForNode(struct Node *node, const char *key) {
+struct Symbol *replacementForNode(struct Node *node, const char *key) {
     if (node == NULL) {
-        return (struct Symbol) {
-                NULL,
-                0
-        };
+        struct Symbol *result = malloc(sizeof(struct Symbol));
+        memcpy(result,
+               &(struct Symbol) {
+                       key,
+                       sizeof(key)
+               },
+               sizeof(struct Symbol));
+        return result;
     }
     int delta = strcmp(key, node->key);
     if (delta == 0) {
@@ -97,8 +86,8 @@ void insert(struct Node *node, const char *key, const char *value) {
 }
 
 struct Node *createNode(const char *key, const char *value) {
-    struct Node *result = malloc(sizeof (struct Node));
-    bzero(result, sizeof (struct Node));
+    struct Node *result = malloc(sizeof(struct Node));
+    bzero(result, sizeof(struct Node));
     result->key = key;
     result->value = value;
     result->length = strlen(value);
