@@ -7,7 +7,6 @@
 struct Node {
     const char *key;
     const struct Symbol *value;
-    size_t length;
     struct Node *left;
     struct Node *right;
 };
@@ -29,11 +28,11 @@ void SymbolForName_delete(struct SymbolForName *instance) {
     free(instance);
 }
 
-void insert(struct Node *node, const char *key, const char *value);
+void insert(struct Node *node, const char *key, const struct Symbol *value);
 
-struct Node *createNode(const char *key, const char *value);
+struct Node *createNode(const char *key, const struct Symbol *value);
 
-struct Symbol *SymbolForName_get(struct SymbolForName *self, const char *key, const char *value) {
+void SymbolForName_set(struct SymbolForName *self, const char *key, const struct Symbol *value) {
     if (self->baseNode == NULL) {
         self->baseNode = createNode(key, value);
     } else {
@@ -41,7 +40,7 @@ struct Symbol *SymbolForName_get(struct SymbolForName *self, const char *key, co
     }
 }
 
-struct Symbol *replacementForNode(struct Node *node, const char *key) {
+const struct Symbol *replacementForNode(struct Node *node, const char *key) {
     if (node == NULL) {
         struct Symbol *result = malloc(sizeof(struct Symbol));
         memcpy(result,
@@ -54,10 +53,7 @@ struct Symbol *replacementForNode(struct Node *node, const char *key) {
     }
     int delta = strcmp(key, node->key);
     if (delta == 0) {
-        return (struct Symbol) {
-                node->value,
-                node->length
-        };
+        return node->value;
     } else if (delta < 0) {
         return replacementForNode(node->left, key);
     } else {
@@ -65,11 +61,10 @@ struct Symbol *replacementForNode(struct Node *node, const char *key) {
     }
 }
 
-void insert(struct Node *node, const char *key, const char *value) {
+void insert(struct Node *node, const char *key, const struct Symbol *value) {
     int delta = strcmp(key, node->key);
     if (delta == 0) {
         node->value = value;
-        node->length = strlen(value);
     } else if (delta < 0) {
         if (node->left != NULL) {
             insert(node->left, key, value);
@@ -85,11 +80,10 @@ void insert(struct Node *node, const char *key, const char *value) {
     }
 }
 
-struct Node *createNode(const char *key, const char *value) {
+struct Node *createNode(const char *key, const struct Symbol *value) {
     struct Node *result = malloc(sizeof(struct Node));
     bzero(result, sizeof(struct Node));
     result->key = key;
     result->value = value;
-    result->length = strlen(value);
     return result;
 }
