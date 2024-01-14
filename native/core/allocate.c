@@ -21,11 +21,11 @@ void ParserGC_init(void) {
     garbage_collection_paused = false;
 }
 
-void ParserGC_pause() {
+void ParserGC_pause(void) {
     garbage_collection_paused = true;
 }
 
-void ParserGC_resume() {
+void ParserGC_resume(void) {
     garbage_collection_paused = false;
 }
 

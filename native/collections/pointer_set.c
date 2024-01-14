@@ -17,7 +17,7 @@ struct Node {
     };
 };
 
-struct PointerSet *PointerSet_create() {
+struct PointerSet *PointerSet_create(void) {
     return allocate_unmanaged(sizeof(struct PointerSet));
 }
 

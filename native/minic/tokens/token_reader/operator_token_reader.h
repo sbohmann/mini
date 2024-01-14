@@ -1,3 +1,3 @@
 #pragma once
 
-struct TokenReader *OperatorTokenReader_create();
+struct TokenReader *OperatorTokenReader_create(void);

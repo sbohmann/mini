@@ -1,3 +1,3 @@
 #pragma once
 
-struct TokenReader *NumberTokenReader_create();
+struct TokenReader *NumberTokenReader_create(void);

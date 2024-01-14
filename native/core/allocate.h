@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 void ParserGC_init(void);
-void ParserGC_pause();
-void ParserGC_resume();
+void ParserGC_pause(void);
+void ParserGC_resume(void);
 void ParserGC_mark(const void *pointer);
 void ParserGC_free(void);
 

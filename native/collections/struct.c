@@ -30,7 +30,7 @@ struct Node {
 
 void Struct_destructor(struct Struct *instance);
 
-struct Struct *Struct_create() {
+struct Struct *Struct_create(void) {
     struct Struct *result = allocate(sizeof(struct Struct));
     Complex_init(&result->base);
     result->base.destructor = (void (*) (struct ComplexValue *))Struct_destructor;
