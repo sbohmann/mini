@@ -10,7 +10,6 @@ struct ParsedModule
     const struct Source *source;
     const struct Tokens *tokens;
     const struct Elements *elements;
-    //const struct
 };
 
 struct ParsedModule * ParsedModule_read(const char *path);

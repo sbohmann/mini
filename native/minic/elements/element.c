@@ -116,6 +116,7 @@ struct Elements *read_elements(const struct Tokens *tokens) {
                          "Unexpected token [%s] - too many closing brackets?",
                          next_element->text->value);
     }
+    TokenQueue_delete(queue);
     struct Elements *result = Elements_from_list(elements);
     ElementList_delete(elements);
     return result;
