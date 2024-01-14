@@ -21,7 +21,7 @@ struct SymbolForName *SymbolForName_create(void) {
     return result;
 }
 
-void deleteNode(struct Node *pNode);
+void deleteNode(struct Node *node);
 
 void SymbolForName_delete(struct SymbolForName *instance) {
     deleteNode(instance->baseNode);
@@ -86,4 +86,13 @@ struct Node *createNode(const char *key, const struct Symbol *value) {
     result->key = key;
     result->value = value;
     return result;
+}
+
+void deleteNode(struct Node *node) {
+    if (node == NULL) {
+        return;
+    }
+    deleteNode(node->left);
+    deleteNode(node->right);
+    free(node);
 }
