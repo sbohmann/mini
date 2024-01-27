@@ -4,7 +4,7 @@
 
 #include "symbol.h"
 
-struct Replacaments;
+struct Replacements;
 
 struct SymbolForName * SymbolForName_create(void);
 
