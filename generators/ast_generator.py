@@ -25,7 +25,7 @@ class Generator:
 
     def _write_header(self):
         path = os.path.join(output_directory, self._file_name + '.h')
-        buffer, out = self._create_buffer(path)
+        buffer, out = self._create_buffer()
         out.println(f'struct {self._name} ')
         out.block(self._write_struct_content, '};')
         text = self._prepend_imports(buffer.getvalue())
@@ -35,13 +35,13 @@ class Generator:
         for field in self._fields:
             if field.type.is_array:
                 self._imports.add('<stddef.h>')
-                out.println(f"const {field.type.element_type} * const {field._name};")
-                out.println(f"const size_t {field._name}Length;")
+                out.println(f"const {field.type.element_type} * const {field.name};")
+                out.println(f"const size_t {field.name}Length;")
             elif field.type.is_string:
                 self._imports.add('"ast/ast_types.h"')
-                out.println(f'const struct ASTString {field._name};')
+                out.println(f'const struct ASTString {field.name};')
             else:
-                out.println(f"const {field.type} {field._name};")
+                out.println(f"const {field.type} {field.name};")
 
     def _prepend_imports(self, text):
         prefix = ['#pragma once', '']
@@ -53,15 +53,17 @@ class Generator:
 
     def _write_code(self):
         path = os.path.join(output_directory, self._file_name + '.c')
-        buffer, out = self._create_buffer(path)
+        buffer, out = self._create_buffer()
         out.println(f'#include "{self._name.lower()}.h"')
         self._write_if_necessary(path, buffer.getvalue())
 
-    def _create_buffer(self, path):
+    @staticmethod
+    def _create_buffer():
         buffer = io.StringIO()
         return buffer, CodeWriter(buffer)
 
-    def _write_if_necessary(self, path, text):
+    @staticmethod
+    def _write_if_necessary(path, text):
         if os.path.isfile(path):
             file = open(path, 'r')
             existing_text = file.read()
