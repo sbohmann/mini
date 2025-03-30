@@ -2,6 +2,7 @@ import io
 import os
 
 from code_writer import CodeWriter
+from generators.type import String, Struct, Array
 from name_conversion import uppercase_to_underscore
 
 output_directory = os.path.join('..', 'native', 'generated', 'ast')
@@ -31,11 +32,11 @@ class Generator:
 
     def _write_struct_content(self, out):
         for field in self._fields:
-            if field.type.is_array:
+            if field.type is Array:
                 self._imports.add('<stddef.h>')
                 out.println(f"const {field.type.element_type} * const {field.name};")
                 out.println(f"const size_t {field.name}Length;")
-            elif field.type.is_string:
+            elif field.type is String:
                 self._imports.add('"ast/ast_types.h"')
                 out.println(f'const struct ASTString {field.name};')
             else:
@@ -78,48 +79,10 @@ class Field:
         self.type = field_type
 
 
-class Type:
-    def __init__(self, name):
-        self.name = name
-        self.element_type = None
-        self.is_array = False
-        self.is_struct = False
-        self.is_string = False
-
-    def __str__(self):
-        if self.is_array:
-            return f'{self.element_type} *'
-        elif self.is_struct:
-            return f'struct {self.name}'
-        elif self.is_string:
-            return 'char *'
-        else:
-            return self.name
-
-
-def array(element_type):
-    result = Type('array')
-    result.element_type = element_type
-    result.is_array = True
-    return result
-
-
-def struct(struct_name):
-    result = Type(struct_name)
-    result.is_struct = True
-    return result
-
-
-def string():
-    result = Type('string')
-    result.is_string = True
-    return result
-
-
 Generator('Module',
           [
-              Field('name', string()),
-              Field('statements', array(struct('Statement')))
+              Field('name', String()),
+              Field('statements', Array(Struct('Statement')))
           ])\
     .run()
 
