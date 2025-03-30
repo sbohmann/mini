@@ -1,14 +1,12 @@
 import io
 import os
 
-import jinja2
-
 from code_writer import CodeWriter
 from name_conversion import uppercase_to_underscore
 
 output_directory = os.path.join('..', 'native', 'generated', 'ast')
-template_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath='templates'))
-
+if not os.path.isdir(output_directory):
+    raise ValueError('Not a directory: ' + output_directory)
 
 class Generator:
     def __init__(self, name, fields):
@@ -68,9 +66,10 @@ class Generator:
             file = open(path, 'r')
             existing_text = file.read()
             file.close()
-            if existing_text != text:
-                print("Writing file [" + path + "]")
-                open(path, 'w').write(text)
+            if existing_text == text:
+                return
+        print("Writing file [" + path + "]")
+        open(path, 'w').write(text)
 
 
 class Field:
