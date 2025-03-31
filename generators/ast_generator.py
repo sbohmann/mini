@@ -2,7 +2,7 @@ import io
 import os
 
 from code_writer import CodeWriter
-from generators.type import String, Struct, Array
+from generators.type import String, Struct, Array, Field
 from name_conversion import uppercase_to_underscore
 
 output_directory = os.path.join('..', 'native', 'generated', 'ast')
@@ -32,15 +32,15 @@ class Generator:
 
     def _write_struct_content(self, out):
         for field in self._fields:
-            if field.type is Array:
+            if isinstance(field.type_, Array):
                 self._imports.add('<stddef.h>')
-                out.println(f"const {field.type.element_type} * const {field.name};")
+                out.println(f"const {field.type_.element_type} * const {field.name};")
                 out.println(f"const size_t {field.name}Length;")
-            elif field.type is String:
+            elif isinstance(field.type_, String):
                 self._imports.add('"ast/ast_types.h"')
                 out.println(f'const struct ASTString {field.name};')
             else:
-                out.println(f"const {field.type} {field.name};")
+                out.println(f"const {field.type_} {field.name};")
 
     def _prepend_imports(self, text):
         prefix = ['#pragma once', '']
@@ -71,12 +71,6 @@ class Generator:
                 return
         print("Writing file [" + path + "]")
         open(path, 'w').write(text)
-
-
-class Field:
-    def __init__(self, name, field_type):
-        self.name = name
-        self.type = field_type
 
 
 Generator('Module',

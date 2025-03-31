@@ -35,8 +35,9 @@ class Struct(Type):
         self.fields.append(Field(name, type_))
 
 
-class String:
-    result = Type('String')
+class String(Type):
+    def __init__(self):
+        Type.__init__(self, 'String')
 
 
 class Field:

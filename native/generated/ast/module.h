@@ -1,7 +1,11 @@
 #pragma once
 
+#include "ast/ast_types.h"
+#include <stddef.h>
+
 struct Module 
 {
-    const <generators.type.String object at 0x10508c520> name;
-    const Array<Statement> statements;
+    const struct ASTString name;
+    const Statement * const statements;
+    const size_t statementsLength;
 };
