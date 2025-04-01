@@ -2,25 +2,18 @@ class Type:
     def __init__(self, name: str):
         self.name = name
         self.element_type = None
-        self.is_array = False
-        self.is_struct = False
-        self.is_string = False
 
     def __str__(self):
-        if self.is_array:
-            return f'{self.element_type} *'
-        elif self.is_struct:
-            return f'struct {self.name}'
-        elif self.is_string:
-            return 'char *'
-        else:
-            return self.name
+        return self.name
 
 
 class Array(Type):
     def __init__(self, element_type: Type):
-        Type.__init__(self, 'Array<' + element_type.name + '>')
+        Type.__init__(self, 'Array<' + str(element_type) + '>')
         self.element_type = element_type
+
+    def __str__(self):
+        return f'{self.element_type} *'
 
 
 class Struct(Type):
@@ -28,6 +21,9 @@ class Struct(Type):
         Type.__init__(self, name)
         self.fields = []
         self.fieldNames = set()
+
+    def __str__(self):
+        return f'struct {self.name}'
 
     def field(self, name, type_: Type):
         if name in self.fieldNames:
@@ -38,6 +34,9 @@ class Struct(Type):
 class String(Type):
     def __init__(self):
         Type.__init__(self, 'String')
+
+    def __str__(self):
+        return 'char *'
 
 
 class Field:
